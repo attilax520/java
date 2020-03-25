@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!-- 素材列表 -->
+    <GET_NOTICE_CONTENT_LIST>
+        <sql><![CDATA[
+        SELECT * FROM (
+            SELECT
+                NC.ID,
+                NC.TITLE,
+                NC.COVER_PATH,
+                NC.SUMMARY,
+                DATE_FORMAT(IFNULL(NC.UPDATE_TIME,NC.CREATE_TIME), '%Y年%m月%d日' ) UPDATE_TIME
+            FROM
+                NOTICE_CONTENT NC
+            WHERE
+                1 = 1 {1}) T
+        ORDER BY T.UPDATE_TIME DESC
+        ]]></sql>
+        <psql><![CDATA[
+        SELECT * FROM (
+            SELECT
+                NC.ID,
+                NC.TITLE,
+                NC.COVER_PATH,
+                NC.SUMMARY,
+                DATE_FORMAT(IFNULL(NC.UPDATE_TIME,NC.CREATE_TIME), '%Y年%m月%d日' ) UPDATE_TIME
+            FROM
+                NOTICE_CONTENT NC
+            WHERE
+                1 = 1 {1}) T
+        ORDER BY T.UPDATE_TIME DESC
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) as tcount
+            FROM
+                NOTICE_CONTENT NC
+            WHERE
+                1 = 1 {1}
+         ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>and NC.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <TITLE>
+                <index>2</index>
+                <con>AND NC.TITLE like :?</con>
+                <type>char</type>
+            </TITLE>
+            <TYPE>
+                <index>3</index>
+                <con>AND NC.TYPE =:?</con>
+                <type>char</type>
+            </TYPE>
+            <SUMMARY>
+                <index>4</index>
+                <con>AND NC.SUMMARY like :?</con>
+                <type>char</type>
+            </SUMMARY>
+        </params>
+    </GET_NOTICE_CONTENT_LIST>
+
+    <!-- 已群发信息列表 -->
+    <GET_SENDED_NOTICE_LIST>
+        <sql><![CDATA[
+            SELECT
+                NC.COVER_PATH,
+                NC.TITLE,
+                NG.READ_COUNT,
+                NG.SEND_TIME,
+                NC.TYPE,
+                NG.SEND_STATUS,
+                CASE NG.SEND_ROLE
+                    WHEN 'all' THEN '全部角色'
+                    ELSE R.`NAME`
+                END AS ROLE_NAME
+            FROM
+                NOTICE_CONTENT NC,
+                NOTICE_GROUP_INFO NG
+                LEFT JOIN SYS_ROLE R ON NG.SEND_ROLE = R.ID
+            WHERE
+                1 = 1
+                AND NG.NOTICE_CONTENT_ID = NC.ID
+	            AND NC.POST_STATUS = '1' {1}
+            ORDER BY NG.SEND_TIME DESC
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT
+                NC.COVER_PATH,
+                NC.TITLE,
+                NG.READ_COUNT,
+                NG.SEND_TIME,
+                NC.TYPE,
+                NG.SEND_STATUS,
+                CASE NG.SEND_ROLE
+                    WHEN 'all' THEN '全部角色'
+                    ELSE R.`NAME`
+                END AS ROLE_NAME
+            FROM
+                NOTICE_CONTENT NC,
+                NOTICE_GROUP_INFO NG
+                LEFT JOIN SYS_ROLE R ON NG.SEND_ROLE = R.ID
+            WHERE
+                1 = 1
+                AND NG.NOTICE_CONTENT_ID = NC.ID
+	            AND NC.POST_STATUS = '1' {1}
+            ORDER BY NG.SEND_TIME DESC
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) as tcount
+            FROM
+                NOTICE_CONTENT NC,
+                NOTICE_GROUP_INFO NG
+                LEFT JOIN SYS_ROLE R ON NG.SEND_ROLE = R.ID
+            WHERE
+                1 = 1
+                AND NG.NOTICE_CONTENT_ID = NC.ID
+	            AND NC.POST_STATUS = '1' {1}
+         ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>and NC.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <TITLE>
+                <index>2</index>
+                <con>AND NC.TITLE like '%':?'%'</con>
+                <type>char</type>
+            </TITLE>
+            <START_TIME>
+                <index>3</index>
+                <con><![CDATA[ AND DATE_FORMAT( NG.SEND_TIME, '%Y-%m-%d' ) >= :? ]]></con>
+                <type>char</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con><![CDATA[ AND DATE_FORMAT( NG.SEND_TIME, '%Y-%m-%d' ) <= :? ]]></con>
+                <type>char</type>
+            </END_TIME>
+        </params>
+    </GET_SENDED_NOTICE_LIST>
+
+    <!-- 接收到的信息列表 -->
+    <GET_ACCEPT_NOTICE_LIST>
+        <sql><![CDATA[
+            SELECT * FROM (
+                SELECT
+                    NC.ID,
+                    NC.TITLE,
+                    NC.AUTHOR,
+                    NC.COVER_PATH,
+                    NC.SUMMARY,
+                    NG.SEND_TIME TIME1,
+                    DATE_FORMAT( NG.SEND_TIME, '%Y年%m月%d日' ) SEND_TIME,
+                    NG.ID AS GROUP_ID,
+                    (SELECT count(distinct NR.ID) FROM NOTICE_READ_INFO NR WHERE NR.USER_ID = :USER_ID AND NR.GROUP_ID = NG.ID ) AS READ_COUNT
+                FROM
+                    NOTICE_CONTENT NC,
+                    NOTICE_GROUP_INFO NG
+                    LEFT JOIN SYS_USER_ROLE_REL UR ON NG.SEND_ROLE = UR.ROLE_ID
+                WHERE
+                    1 = 1
+                    AND NG.NOTICE_CONTENT_ID = NC.ID
+                    AND NC.POST_STATUS = '1' {1}
+            ) t
+            ORDER BY t.TIME1 DESC
+        ]]></sql>
+        <psql><![CDATA[
+            	SELECT * FROM (
+                SELECT
+                    NC.ID,
+                    NC.TITLE,
+                    NC.AUTHOR,
+                    NC.COVER_PATH,
+                    NC.SUMMARY,
+                    NG.SEND_TIME TIME1,
+                    DATE_FORMAT( NG.SEND_TIME, '%Y年%m月%d日' ) SEND_TIME,
+                    NG.ID AS GROUP_ID,
+                    (SELECT count(distinct NR.ID) FROM NOTICE_READ_INFO NR WHERE NR.USER_ID = :USER_ID AND NR.GROUP_ID = NG.ID ) AS READ_COUNT
+                FROM
+                    NOTICE_CONTENT NC,
+                    NOTICE_GROUP_INFO NG
+                    LEFT JOIN SYS_USER_ROLE_REL UR ON NG.SEND_ROLE = UR.ROLE_ID
+                WHERE
+                    1 = 1
+                    AND NG.NOTICE_CONTENT_ID = NC.ID
+                    AND NC.POST_STATUS = '1' {1}
+            ) t
+            ORDER BY t.TIME1 DESC
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) as tcount
+            FROM
+                    NOTICE_CONTENT NC,
+                    NOTICE_GROUP_INFO NG
+                    LEFT JOIN SYS_USER_ROLE_REL UR ON NG.SEND_ROLE = UR.ROLE_ID
+                WHERE
+                    1 = 1
+                    AND NG.NOTICE_CONTENT_ID = NC.ID
+                AND NC.POST_STATUS = '1'  {1}
+         ]]></tsql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>and ( UR.USER_ID = :? OR NG.SEND_ROLE = 'all')</con>
+                <type>char</type>
+            </USER_ID>
+            <TITLE>
+                <index>2</index>
+                <con>AND NC.TITLE like '%':?'%'</con>
+                <type>char</type>
+            </TITLE>
+            <START_TIME>
+                <index>3</index>
+                <con><![CDATA[ AND DATE_FORMAT( NG.SEND_TIME, '%Y-%m-%d' ) >= :? ]]></con>
+                <type>char</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con><![CDATA[ AND DATE_FORMAT( NG.SEND_TIME, '%Y-%m-%d' ) <= :? ]]></con>
+                <type>char</type>
+            </END_TIME>
+            <!--<TENANT_ID>
+                <index>5</index>
+                <con> and NC.TENANT_ID = :? </con>
+                <type>char</type>
+            </TENANT_ID>-->
+            <TYPE>
+                <index>6</index>
+                <con>AND NC.TYPE =:?</con>
+                <type>char</type>
+            </TYPE>
+        </params>
+    </GET_ACCEPT_NOTICE_LIST>
+
+    <GET_UNREAD_NOTICE_COUNT>
+        <sql><![CDATA[
+                SELECT
+                    COUNT(NG.ID) as unread_count
+                FROM
+                    NOTICE_CONTENT NC,
+                    NOTICE_GROUP_INFO NG
+                    LEFT JOIN SYS_USER_ROLE_REL UR ON NG.SEND_ROLE = UR.ROLE_ID
+                WHERE
+                    1 = 1
+                    AND NG.NOTICE_CONTENT_ID = NC.ID
+                    AND NC.POST_STATUS = '1'
+                    AND NOT EXISTS (SELECT 1 FROM NOTICE_READ_INFO NR WHERE NR.USER_ID = :USER_ID AND NR.GROUP_ID = NG.ID)
+                    {1}
+        ]]></sql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>and ( UR.USER_ID = :? OR NG.SEND_ROLE = 'all')</con>
+                <type>char</type>
+            </USER_ID>
+        </params>
+    </GET_UNREAD_NOTICE_COUNT>
+
+    <sys_role_list_all>
+        <sql>
+            SELECT
+            P.*
+            FROM
+            SYS_ROLE P
+            WHERE 1=1
+        </sql>
+        <params>
+            <S_TENANT_ID>
+                <index>2</index>
+                <con>AND P.TENANT_ID = :?</con>
+                <type>char</type>
+            </S_TENANT_ID>
+        </params>
+    </sys_role_list_all>
+
+    <qry_allusers_by_role>
+        <sql><![CDATA[
+            SELECT U.ID,U.`NAME`,R.CODE FROM SYS_USER U
+            LEFT JOIN SYS_USER_ROLE_REL UR ON UR.USER_ID = U.ID
+            LEFT JOIN SYS_ROLE R ON R.ID = UR.ROLE_ID
+            WHERE 1 = 1 AND U.DELETED = 0 AND R.DELETED = 0
+            {1}
+        ]]></sql>
+        <params>
+            <CODE>
+                <index>2</index>
+                <con>AND R.CODE IN (:?)</con>
+                <type>char</type>
+            </CODE>
+            <ROLE_ID>
+                <index>3</index>
+                <con>AND R.ID = :?</con>
+                <type>char</type>
+            </ROLE_ID>
+        </params>
+    </qry_allusers_by_role>
+</qrys>
+

@@ -1,0 +1,6 @@
+{
+    xtype:'uxmap',flex:1,
+    title:'地图测试',
+    map: 'china',
+    store:Ext.create('Ext.data.Store',{})
+}

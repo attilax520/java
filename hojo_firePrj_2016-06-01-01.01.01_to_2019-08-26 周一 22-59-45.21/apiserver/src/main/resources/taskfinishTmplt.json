@@ -1,0 +1,12 @@
+{
+  "request": {
+    "apiVer": "1.0.0"
+  },
+  "id": 1508212818676,
+  "params": {
+    "taskId":${taskid},
+    "action":"accept",
+    "data":"${data}"
+  },
+  "version": "1.0"
+}

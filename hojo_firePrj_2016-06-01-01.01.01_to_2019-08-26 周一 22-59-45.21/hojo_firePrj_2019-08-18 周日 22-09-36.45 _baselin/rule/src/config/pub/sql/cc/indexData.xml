@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 首页 七天数据 展示 -->
+    <seven_day_data>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT,
+        C.CREATE_TIME AS TIME
+        FROM(
+        SELECT
+        SUBSTR(from_unixtime(I.create_time/1000),1,10) AS CREATE_TIME
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        {1}
+        ) C
+        WHERE
+        DATE_SUB(CURDATE(), INTERVAL 7 DAY) <= date(C.CREATE_TIME)
+        GROUP BY C.CREATE_TIME ORDER BY C.CREATE_TIME asc
+    ]]>
+        </sql><!--AND D.TENANT_ID = :TENANT_ID-->
+        <params>
+            <alarm>
+                <index>1</index>
+                <con>AND Y.is_alarm='1'</con>
+                <type>char</type>
+            </alarm>
+            <fault>
+                <index>1</index>
+                <con>AND Y.is_fault='1'</con>
+                <type>char</type>
+            </fault>
+            <TENANT_ID>
+                <index>3</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </seven_day_data>
+    <!-- 今日 数据 总数 -->
+    <today_data_total>
+        <sql>
+            <![CDATA[
+		SELECT
+        count(1) AS count
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        {1}
+        AND I.create_time > UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+    ]]>
+        </sql><!--AND D.TENANT_ID = :TENANT_ID--><!--AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE) - INTERVAL 1 DAY)*1000-->
+        <params>
+            <alarm>
+                <index>1</index>
+                <con>AND Y.is_alarm='1'</con>
+                <type>char</type>
+            </alarm>
+            <fault>
+                <index>2</index>
+                <con>AND Y.is_fault='1'</con>
+                <type>char</type>
+            </fault>
+            <TENANT_ID>
+                <index>3</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </today_data_total>
+    <!-- 今日 数据 处理 -->
+    <today_data_deal>
+        <sql><![CDATA[
+		SELECT
+        COUNT(1) AS count
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        {1}
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        AND I.id IN (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD)
+    ]]>
+        </sql><!--AND D.TENANT_ID = :TENANT_ID--><!--AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE) - INTERVAL 1 DAY)*1000-->
+        <params><!--#AND NOT EXISTS (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD R WHERE R.BUSINESS_ID=I.ID)-->
+            <alarm>
+                <index>1</index>
+                <con>AND Y.is_alarm='1'</con>
+                <type>char</type>
+            </alarm>
+            <fault>
+                <index>2</index>
+                <con>AND Y.is_fault='1'</con>
+                <type>char</type>
+            </fault>
+            <TENANT_ID>
+                <index>3</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </today_data_deal>
+    <!-- 未处理数据 单位排行 -->
+    <un_deal_rank>
+        <sql><![CDATA[
+		SELECT * from (
+        SELECT
+        COUNT(1) count,
+        U.UNIT_ADDRESS as name
+        FROM
+        DATA_EVENT_INFO I,
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        {1}
+        AND I.device_id=D.ID
+        AND D.unit_id=U.ID
+        AND I.event_type=Y.TYPE
+        AND Y.is_alarm='1'
+        AND I.id NOT IN (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD)
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        GROUP BY D.unit_id) A
+        ORDER BY A.count DESC LIMIT 0,5
+    ]]>
+        </sql><!--AND D.TENANT_ID = :TENANT_ID-->
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </un_deal_rank>
+    <!-- 实时数据 最新5条 -->
+    <current_data>
+        <sql><![CDATA[
+		SELECT
+        I.ID,
+        U.UNIT_ADDRESS AS UNIT_NAME,
+        S.`NAME`,
+        SUBSTR(from_unixtime(I.create_time/1000),1,19) AS CREATE_TIME,
+        (SELECT
+        SU.`NAME`
+        FROM
+        SYS_USER_UNIT_REL R,
+        SYS_USER SU
+        WHERE
+        R.UNIT_ID=U.ID
+        AND R.USER_ID=SU.ID
+        LIMIT 0,1) AS LEADER_NAME,
+        (SELECT
+        SU.PHONE
+        FROM
+        SYS_USER_UNIT_REL R,
+        SYS_USER SU
+        WHERE
+        R.UNIT_ID=U.ID
+        AND R.USER_ID=SU.ID
+        LIMIT 0,1) AS LEADER_PHONE
+        FROM
+        DATA_EVENT_INFO I,
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        DATA_DICTIONARY Y,
+        SYS_DEPT S
+        WHERE 1=1
+        {1}
+        AND I.device_id=D.ID
+        AND I.event_type=Y.TYPE
+        AND D.unit_id=U.id
+        AND U.dept_id=S.ID
+        AND Y.is_alarm='1'
+        AND I.id NOT IN (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD)
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        ORDER BY I.create_time desc LIMIT 0,5
+    ]]>
+        </sql><!--AND D.TENANT_ID = :TENANT_ID  AND Y.is_alarm='1' -->
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </current_data>
+    <index_unit_list>
+        <sql><![CDATA[
+		SELECT
+        ID,
+        UNIT_NAME,
+        UNIT_ADDRESS,
+        CONCAT(LONGITUDE,',',LATITUDE) as LONGITUDE
+        FROM
+        UNIT_INFO
+        WHERE 1=1
+        {1}
+        AND DELETED='0'
+    ]]>
+        </sql><!--AND TENANT_ID = :TENANT_ID-->
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </index_unit_list>
+    <!--今天有报警且未处理的单位-->
+    <alarm_unit>
+        <sql><![CDATA[
+		SELECT
+        DISTINCT U.ID
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        UNIT_INFO U,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        {1}
+        AND I.device_id=D.ID
+        AND D.unit_id=U.ID
+        AND I.event_type=Y.TYPE
+        AND Y.is_alarm='1'
+        AND I.id NOT IN (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD)
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </alarm_unit>
+    <!-- 根据id获取单位详情 -->
+    <index_unit_info>
+        <sql><![CDATA[
+		SELECT
+        I.UNIT_ADDRESS,
+        D.`NAME`,
+        U.`NAME` AS LEADER_NAME,
+        U.PHONE AS LEADER_PHONE
+        FROM
+        UNIT_INFO I,
+        SYS_DEPT D,
+        SYS_USER_UNIT_REL R,
+        SYS_USER U
+        WHERE 1=1
+        {1}
+        AND I.DEPT_ID=D.ID
+        AND I.ID=R.UNIT_ID
+        AND R.USER_ID=U.ID
+        ]]>
+        </sql>
+        <params><!--#AND NOT EXISTS (SELECT BUSINESS_ID FROM IOT_ALARM_PROCESS_RECORD R WHERE R.BUSINESS_ID=I.ID)-->
+            <id>
+                <index>1</index>
+                <con>AND I.ID=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </index_unit_info>
+</qrys>

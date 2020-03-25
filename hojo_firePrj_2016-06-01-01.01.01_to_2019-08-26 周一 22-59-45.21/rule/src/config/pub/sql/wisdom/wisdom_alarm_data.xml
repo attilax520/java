@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!--插座在线设备量统计 and type = 'smart_power_plug'-->
+    <query_wisdom_online_device_count>
+        <sql>
+            <![CDATA[
+                SELECT
+                    MAX(
+                        CASE
+                        WHEN  is_online='0' THEN
+                            count
+                        END
+                    ) AS off_count,
+                    MAX(
+                        CASE
+                        WHEN  is_online='1' THEN
+                            count
+                        END
+                    ) AS online_count
+                from (
+                SELECT count(id) count,is_online FROM DATA_DEVICE dd
+                WHERE type = 'smart_power_plug' {1}
+                GROUP BY is_online
+                ) t WHERE 1= 1
+
+            ]]>
+        </sql>
+        <params>
+            <DEVICE_TYPE>
+                <index>1</index>
+                <con>and type = :?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <TENANT_ID>
+                <index>2</index>
+                <con>and dd.tenant_id =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </query_wisdom_online_device_count>
+
+    <!--查询7日之前的历史在线率-->
+    <query_device_online_per>
+        <sql>
+            <![CDATA[
+                SELECT statistics_date, round((online_count/total)*100,1) as per
+			    FROM DATA_DEVICE_STATISTICS WHERE TO_DAYS(NOW()) - TO_DAYS(statistics_date)>=1
+			    {1}
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND tenant_id = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <DEVICE_TYPE>
+                <index>2</index>
+                <con>AND device_type =:?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+        </params>
+    </query_device_online_per>
+</qrys>

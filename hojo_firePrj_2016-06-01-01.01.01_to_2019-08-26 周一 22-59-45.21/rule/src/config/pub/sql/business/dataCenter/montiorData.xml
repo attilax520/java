@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!--获取所有设备类型-->
+    <getDataDeviceType>
+        <sql>
+            <![CDATA[
+                select id,type,name from DATA_DEVICE_TYPE dt WHERE dt.type in (:DEVICE_TYPE)
+            ]]>
+        </sql>
+    </getDataDeviceType>
+
+    <!--查询嘉善下的所有区域-->
+    <getChildAreaByAreaId>
+        <sql>
+            <![CDATA[
+                select * FROM SYS_DISTRICT WHERE parent_id = :AREA_ID
+            ]]>
+        </sql>
+    </getChildAreaByAreaId>
+
+<!--SELECT t1.id, t1.name as type_name,  t1.type, IFNULL(sum(t2.device_num),0) device_num  FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+				SELECT dt.parent_id, dd.type, count( dd.id ) device_num
+                FROM UNIT_INFO ui,  DATA_DEVICE dd,  DATA_DEVICE_TYPE dt
+                WHERE ui.DEPT_ID IN ( SELECT sudr.DEPT_ID FROM SYS_USER su, SYS_USER_DEPT_REL sudr WHERE su.ID = :USER_ID AND su.ID = sudr.USER_ID )
+                    {1}  AND ui.ID = dd.unit_id  AND dd.type = dt.type
+                GROUP BY dd.type,dt.parent_id ) t2 ON t1.id = t2.parent_id
+				WHERE t1.type in (:DEVICE_TYPES)
+				GROUP BY t1.id,t1.name,  t1.type
+                UNION ALL
+				SELECT t1.id, t1.name type_name, t1.type,IFNULL(sum(device_num),0) device_num FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+                SELECT dt.parent_id,dt.type ,count( dd.id ) device_num
+                FROM UNIT_INFO ui, DATA_MACHINE_INFO dd, DATA_DEVICE_TYPE dt
+                WHERE
+                    ui.DEPT_ID IN ( SELECT sudr.DEPT_ID FROM SYS_USER su, SYS_USER_DEPT_REL sudr WHERE su.ID = :USER_ID AND su.ID = sudr.USER_ID )
+                    {1}
+                    AND ui.ID = dd.unit_id
+					AND dt.type = dd.device_type
+                GROUP BY dt.parent_id,dd.device_type ) t2 ON t1.id = t2.parent_id
+								WHERE t1.type = 'fire_alarm_system'
+								GROUP BY t1.id,t1.name, t1.type-->
+    <!--根据设备类型统计每种设备类型的接入数量
+    第一段SQL: 统计用传以外的设备。
+    第三段SQL: 统计火灾自动报警系统设备
+    -->
+    <getJoinDevNumByDevType>
+        <sql>
+            <![CDATA[
+                SELECT t1.id, t1.name as type_name,  t1.type, IFNULL(sum(t2.device_num),0) device_num  FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+							 SELECT
+                    dt.parent_id, dd.type, count( dd.id ) device_num
+                FROM
+                    DATA_DEVICE dd,
+                    DATA_DEVICE_TYPE dt
+                WHERE 1=1
+                    {1}
+                    AND dd.type = dt.type
+                GROUP BY dd.type,dt.parent_id ) t2
+                ON (t1.id = t2.parent_id OR t1.id = '69')
+                WHERE t1.type in (:DEVICE_TYPES)
+                GROUP BY t1.id,t1.name,  t1.type
+                UNION ALL
+                SELECT t1.id, t1.name type_name, t1.type,IFNULL(sum(device_num),0) device_num FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+                SELECT
+                    dt.parent_id,dt.type ,count( dd.id ) device_num
+                FROM DATA_MACHINE_INFO dd,
+					 DATA_DEVICE_TYPE dt
+                WHERE  1=1
+                    {1}
+					AND dt.type = dd.device_type
+                GROUP BY dt.parent_id,dd.device_type ) t2 ON t1.id = t2.parent_id
+                WHERE t1.type = 'fire_alarm_system'
+                GROUP BY t1.id,t1.name, t1.type
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND dd.tenant_id =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con> and dd.zone_code in (:?)</con>
+                <type>char</type>
+            </AREA_IDS>
+        </params>
+    </getJoinDevNumByDevType>
+
+    <!--获取用传设备的统计数量-->
+    <getMachineUserCounts>
+        <sql>
+            <![CDATA[
+                select dm.device_type deviceType,
+                (select dt.name SELECT
+                    dm.device_type deviceType,
+                    ( SELECT dt.NAME FROM DATA_DEVICE_TYPE dt WHERE dt.type = dm.device_type ) deviceName,
+                    count( dm.id ) device_num
+                FROM
+                    UNIT_INFO ui,
+                    DATA_MACHINE_INFO dm
+                WHERE
+                    ui.DEPT_ID IN ( SELECT sudr.DEPT_ID FROM SYS_USER su, SYS_USER_DEPT_REL sudr WHERE su.ID = 'b2c97670-0ec1-4f09-a57f-96498fdee2f5' AND su.ID = sudr.USER_ID )
+                    AND ui.AREA_ID = '1354'
+                    AND ui.ID = dm.unit_id
+                GROUP BY
+                    dm.device_type
+            ]]>
+        </sql>
+    </getMachineUserCounts>
+
+    <!--统计说是有设备的当前的在线率-->
+    <getDeviceOnlineBytype>
+        <sql>
+            <![CDATA[
+
+                    SELECT t1.type, t1.name type_name,
+                        IFNULL(sum(t2.online_count),0) online_count, IFNULL( sum(t2.offline_count),0) offline_count,
+                        IFNULL((sum(t2.online_count)+sum(t2.offline_count)),0) total_num	 FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+                        select t.type, t.parent_id,
+                        Max(case t.is_online when '1' then t.count else 0 end ) online_count,
+                        Max(case t.is_online when '0' then t.count else 0 end ) offline_count
+                        from (
+                            select dt.parent_id, d.type,d.is_online, IFNULL(count(d.id),0) count
+                            FROM DATA_DEVICE d,DATA_DEVICE_TYPE dt
+                            WHERE d.type is not null
+                            AND d.type = dt.type
+                            {1}
+                            GROUP BY dt.parent_id,d.type, is_online
+                        ) t GROUP BY t.type,t.parent_id
+                    ) t2 ON (t1.id = t2.parent_id or t1.id = '69')
+                     WHERE t1.type in  (:DEVICE_TYPES)
+                    GROUP BY t1.type, t1.name
+                    UNION ALL
+                    SELECT t1.type, t1.name type_name,
+                        IFNULL(sum(t2.online_count),0) online_count, IFNULL( sum(t2.offline_count),0) offline_count,
+                        IFNULL((sum(t2.online_count)+sum(t2.offline_count)),0) total_num FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+                    select t.type,t.parent_id,
+                        Max(case t.is_online when '1' then t.count else 0 end ) online_count,
+                        Max(case t.is_online when '0' then t.count else 0 end ) offline_count  from (
+                    select d.device_type as type,d.is_online,dt.parent_id,count(d.id) count
+                    FROM DATA_MACHINE_INFO d,DATA_DEVICE_TYPE dt
+                    WHERE d.device_type = dt.type
+                    and d.is_online is not null
+                    {1}
+                    GROUP BY d.device_type,d.is_online,dt.parent_id
+                    ) t GROUP BY t.type,t.parent_id
+                    ) t2 ON t1.id = t2.parent_id
+                     WHERE t1.type in  ('fire_alarm_system')
+                    GROUP BY t1.type, t1.name
+
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND d.tenant_id =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con> and d.zone_code in (:?)</con>
+                <type>char</type>
+            </AREA_IDS>
+        </params>
+    </getDeviceOnlineBytype>
+
+    <!--上个月设备告警分类统计-->
+    <getDeviceAlaramCountByLastMonths>
+        <sql>
+            <![CDATA[
+            SELECT t3.type,t3.type_name,IFNULL(sum(t3.alarm_total),0) alarm_total, IFNULL(sum(t3.processed_counts),0)  processed_counts  FROM (
+            SELECT t.type, t.name type_name,IFNULL(t2.alarm_total,0) as alarm_total ,t2.processed_counts FROM DATA_DEVICE_TYPE t LEFT JOIN (
+            SELECT t1.parent_id, count(dmei.id) alarm_total,
+            (SELECT count(iapr.BUSINESS_ID) FROM IOT_ALARM_PROCESS_RECORD iapr WHERE iapr.BUSINESS_ID = dmei.id GROUP BY iapr.BUSINESS_ID) as processed_counts
+            FROM
+            DATA_DEVICE dd,
+            DATA_EVENT_INFO dmei,
+			DATA_EVENT_ENUM dee,
+            DATA_DEVICE_TYPE t1
+            WHERE dd.id = dmei.device_id
+            AND dee.type = dmei.event_type
+			 {1}
+            AND t1.type = dd.type
+            GROUP BY  t1.parent_id,dmei.id,dd.type,FROM_UNIXTIME(dmei.event_time / 1000, '%Y%m' )
+            ) t2 ON (t.id = t2.parent_id or t.id = '69') WHERE t.type in (:DEVICE_TYPES)
+            ) t3 GROUP BY t3.type,t3.type_name
+						UNION ALL
+			SELECT t1.type,t1.name type_name, IFNULL(sum(t2.count),0) alarm_total, IFNULL(sum(t2.processed_counts),0)   processed_counts
+			FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+			SELECT dt.parent_id, dee.device_type,FROM_UNIXTIME(dmei.event_time / 1000, '%Y%m' ) as event_time, count(dmei.id) count,
+			(select count(iapr.BUSINESS_ID) FROM IOT_ALARM_PROCESS_RECORD iapr
+			   WHERE iapr.BUSINESS_ID = dmei.id GROUP BY iapr.BUSINESS_ID) as processed_counts
+			FROM DATA_MACHINE_EVENT_INFO dmei, DATA_EVENT_ENUM dee,
+					 DATA_DEVICE_TYPE dt,DATA_MACHINE_INFO dd
+			WHERE dmei.type_flag = 2
+				AND dmei.event_type = dee.type
+				and dt.type = dee.device_type
+				AND dd.id = dmei.machine_info_id
+				  {1}
+			GROUP BY dt.parent_id,dmei.id, dee.device_type,FROM_UNIXTIME(dmei.event_time / 1000, '%Y%m' )
+			) t2 ON t1.id = t2.parent_id
+			WHERE t1.type = 'fire_alarm_system'
+			GROUP BY t1.type,t1.name
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> AND dd.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con> AND dd.zone_code in (:?) </con>
+                <type>char</type>
+            </AREA_IDS>
+            <IS_ALARM>
+                <index>3</index>
+                <con> AND dee.is_alarm = 1 </con>
+                <type>char</type>
+            </IS_ALARM>
+            <IS_FAULT>
+                <index>3</index>
+                <con> AND dee.is_fault = 1 </con>
+                <type>char</type>
+            </IS_FAULT>
+            <DATE_TYPE_MONTH>
+                <index>4</index>
+                <con>
+                    <![CDATA[
+                        AND PERIOD_DIFF(date_format(now() , '%Y%m' ) ,FROM_UNIXTIME(dmei.event_time / 1000, '%Y%m' ) ) =1
+                    ]]>
+                </con>
+                <type>char</type>
+            </DATE_TYPE_MONTH>
+            <DATE_TYPE_DAY>
+                <index>5</index>
+                <con><![CDATA[
+                        AND to_days(FROM_UNIXTIME(dmei.event_time / 1000, '%Y-%m-%d')) = to_days(date_format( now() , '%Y-%m-%d' ))
+                    ]]>
+                </con>
+                <type>char</type>
+            </DATE_TYPE_DAY>
+        </params>
+    </getDeviceAlaramCountByLastMonths>
+
+    <!--根据设备类型 查询各个设备近12个月的统计分析数据-->
+    <get12MonthDataByDeviceTYpe>
+        <sql>
+            <![CDATA[
+                SELECT A.month, IFNULL(B.total_alarm_num,0) total_alarm_num, IFNULL(B.processed_counts,0) processed_counts  FROM past_12_month_view A LEFT JOIN (
+
+			SELECT  t2.event_time, IFNULL(sum(t2.total_alarm_num),0) total_alarm_num,IFNULL(sum(t2.processed_counts) ,0) processed_counts
+			FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+			 select dt.parent_id, FROM_UNIXTIME(dmei.event_time / 1000, '%Y-%m' ) event_time,count(dmei.id) total_alarm_num,
+			 (select count(iapr.BUSINESS_ID) FROM IOT_ALARM_PROCESS_RECORD iapr
+			   WHERE iapr.BUSINESS_ID = dmei.id GROUP BY iapr.BUSINESS_ID) as processed_counts
+				FROM DATA_MACHINE_EVENT_INFO dmei,
+				DATA_EVENT_ENUM dee,
+				DATA_DEVICE_TYPE dt,
+				DATA_MACHINE_INFO dd
+			 WHERE dmei.type_flag = 2
+			 AND dd.id = dmei.machine_info_id
+			 AND dmei.event_type = dee.type
+			 AND dt.type = dee.device_type
+			 {1}
+			 and FROM_UNIXTIME(dmei.event_time / 1000, '%Y-%m' ) > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH),'%Y-%m')
+			 GROUP BY dt.parent_id,dmei.id,FROM_UNIXTIME(dmei.event_time / 1000, '%Y-%m' ),dee.device_type
+			) t2 ON (t1.id = t2.parent_id or t1.id = '69')
+			WHERE t1.type in(:DEVICE_TYPES)
+			GROUP BY  t2.event_time
+			UNION ALL
+			SELECT t2.event_time, IFNULL(sum(t2.alarm_total),0) as alarm_total ,IFNULL(sum(t2.processed_counts),0) processed_counts
+						FROM DATA_DEVICE_TYPE t LEFT JOIN (
+            SELECT t1.parent_id,FROM_UNIXTIME(dei.event_time / 1000, '%Y-%m' ) event_time,count(dei.id) alarm_total,
+            (select count(iapr.BUSINESS_ID) FROM IOT_ALARM_PROCESS_RECORD iapr WHERE iapr.BUSINESS_ID = dei.id GROUP BY iapr.BUSINESS_ID) as processed_counts
+            FROM
+            DATA_DEVICE dd,
+            DATA_EVENT_INFO dei,
+						DATA_EVENT_ENUM dee,
+            DATA_DEVICE_TYPE t1
+            WHERE dd.id = dei.device_id
+            AND dee.type = dei.event_type
+				{1}
+             AND FROM_UNIXTIME(dei.event_time / 1000, '%Y-%m' ) > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH),'%Y-%m')
+            AND t1.type = dd.type
+            GROUP BY  t1.parent_id,dei.id,dd.type,FROM_UNIXTIME(dei.event_time / 1000, '%Y-%m' )
+            ) t2 ON t.id = t2.parent_id WHERE t.type in (:DEVICE_TYPES)
+						GROUP BY t2.event_time
+			) B ON A.month = B.event_time
+			ORDER BY A.month
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND dd.tenant_id = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con>AND dd.zone_code in (:?)</con>
+                <type>char</type>
+            </AREA_IDS>
+            <IS_ALARM>
+                <index>3</index>
+                <con>AND dee.is_alarm = 1</con>
+                <type>char</type>
+            </IS_ALARM>
+            <IS_FAULT>
+                <index>3</index>
+                <con>AND dee.is_fault = 1</con>
+                <type>char</type>
+            </IS_FAULT>
+        </params>
+    </get12MonthDataByDeviceTYpe>
+
+    <!--查询设备近12个月的历史在线率-->
+    <getDevice12OnlinePercent>
+        <sql>
+            <![CDATA[
+            SELECT months,IFNULL(round((online_count/total)*100,1) ,0) as percent FROM (
+                SELECT td.month months,IFNULL(t.total,0) total, IFNULL(t.online_count,0) online_count
+                FROM past_12_month_view td LEFT JOIN (
+                    SELECT t2.statistics_date,t2.total,t2.online_count FROM DATA_DEVICE_TYPE t1 LEFT JOIN (
+                    SELECT dt.parent_id, DATE_FORMAT(ds.statistics_date,'%Y-%m') statistics_date, sum(ds.total) total,sum(ds.online_count) online_count
+                        FROM DATA_DEVICE_STATISTICS ds,DATA_DEVICE_TYPE dt
+                    WHERE DATE_FORMAT(ds.statistics_date,'%Y-%m') > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH),'%Y-%m')
+                    AND ds.device_type = dt.type
+                {1}
+                GROUP BY dt.parent_id, DATE_FORMAT(ds.statistics_date,'%Y-%m')
+                ) t2 ON (t1.id = t2.parent_id or t1.id = '69')
+                WHERE t1.type = :DEVICE_TYPES
+                ) t ON td.month = t.statistics_date
+                ) tab
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> AND ds.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con>AND ds.zone_code in (:?)</con>
+                <type>char</type>
+            </AREA_IDS>
+            <UNINT_IDS>
+                <index>3</index>
+                <con>AND ds.unit_id in (:?)</con>
+                <type>char</type>
+            </UNINT_IDS>
+        </params>
+    </getDevice12OnlinePercent>
+
+    <!--统计平均报警响应时长和故障处理时间-->
+    <getResponseTime>
+        <sql>
+            <![CDATA[
+                select CONCAT_WS(":",hour,minute,second) as responseTime from (
+                    select
+                      cast(((t.ptime-t.utime)/count /1000% 86400/3600) as signed integer)hour,
+                      cast(((t.ptime-t.utime)/count /1000% 86400%3600/ 60) as signed integer)minute,
+                      cast(((t.ptime-t.utime)/count /1000% 86400%3600% 60) as signed integer) second
+                from (
+                select if(sum(UNIX_TIMESTAMP(a.CREATE_TIME)*1000) is null , 0,sum(UNIX_TIMESTAMP(a.CREATE_TIME)*1000))  ptime , if(sum(a.event_time) is null , 0,sum(a.event_time))  utime,count(*) count from (
+                SELECT dei.event_time ,iapr.CREATE_TIME FROM DATA_EVENT_INFO dei,DATA_DICTIONARY dd,IOT_ALARM_PROCESS_RECORD iapr,DATA_DEVICE dev
+                WHERE  dei.event_type = dd.type  and dei.id = iapr.BUSINESS_ID
+
+                and dev.id = iapr.device_id
+                and FROM_UNIXTIME( dei.event_time / 1000, '%Y-%m-%d' ) > DATE_FORMAT( now( ) - INTERVAL 1 MONTH, '%Y-%m-01' )
+                AND FROM_UNIXTIME( dei.event_time / 1000, '%Y-%m-%d' ) < DATE_FORMAT( now( ) - INTERVAL 1 MONTH, '%Y-%m-31' )
+                union
+                SELECT dei.event_time,iapr.CREATE_TIME
+                FROM DATA_MACHINE_EVENT_INFO dei,DATA_DICTIONARY dd,IOT_ALARM_PROCESS_RECORD iapr,DATA_MACHINE_INFO dev
+                WHERE  dei.event_type = dd.type
+                and dei.id = iapr.BUSINESS_ID and dev.id = dei.machine_info_id and
+                FROM_UNIXTIME( dei.event_time / 1000, '%Y-%m-%d' ) > DATE_FORMAT( now( ) - INTERVAL 1 MONTH, '%Y-%m-01' )
+                AND FROM_UNIXTIME( dei.event_time / 1000, '%Y-%m-%d' ) < DATE_FORMAT( now( ) - INTERVAL 1 MONTH, '%Y-%m-31' )
+                )a)t)t1
+            ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> AND dev.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <AREA_IDS>
+                <index>2</index>
+                <con>AND dev.zone_code in (:?)</con>
+                <type>char</type>
+            </AREA_IDS>
+            <ALARM>
+                <index>3</index>
+                <con>and dd.is_alarm = 1</con>
+                <type>char</type>
+            </ALARM>
+            <FAULT>
+                <index>4</index>
+                <con>and dd.is_fault = 1</con>
+                <type>char</type>
+            </FAULT>
+        </params>
+    </getResponseTime>
+</qrys>

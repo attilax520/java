@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_unit_info>
+        <sql><![CDATA[
+		SELECT b.CODE_NAME, c.`NAME` as AREA_NAME, a.*,
+		(SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=a.ID AND M.COM_STATUS='0' AND M.TYPE='R') AS REPAIR_COMPARY_NAME,
+		(SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=a.ID AND M.COM_STATUS='0'  AND M.TYPE='C') AS CHECK_COMPARY_NAME
+		FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+        LEFT JOIN SYS_DISTRICT c ON a.AREA_ID = c.ID
+		where 1=1
+		AND a.UNIT_FLAG in ('0','1')
+		{1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT b.CODE_NAME, c.`NAME` as AREA_NAME, a.*,
+		(SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=a.ID AND M.COM_STATUS='0' AND M.TYPE='R') AS REPAIR_COMPARY_NAME,
+		(SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=a.ID AND M.COM_STATUS='0'  AND M.TYPE='C') AS CHECK_COMPARY_NAME
+		FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+        LEFT JOIN SYS_DISTRICT c ON a.AREA_ID = c.ID
+		where 1=1 AND a.UNIT_FLAG in ('0','1')  {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		SELECT
+			count(*) as tcount
+		FROM UNIT_INFO a
+		where 1=1 AND a.UNIT_FLAG in ('0','1') {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_CODE>
+                <index>2</index>
+                <con>and a.UNIT_CODE like :?</con>
+                <type>char</type>
+            </UNIT_CODE>
+            <UNIT_NAME>
+                <index>3</index>
+                <con>and a.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <UNIT_ADDRESS>
+                <index>4</index>
+                <con>and a.UNIT_ADDRESS like :?</con>
+                <type>char</type>
+            </UNIT_ADDRESS>
+            <UNIT_TYPE>
+                <index>5</index>
+                <con>and a.UNIT_TYPE= :?</con>
+                <type>char</type>
+            </UNIT_TYPE>
+            <AREA_ID>
+                <index>5</index>
+                <con>and a.AREA_ID= :?</con>
+                <type>char</type>
+            </AREA_ID>
+            <UNIT_FLAG>
+                <index>6</index>
+                <con>and a.UNIT_FLAG= :?</con>
+                <type>char</type>
+            </UNIT_FLAG>
+            <TENANT_ID>
+                <index>7</index>
+                <con>AND a.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </dtset_unit_info>
+
+    <dtset_unit_info_only>
+        <sql><![CDATA[
+		SELECT b.CODE_NAME, c.`NAME` as AREA_NAME, a.*,
+		(SELECT t.`NAME` FROM SYS_DEPT t WHERE t.ID = a.DEPT_ID) as DEPT_NAME
+		FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+        LEFT JOIN SYS_DISTRICT c ON a.AREA_ID = c.ID
+		where 1=1  {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT b.CODE_NAME, c.`NAME` as AREA_NAME, a.*,
+		(SELECT t.`NAME` FROM SYS_DEPT t WHERE t.ID = a.DEPT_ID) as DEPT_NAME
+		FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+        LEFT JOIN SYS_DISTRICT c ON a.AREA_ID = c.ID
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		SELECT
+			count(*) as tcount
+		FROM UNIT_INFO a
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <UNIT_CODE>
+                <index>2</index>
+                <con>and a.UNIT_CODE like :?</con>
+                <type>char</type>
+            </UNIT_CODE>
+            <UNIT_NAME>
+                <index>3</index>
+                <con>and a.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <UNIT_ADDRESS>
+                <index>4</index>
+                <con>and a.UNIT_ADDRESS like :?</con>
+                <type>char</type>
+            </UNIT_ADDRESS>
+            <UNIT_TYPE>
+                <index>5</index>
+                <con>and a.UNIT_TYPE= :?</con>
+                <type>char</type>
+            </UNIT_TYPE>
+            <AREA_ID>
+                <index>5</index>
+                <con>and a.AREA_ID= :?</con>
+                <type>char</type>
+            </AREA_ID>
+            <UNIT_FLAG>
+                <index>6</index>
+                <con>and a.UNIT_FLAG= :?</con>
+                <type>char</type>
+            </UNIT_FLAG>
+            <IS_RISK_UNIT>
+                <index>7</index>
+                <con>AND a.IS_RISK_UNIT = :?</con>
+                <type>char</type>
+            </IS_RISK_UNIT>
+            <TENANT_ID>
+                <index>8</index>
+                <con>AND a.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </dtset_unit_info_only>
+
+    <!--查询是否有报警的设备,返回在首页地图上-->
+    <map_unit_info>
+        <sql><![CDATA[
+		        SELECT b.CODE_NAME, a.*,
+                    if(t.ID is NULL,null,"warn_type") as ALARM_TYPE
+                    FROM UNIT_INFO a
+                    LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+                     left join IOT_DEVICE t on t.UNIT_ID = a.ID  and t.DEVICE_STATE= :DEVICE_STATE
+                    where 1=1  AND a.TENANT_ID = :TENANT_ID {1}
+
+	            ]]>
+        </sql>
+        <params>
+            <UNIT_FLAG>
+                <index>1</index>
+                <con> and a.UNIT_FLAG in (:?)</con>
+                <type>char</type>
+            </UNIT_FLAG>
+        </params>
+    </map_unit_info>
+    <query_dept_info>
+        <sql>
+            <![CDATA[
+                SELECT ID as v, `NAME` as n FROM SYS_DEPT
+                WHERE 1=1 AND TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <DEPT_ID>
+                <index>1</index>
+                <con>and DEPT_ID= :?</con>
+                <type>char</type>
+            </DEPT_ID>
+        </params>
+    </query_dept_info>
+
+    <query_unit_name>
+        <sql>
+            <![CDATA[
+                SELECT ID as v, UNIT_NAME as n FROM UNIT_INFO
+                WHERE 1=1 AND TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </query_unit_name>
+
+    <!-- 根据登陆者的ssid查询单位 -->
+    <qry_unit_by_ssid>
+        <sql><![CDATA[
+            select distinct ui.* from UNIT_INFO ui,SYS_USER u , SYS_ONLINE_USER ou
+            where ui.DEPT_ID = u.DEPT_ID and u.ID = ou.USER_ID
+            {1}
+        ]]></sql>
+        <params>
+            <ssid>
+                <index>1</index>
+                <con> and ou.ID = :?</con>
+                <type>char</type>
+            </ssid>
+            <user_id>
+                <index>2</index>
+                <con> and u.ID = :?</con>
+                <type>char</type>
+            </user_id>
+            <UNIT_ID>
+                <index>3</index>
+                <con>AND ui.ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </qry_unit_by_ssid>
+
+    <!-- 查找单位编码增长规则 -->
+    <qry_unit_code_inc>
+        <sql><![CDATA[SELECT * FROM SYS_DICTIONARY d where d.CODE_VALUE=:code_value]]></sql>
+    </qry_unit_code_inc>
+</qrys>

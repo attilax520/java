@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<style>
+    .rountEventP{
+        width:250px;
+        height: 250px ;
+        position: absolute;
+        background: white;
+        left: 0;top: -100px;
+        z-index: 1;
+        border: 1px solid black;
+        display: none;
+    }
+    .device{
+        height: 250px ;
+        position: absolute;
+        background: white;
+        left: 50px;top: -100px;
+        z-index: 2;
+        border: 1px solid black;
+        display: none;
+    }
+    .cancel{
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        background: black;
+        top: -100px;
+        left: 220px;
+        z-index: 1;
+        color: aliceblue;
+        display: none;
+    }
+    .device-cancel{
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        background: black;
+        top: -100px;
+        z-index: 2;
+        left: 382px;
+        color: aliceblue;
+        display: none;
+    }
+    .cancel a{
+        display:inline-block;width: 100%;height: 100%;
+    }
+    .rounted{
+        background: forestgreen;
+    }
+    .norounted{
+        background: red;
+    }
+    .text{
+        height: 50%;
+    }
+</style>
+<body>
+    <div class="routing" style="margin-left: 500px;margin-top:200px; position: relative">
+        <table border="1">
+            <tr>
+                <th>任务名称</th>
+                <th>相关事件</th>
+                <th>应处理时间</th>
+                <th>告警类型</th>
+                <th>相关责任人</th>
+            </tr>
+            <tr th:each="rounting : ${ROUNTING}" th:if="${rounting.NAME}">
+                <td th:text="${rounting.ROUTING_NAME}"></td>
+                <!--<td><a href="ceshi.html" th:href="@{/rountEvent/(rountID=${rounting.ID})}">查看</a></td>-->
+                <td><a href="#" th:attr="value=${rounting.ID}" id="1">查看</a></td>
+                <td th:text="${rounting.ROUNT_END_TIME}"></td>
+                <div th:switch="${rounting.ROUTING_STATUS}">
+                  <td th:case="0">未巡检</td>
+                  <td th:case="1">巡检超时</td>
+                  <td th:case="2">已巡检</td>
+                </div>
+                <td th:text="${rounting.NAME}"></td>
+            </tr>
+        </table>
+        <div class="rountEventP">
+            已巡检
+            <div class="rountedEvent-text text"></div>
+            未巡检
+            <div class="norountedEvent-text text"></div>
+        </div>
+        <div class="device">
+            已巡检
+            <div class="rounted-text text"></div>
+            未巡检
+            <div class="norounted-text text"></div>
+        </div>
+        <div class="device-cancel">
+            <a href="#">×</a>
+        </div>
+        <div class="cancel">
+            <a href="#">×</a>
+        </div>
+    </div>
+</body>
+<script>
+    $(function() {
+        $('.cancel').click(function () {
+           $('.rountEventP').hide();
+           $(this).hide();
+           $('.norountedEvent-text').html('');
+           $('.rountedEvent-text').html('');
+        });
+        $('.routing tr').each(function () {
+            if($(this).index()>0){
+                var i=$(this).index();
+                $('.routing tr').eq(i).children('td').eq(1).click(function () {
+                    $('.rountEventP').show();
+                    $('.cancel').show();
+                    var rountId=$(this).children('a').attr("value");
+                    console.log(rountId);
+                    $.ajax({
+                        url: "/rountEvent",
+                        data: {
+                            rountId: rountId
+                        },
+                        success: function( result ) {
+                            for (var i in result){
+                                console.log(result[i].EVENT_NAME);
+                                if(result[i].STATUS===0) {
+                                    var html = '<div class="eventid">' + '<a class="norounted" href="#">' + result[i].EVENT_NAME + '</a>' + '</div>';
+                                    $('.norountedEvent-text').append(html);
+                                }else if(result[i].STATUS==1){
+                                    var html ='<div class="eventid">' + '<a class="rounted" href="#">' + result[i].EVENT_NAME + '</a>' + '</div>';
+                                    $('.rountedEvent-text').append(html);
+                                }else{
+                                    var html ='<div class="eventid">' + '<a class="rounted" href="#">' + result[i].EVENT_NAME + '</a>' + '</div>';
+                                    $('.rountedEvent-text').append(html);
+                                }
+                            }
+                            var len=$('.eventid').length;
+                            for (var i in result){
+                                $('.eventid').eq(i).children('a').attr('event-id',result[i].ID);
+                            }
+                        }
+                    });
+                });
+            }
+        });
+        $('.device-cancel').click(function () {
+            $(this).hide();
+            $('.device').hide();
+            $('.norounted-text').html('');
+            $('.rounted-text').html('');
+
+        });
+        $('.rountEventP').on('click','.norounted',function () {
+            $('.device-cancel').show();
+            $('.device').show();
+           var evenId=$(this).attr('event-id');
+            $.ajax({
+                url: "/deviceByEventId",
+                data: {
+                    evenId: evenId
+                },
+                success: function (result) {
+                    for (var i in result){
+                        if(result[i].DEVICE_STATUS==0){
+                           var  html = '<div class="deviceid">'+'<a class="norounted" href="#">' + result[i].DEVICE_ID + '</a>'+'</div>';
+                            $('.rounted-text').append(html);
+                        }else{
+                           var html = '<div class="deviceid">'+'<a class="rounted" href="#">' + result[i].DEVICE_ID + '</a>'+'</div>';
+                            $('.norounted-text').append(html);
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+</html>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="ons-client-1.8.0.Final">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/apiserver/libs/ons-client-1.8.0.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

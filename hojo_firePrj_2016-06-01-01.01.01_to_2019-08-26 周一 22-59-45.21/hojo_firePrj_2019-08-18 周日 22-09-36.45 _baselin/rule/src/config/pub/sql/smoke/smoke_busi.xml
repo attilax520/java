@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 数据概览->数据统计-->
+    <query_statistics>
+        <sql>
+            select t1.unit_count,t2.resident_count,t3.device_count,t4.alarm_count from (
+            select count(1) unit_count from UNIT_INFO t where t.DELETED = 0 {1})t1,
+            (
+            select count(1) resident_count from SP_RESIDENT t where t.DELETED = 0 {1})t2,
+            (
+            select count(1) device_count from DATA_DEVICE t where t.logic_status = 1 {1})t3,
+            (
+            select count(dei.id) alarm_count from DATA_DICTIONARY dd,DATA_EVENT_INFO dei,DATA_DEVICE t,
+            UNIT_INFO u,
+            SYS_DEPT d where dd.type = dei.event_type
+            AND (dd.is_alarm = 1 OR dd.is_fault = 1 ) and dei.device_id = t.id
+            AND t.unit_id = u.ID
+            AND u.DEPT_ID = d.ID {1}
+            and DATE_FORMAT(FROM_UNIXTIME(dei.create_time/1000),'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d'))t4
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>and t.TENANT_ID =  :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </query_statistics>
+
+
+    <!-- 机构列表 -->
+    <query_dept_data_list>
+        <psql>
+            <![CDATA[
+            select
+                t.dept_name deptName,
+                t.LEADER_NAME leaderName,
+                t.LEADER_PHONE leaderPhone,
+                t.unit_count unitCount ,
+                t1.device_count deviceCount ,
+                t2.fault_count faultCount ,
+                t3.alarm_count alarmCount,
+                t4.untreated_count  untreatedCount
+            from ( select count(ui.ID) unit_count,sd.ID dept_id,sd.LEADER_NAME,sd.LEADER_PHONE,sd.NAME as dept_name,sd.CREATE_TIME from SYS_DEPT sd left join UNIT_INFO ui on  sd.ID = ui.DEPT_ID where sd.DELETED <> 1 and sd.TENANT_ID = :TENANT_ID {1} group by sd.ID)t
+                 left join ( select count(dd.id) device_count,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd where ui.ID = dd.unit_id and dd.logic_status =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID ) t1 on t.dept_id = t1.DEPT_ID
+                 left join ( select count(dd.id) fault_count,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd where ui.ID = dd.unit_id and dd.logic_status =1 and dd.is_fault =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID) t2 on t.dept_id = t2.DEPT_ID
+                 left join (select count(dei.id) alarm_count ,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd,(select d.id,d.event_type,d.device_id from  DATA_EVENT_INFO d  where  DATE_FORMAT(FROM_UNIXTIME(d.create_time/1000),'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')) dei,DATA_DICTIONARY dic where ui.ID = dd.unit_id and dd.logic_status =1 and dd.id = dei.device_id and dei.event_type = dic.type and dic.is_alarm =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID)t3 on t.dept_id = t3.DEPT_ID
+                 left join (select count(dei.id) untreated_count ,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd,(select d.id,d.event_type,d.device_id from  DATA_EVENT_INFO d  where  DATE_FORMAT(FROM_UNIXTIME(d.create_time/1000),'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')  and not EXISTS ( select 1 from IOT_ALARM_PROCESS_RECORD iapr where iapr.BUSINESS_ID = d.id)) dei,DATA_DICTIONARY dic where ui.ID = dd.unit_id and dd.logic_status =1 and dd.id = dei.device_id and dei.event_type = dic.type and dic.is_alarm =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID)t4 on t.dept_id = t4.DEPT_ID
+           order by t.CREATE_TIME  LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+             select
+                count(1) tcount
+            from ( select count(ui.ID) unit_count,sd.ID dept_id,sd.LEADER_NAME,sd.LEADER_PHONE,sd.NAME as dept_name,sd.CREATE_TIME from SYS_DEPT sd left join UNIT_INFO ui on  sd.ID = ui.DEPT_ID where sd.DELETED <> 1 and sd.TENANT_ID = :TENANT_ID {1} group by sd.ID)t
+                 left join ( select count(dd.id) device_count,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd where ui.ID = dd.unit_id and dd.logic_status =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID ) t1 on t.dept_id = t1.DEPT_ID
+                 left join ( select count(dd.id) fault_count,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd where ui.ID = dd.unit_id and dd.logic_status =1 and dd.is_fault =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID) t2 on t.dept_id = t2.DEPT_ID
+                 left join (select count(dei.id) alarm_count ,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd,(select d.id,d.event_type,d.device_id from  DATA_EVENT_INFO d  where  DATE_FORMAT(FROM_UNIXTIME(d.create_time/1000),'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')) dei,DATA_DICTIONARY dic where ui.ID = dd.unit_id and dd.logic_status =1 and dd.id = dei.device_id and dei.event_type = dic.type and dic.is_alarm =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID)t3 on t.dept_id = t3.DEPT_ID
+                 left join (select count(dei.id) untreated_count ,ui.DEPT_ID from UNIT_INFO ui, DATA_DEVICE dd,(select d.id,d.event_type,d.device_id from  DATA_EVENT_INFO d  where  DATE_FORMAT(FROM_UNIXTIME(d.create_time/1000),'%Y-%m-%d')=DATE_FORMAT(now(),'%Y-%m-%d')  and not EXISTS ( select 1 from IOT_ALARM_PROCESS_RECORD iapr where iapr.BUSINESS_ID = d.id)) dei,DATA_DICTIONARY dic where ui.ID = dd.unit_id and dd.logic_status =1 and dd.id = dei.device_id and dei.event_type = dic.type and dic.is_alarm =1 and ui.TENANT_ID = :TENANT_ID GROUP BY ui.DEPT_ID)t4 on t.dept_id = t4.DEPT_ID
+        ]]>
+        </tsql>
+
+        <params>
+            <deptName>
+                <index>1</index>
+                <con> AND sd.NAME like '%':?'%' </con>
+                <type>char</type>
+            </deptName>
+        </params>
+    </query_dept_data_list>
+    <!-- 告警/故障信息列表 -->
+    <get_smoke_alarm_list>
+        <psql>
+            <![CDATA[
+            SELECT
+                ui.UNIT_NAME,
+                sd.`NAME`,
+                FROM_UNIXTIME(dei.create_time/1000,'%Y-%m-%d %H:%i:%s') as CREATE_TIME,
+                su.`NAME` as USER_NAME,
+                su.PHONE,
+                dd.type_desc EVENT_TYPE_DESC,
+                iapr.CREATE_TIME as PROCESS_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.ALARM_DESCRIBE,
+                dei.id BUSINESS_ID,
+                d.id DEVICEID,
+                ui.UNIT_ADDRESS,
+                iapr.PROCESS_IMG,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+            FROM
+                (select t1.* from DATA_EVENT_INFO t1, DATA_DEVICE t2 WHERE t1.device_id = t2.id AND t2.type = 'smoke_detector') dei left join
+                IOT_ALARM_PROCESS_RECORD iapr on dei.id = iapr.BUSINESS_ID,
+                DATA_DICTIONARY dd,
+                DATA_DEVICE d,
+                UNIT_INFO ui left join
+                SYS_DEPT sd  on  ui.DEPT_ID = sd.id left join
+                SYS_USER_UNIT_REL suur on ui.ID = suur.UNIT_ID left join
+                SYS_USER su on  suur.USER_ID = su.id
+            WHERE
+                dei.event_type = dd.type
+                AND dei.device_id = d.id
+                AND d.unit_id = ui.id
+                AND ui.TENANT_ID = :TENANT_ID {1}
+            order by if(PROCESS_RESULT is null ,-1,0) , dei.CREATE_TIME desc  LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+             select
+                count(1) tcount
+             FROM
+                (select t1.* from DATA_EVENT_INFO t1, DATA_DEVICE t2 WHERE t1.device_id = t2.id AND t2.type = 'smoke_detector') dei left join
+                IOT_ALARM_PROCESS_RECORD iapr on dei.id = iapr.BUSINESS_ID,
+                DATA_DICTIONARY dd,
+                DATA_DEVICE d,
+                UNIT_INFO ui left join
+                SYS_DEPT sd  on  ui.DEPT_ID = sd.id left join
+                SYS_USER_UNIT_REL suur on ui.ID = suur.UNIT_ID left join
+                SYS_USER su on  suur.USER_ID = su.id
+            WHERE
+                dei.event_type = dd.type
+                AND dei.device_id = d.id
+                AND d.unit_id = ui.id
+                 {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <deptName>
+                <index>1</index>
+                <con> AND sd.NAME like '%':?'%' </con>
+                <type>char</type>
+            </deptName>
+            <deptId>
+                <index>2</index>
+                <con> AND sd.ID = :? </con>
+                <type>char</type>
+            </deptId>
+            <unitId>
+                <index>3</index>
+                <con> AND ui.id = :? </con>
+                <type>char</type>
+            </unitId>
+            <isAlarm>
+                <index>4</index>
+                <con> AND dd.is_alarm = :?  </con>
+                <type>char</type>
+            </isAlarm>
+            <isFault>
+                <index>5</index>
+                <con> AND  dd.is_fault = :? </con>
+                <type>char</type>
+            </isFault>
+            <startTime>
+                <index>6</index>
+                <con>AND dei.create_time >= :?</con>
+                <type>datetime</type>
+            </startTime>
+            <endTime>
+                <index>7</index>
+                <con>
+                    <![CDATA[
+                        AND dei.create_time<= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </endTime>
+            <TENANT_ID>
+                <index>8</index>
+                <con>AND ui.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <!--<DEVICE_TYPE>-->
+                <!--<index>9</index>-->
+                <!--<con>AND t2.type =:?</con>-->
+                <!--<type>char</type>-->
+            <!--</DEVICE_TYPE>-->
+        </params>
+    </get_smoke_alarm_list>
+    <!-- 设备状态信息列表 -->
+    <get_device_status_list>
+        <psql>
+            <![CDATA[
+             SELECT
+                d.`NAME` DEVICE_NAME,
+                ui.UNIT_NAME,
+                sd.`NAME` DEPT_NAME,
+                su.NAME LEADER_NAME,
+                su.PHONE LEADER_PHONE,
+                IF( d.is_online = 1, '在线', '离线' ) DEVICE_STATUS,
+                ui.UNIT_ADDRESS
+            FROM
+                DATA_DEVICE d,
+                UNIT_INFO ui left join
+                SYS_DEPT sd on ui.DEPT_ID = sd.id   AND ui.DELETED =0 left join
+                SYS_USER_UNIT_REL suur on ui.id = suur.UNIT_ID
+								left join
+                SYS_USER su on suur.USER_ID = su.id   and su.DELETED = 0
+            WHERE
+                d.unit_id = ui.id
+                AND d.logic_status =1
+                AND d.TENANT_ID = :TENANT_ID {1}
+            order by d.create_time desc  LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+             select
+                count(1) tcount
+              FROM
+                DATA_DEVICE d,
+                UNIT_INFO ui left join
+                SYS_DEPT sd on ui.DEPT_ID = sd.id   AND ui.DELETED =0 left join
+                SYS_USER_UNIT_REL suur on ui.id = suur.UNIT_ID
+								left join
+                SYS_USER su on suur.USER_ID = su.id   and su.DELETED = 0
+            WHERE
+                d.unit_id = ui.id
+                AND d.logic_status =1
+                AND d.TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <unitName>
+                <index>1</index>
+                <con> AND ui.UNIT_NAME like '%':?'%' </con>
+                <type>char</type>
+            </unitName>
+            <unitId>
+                <index>2</index>
+                <con> AND ui.id = :?  </con>
+                <type>char</type>
+            </unitId>
+            <deptId>
+                <index>3</index>
+                <con> AND sd.id = :? </con>
+                <type>char</type>
+            </deptId>
+            <isOnline>
+                <index>4</index>
+                <con> AND d.is_online = :? </con>
+                <type>char</type>
+            </isOnline>
+        </params>
+    </get_device_status_list>
+
+</qrys>

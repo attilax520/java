@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<!-- todox o91 jeig nameespace will be   attach resultType zuchen yg  fullNameClass for map -->
+<mapper namespace="/">
+
+    <select id="warning_query" parameterType="Map" resultType="Map">
+
+
+        select *
+        from warn_v
+        where 1 = 1
+
+
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="Handler != null">
+            AND Handler = #{Handler}
+        </if>
+        <if test="Status != null">
+            AND Status = #{Status}
+        </if>
+        <if test="TaskName  != null">
+            AND TaskName like #{TaskName}
+        </if>
+
+          <!-- deflt is gwh -->
+        <if test="loginUserInfo.role_id =='pmcadmin' ">
+            AND  pmcid=#{loginUserInfo.dptid};
+        </if>
+        <if test="loginUserInfo.role_id =='mainadmin' ">
+            AND  mainid=#{loginUserInfo.dptid};
+        </if>
+
+        <![CDATA[   ]]>
+    </select>
+
+    <select id="warning_queryMlt" parameterType="Map" resultType="Map">
+        select taskname, place into @n, @pls
+        from task_warning
+        limit 1;
+        select @n as n, @pls as pl;
+
+    </select>
+    <select id="上报隐患流程" parameterType="Map" resultType="Map">
+        set @source = '人工';
+        insert task_warning(place, Source, HiddenDescript, LivePhoto, Type, ProblemReporter, TaskName)
+        VALUES (#{place}, @source, #{HiddenDescript}, #{LivePhoto}, #{Type}, #{ProblemReporter}, #{TaskName});
+        insert workorder(TaskName, Descript, Property, warnId)
+        values (#{TaskName}, #{Descript}, #{Property}, LAST_INSERT_ID());
+        set @loginfo =
+                json_object('place', #{place}, 'source', @source, 'HiddenDescript', #{HiddenDescript}, 'TaskName',
+                            #{TaskName});
+        insert oplog(oper, event)
+        values (#{ProblemReporter}, @loginfo);
+
+        /*
+   select LAST_INSERT_ID()
+SELECT ROW_COUNT() as cnt;
+            //select LAST_INSERT_ID()*/
+    </select>
+<!-- 获取隐患详细 -->
+    <select id="warndetail" parameterType="Map" resultType="Map">
+select * from task_warning where id=#{id}
+    </select>
+
+    <!-- 从mq插入隐患详细 -->
+    <select id="mqInsertProcess" parameterType="Map" resultType="Map">
+
+        insert task_warning(place, Source, HiddenDescript, LivePhoto, Type, ProblemReporter, TaskName)
+        VALUES (#{iotmsg.bizContent.address}, 'mq', #{iotmsg,typeHandler=JsonHandlerAlias}, json_quote(#{iotmsgx}), '隐患', 'iot', '设备报警');
+        -- SELECT ROW_COUNT() as cnt;
+        select id, name into @pmcid,@pname
+        from park_pmc_rlt
+        where park_name = #{dvc_park.data.deviceDTO.districtName}
+        limit 1;
+
+        insert workorder(TaskName, Descript, Property, warnId)
+        values (#{TaskName}, #{Descript}, @pmcid, LAST_INSERT_ID());
+        set @woid = LAST_INSERT_ID();
+        set @loginfo =
+                json_object('place', #{place}, 'source', @source, 'HiddenDescript', #{HiddenDescript}, 'TaskName',
+                            #{TaskName});
+        insert oplog(oper, event)
+        values (#{ProblemReporter}, @loginfo);
+        /* auto dispatch */
+        /* todoxx query pmc cfg   @pmc_cfg_isAutoDisp */
+        set @autodispatch = 'n',@maint = 'atimant';
+        set @eventName = #{iotmsg.bizContent.eventName};
+        --  SIGNAL SQLSTATE 'HY000' SET MESSAGE_TEXT = '手动抛出异常xx' ;
+        call autodispatch(@autodispatch, @maint, @woid);
+
+/*typeHandler=org.chwin.firefighting.apiserver.data.*/
+    </select>
+
+    <select id="隐患事件流程" parameterType="Map" resultType="Map">
+        insert 工单表(#{工单信息});
+        set @当前工单id = LAST_INSERT_ID();
+        insert 操作日志(#{操作员}, #{事件});
+        select 是否自动派单, 维保公司 into @是否自动派单, @维保公司
+        from 物业配置表
+        limit 1;
+        /* select @是否自动派单n,@维保公司; */
+        if
+            (@是否自动派单)
+        update 工单表
+        set 维保公司=@维保公司
+        where id = @当前工单id
+            end if;
+    </select>
+
+
+    <select id="variTest" parameterType="Map" resultType="java.util.HashMap">
+        set @autodispatch='y',@maint='';
+        <!--
+        <bind name="autodispatch" value="select @autodispatch" />
+        <if test="autodispatch == 'y' ">
+              select #{autodispatch}
+        </if>
+        -->
+    </select>
+
+
+    <!-- where id  <=#{id} and timelineId=0 -->
+    <select id="WaringStatic" resultType="java.util.HashMap">
+
+         <![CDATA[
+        select *
+        from WaringStatic;
+        ]]>
+   </select>
+
+    <!--
+       <select id="listRecentlyLoginUserMood" parameterType="map" resultType="Mood">
+     select m.* from  userExtInfo as e join mood as m
+ on m.id=e.moodId
+ where e.lastLoginAt >= #{atleastLastLoginAt}
+ order by e.lastLoginAt desc
+ limit #{offset},#{limit}
+    </select>
+    -->
+
+
+</mapper>

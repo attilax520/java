@@ -1,0 +1,8 @@
+{
+	xtype:'uxnumberchart',flex:1,
+	title:'测试',
+	store:Ext.create('Ext.data.Store',{
+		fields:['MAX','MIN'],
+		data:[{MAX:1500,MIN:998}]
+	})
+}

@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.github.aliyun:iotx-api-gateway-client:master">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/aliyun/iotx-api-gateway-client/master/iotx-api-gateway-client-master.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/aliyun/iotx-api-gateway-client/master/iotx-api-gateway-client-master-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/aliyun/iotx-api-gateway-client/master/iotx-api-gateway-client-master-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

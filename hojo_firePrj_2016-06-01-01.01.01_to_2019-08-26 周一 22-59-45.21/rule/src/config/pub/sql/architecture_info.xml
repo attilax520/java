@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_architecture_info>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.CODE_NAME
+		from ARCHITECTURE_INFO a
+		left join UNIT_INFO b on a.UNIT_ID = b.ID
+		left join SYS_DICTIONARY c on c.CODE_VALUE = a.ARCHITECTURE_TYPE
+		where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.CODE_NAME
+		from ARCHITECTURE_INFO a
+		left join UNIT_INFO b on a.UNIT_ID = b.ID
+		left join SYS_DICTIONARY c on c.CODE_VALUE = a.ARCHITECTURE_TYPE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from ARCHITECTURE_INFO a
+		left join UNIT_INFO b on a.UNIT_ID = b.ID
+		left join SYS_DICTIONARY c on c.CODE_VALUE = a.ARCHITECTURE_TYPE
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <ARCHITECTURE_NO>
+                <index>1</index>
+                <con>and a.ARCHITECTURE_NO like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_NO>
+            <ARCHITECTURE_NAME>
+                <index>1</index>
+                <con>and ARCHITECTURE_NAME like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_NAME>
+            <ARCHITECTURE_ADDRESS>
+                <index>1</index>
+                <con>and a.ARCHITECTURE_ADDRESS like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_ADDRESS>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FIRE_CONTROL>
+                <index>1</index>
+                <con>and a.FIRE_CONTROL like :?</con>
+                <type>char</type>
+            </FIRE_CONTROL>
+            <STRUCTURE>
+                <index>1</index>
+                <con>and a.STRUCTURE like :?</con>
+                <type>char</type>
+            </STRUCTURE>
+            <ARCHITECTURE_TYPE>
+                <index>1</index>
+                <con>and a.ARCHITECTURE_TYPE= :?</con>
+                <type>char</type>
+            </ARCHITECTURE_TYPE>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND a.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </dtset_architecture_info>
+
+    <!--查询设备分布在哪个楼层-->
+    <query_device_distribute_architecture>
+        <sql>
+            <![CDATA[
+                 SELECT tab.ARCHITECTURE_ID,arc.ARCHITECTURE_NAME,tab.UNIT_ID,tab.DEVICE_TYPE, sum(total) total,
+				MAX(CASE tab.DEVICE_STATE WHEN 'wait' THEN tab.total ELSE 0 END ) 'wait',
+				MAX(CASE tab.DEVICE_STATE WHEN 'normal' THEN tab.total ELSE 0 END ) 'normal',
+				MAX(CASE tab.DEVICE_STATE WHEN 'warn' THEN tab.total ELSE 0 END ) 'warn'
+				from(
+						SELECT
+                        a.ARCHITECTURE_ID,a.UNIT_ID, count(*) total,a.DEVICE_STATE,a.REQ_IP as DEVICE_TYPE
+                        FROM IOT_DEVICE a
+                        WHERE a.TENANT_ID = :TENANT_ID
+                        AND (a.REQ_IP is not null AND a.REQ_IP != '')
+												AND (a.ARCHITECTURE_ID != '' or a.ARCHITECTURE_ID is not null)
+                        GROUP BY a.ARCHITECTURE_ID,a.DEVICE_STATE,a.UNIT_ID,a.REQ_IP
+                        UNION all
+                       SELECT t.ARCHITECTURE_ID, t.UNIT_ID, count(*) total,t.DEVICE_STATE,t.DEVICE_TYPE FROM (
+                       SELECT
+                            JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+                                                a.ARCHITECTURE_ID,a.DEVICE_STATE,a.UNIT_ID
+                            FROM IOT_DEVICE a  WHERE 1=1
+                            AND a.TENANT_ID = :TENANT_ID
+                                                AND (a.ARCHITECTURE_ID != '' or a.ARCHITECTURE_ID is not null)
+                        ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                        GROUP BY t.ARCHITECTURE_ID,t.DEVICE_STATE ,t.UNIT_ID, t.DEVICE_TYPE
+								) tab
+								LEFT JOIN ARCHITECTURE_INFO arc ON arc.ID = tab.ARCHITECTURE_ID
+								WHERE 1 =1 {1}
+								GROUP BY tab.ARCHITECTURE_ID,tab.UNIT_ID,tab.DEVICE_TYPE
+                	ORDER BY total desc
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND tab.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE>
+                <index>2</index>
+                <con>AND tab.DEVICE_TYPE in ( :? )</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+        </params>
+    </query_device_distribute_architecture>
+</qrys>

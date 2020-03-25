@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_fire_room>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.ARCHITECTURE_NAME
+		from FIRE_ROOM  a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join ARCHITECTURE_INFO c ON a.ARCHITECTURE_ID = c.ID
+		where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		  a.*,b.UNIT_NAME,c.ARCHITECTURE_NAME
+		from FIRE_ROOM a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join ARCHITECTURE_INFO c ON a.ARCHITECTURE_ID = c.ID
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from FIRE_ROOM a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join ARCHITECTURE_INFO c ON a.ARCHITECTURE_ID = c.ID
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND a.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <ARCHITECTURE_ID>
+                <index>2</index>
+                <con>and a.ARCHITECTURE_ID= :?</con>
+                <type>char</type>
+            </ARCHITECTURE_ID>
+            <ID_CARD>
+                <index>3</index>
+                <con>and a.ID_CARD like :?</con>
+                <type>char</type>
+            </ID_CARD>
+            <FIRE_ROOM_NAME>
+                <index>4</index>
+                <con>and a.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+            <RECORD_DATE>
+                <index>5</index>
+                <con>and a.RECORD_DATE= :?</con>
+                <type>char</type>
+            </RECORD_DATE>
+            <UNIT_ID>
+                <index>6</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FRIE_GOVERNMENT>
+                <index>7</index>
+                <con>and a.FRIE_GOVERNMENT like :?</con>
+                <type>char</type>
+            </FRIE_GOVERNMENT>
+            <FIRE_STATUS>
+                <index>8</index>
+                <con>and a.FIRE_STATUS like :?</con>
+                <type>char</type>
+            </FIRE_STATUS>
+            <UNIT_NAME>
+                <index>9</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <ARCHITECTURE_NAME>
+                <index>10</index>
+                <con>and c.ARCHITECTURE_NAME like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_NAME>
+        </params>
+    </dtset_fire_room>
+
+    <!--查询微型消防站信息-->
+    <select_little_fire_station>
+        <sql>
+            <![CDATA[
+                SELECT * FROM RESOURCE_INFO
+                WHERE TENANT_ID = :TENANT_ID
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <RESOURCE_TYPE>
+                <index>2</index>
+                <con>and RESOURCE_TYPE =:?</con>
+                <type>char</type>
+            </RESOURCE_TYPE>
+        </params>
+    </select_little_fire_station>
+</qrys>

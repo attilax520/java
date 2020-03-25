@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!--当日设备报警总数-->
+    <GET_ONEDAY_EVENT_COUNT>
+        <sql><![CDATA[
+		SELECT
+            count( * ) AS count
+        FROM
+            DATA_EVENT_INFO el,
+            DATA_DEVICE d
+        WHERE el.device_id = d.id
+            AND d.tenant_id = :TENANT_ID
+            AND el.create_time >= :SEARCH_TIME
+		]]></sql>
+    </GET_ONEDAY_EVENT_COUNT>
+
+    <!--接入设备总数-->
+    <GET_ALL_DEVICE_COUNT>
+        <sql><![CDATA[
+		SELECT
+            count( * ) AS count
+        FROM
+            DATA_DEVICE d
+        WHERE
+            d.logic_status = '1'
+            AND d.tenant_id = :TENANT_ID
+		]]></sql>
+    </GET_ALL_DEVICE_COUNT>
+
+    <!--设备类型分布-->
+    <GET_DEVICE_FOR_TYPE>
+        <sql><![CDATA[
+		SELECT
+            t.device_type,
+            sum( t.count ) AS count
+        FROM
+            (
+        SELECT
+            count( * ) AS count,
+        CASE
+            d.type
+            WHEN 'machine_user' THEN
+            'machine'
+            WHEN 'manual_fire_point' THEN
+            'machine'
+            WHEN 'smoke_detector_line' THEN
+            'machine'
+            WHEN 'audible_visual_alarm' THEN
+            'machine'
+            WHEN 'fault_arc_fire' THEN
+            'electrical_fire_alarm'
+            WHEN 'residual_power_monitor' THEN
+            'electrical_fire_alarm'
+            WHEN 'fire_main_network' THEN
+            'automatic_sprinkler'
+            WHEN 'end_water_pressure' THEN
+            'automatic_sprinkler'
+            WHEN 'alarm_valve_water' THEN
+            'automatic_sprinkler' ELSE d.type
+            END AS device_type
+        FROM
+            DATA_DEVICE d
+        WHERE
+            d.logic_status = '1'
+            AND d.tenant_id = :TENANT_ID
+        GROUP BY
+            d.type
+            ) t
+        GROUP BY
+            t.device_type
+		]]></sql>
+    </GET_DEVICE_FOR_TYPE>
+
+    <!-- 设备数量分布 -->
+    <GET_DEVICE_FOR_PLATFORM>
+        <sql><![CDATA[
+            SELECT
+                tt.app_id,
+                tt.company_name,
+	            (select count(distinct d1.affiliated_unit ) from DATA_DEVICE d1 where d1.app_id = tt.app_id) as affiliated_unit_count,
+                max( IFNULL( CASE tt.device_type WHEN 'machine' THEN tt.count END, 0 ) ) AS 'machine_count',
+                max( IFNULL( CASE tt.device_type WHEN 'electrical_fire_alarm' THEN tt.count END, 0 ) ) AS 'electrical_fire_alarm_count',
+                max( IFNULL( CASE tt.device_type WHEN 'automatic_sprinkler' THEN tt.count END, 0 ) ) AS 'automatic_sprinkler_count',
+                max( IFNULL( CASE tt.device_type WHEN 'smoke_detector' THEN tt.count END, 0 ) ) AS 'smoke_detector_count',
+                max( IFNULL( CASE tt.device_type WHEN 'charging_pile' THEN tt.count END, 0 ) ) AS 'charging_pile_count',
+                max( IFNULL( CASE tt.device_type WHEN 'fire_hose' THEN tt.count END, 0 ) ) AS 'fire_hose_count',
+                max( IFNULL( CASE tt.device_type WHEN 'in_fire_hydrant' THEN tt.count END, 0 ) ) AS 'in_fire_hydrant_count',
+                max( IFNULL( CASE tt.device_type WHEN 'gas_detector' THEN tt.count END, 0 ) ) AS 'gas_detector_count'
+            FROM
+                (
+            SELECT
+                t.app_id,
+                t.company_name,
+                sum( t.count ) AS count,
+                t.device_type
+            FROM
+                (
+            SELECT
+                a.app_id,
+                a.company_name,
+                count( * ) AS count,
+	            (select TYPE_VALUE  from SYS_DICTIONARY where CODE_VALUE = d.type) AS device_type
+            FROM
+                DATA_DEVICE d,
+                app a
+            WHERE
+                d.logic_status = '1'
+                AND d.app_id = a.app_id
+                AND d.tenant_id = :TENANT_ID
+            GROUP BY
+                a.app_id,
+                a.company_name,
+                d.type
+                ) t
+            GROUP BY
+                t.app_id,
+                t.company_name,
+                t.device_type
+                ) tt
+            GROUP BY
+                tt.app_id,
+                tt.company_name
+            order by tt.company_name
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT
+                tt.app_id,
+                tt.company_name,
+	            (select count(distinct d1.affiliated_unit ) from DATA_DEVICE d1 where d1.app_id = tt.app_id) as affiliated_unit_count,
+                max( IFNULL( CASE tt.device_type WHEN 'machine' THEN tt.count END, 0 ) ) AS 'machine_count',
+                max( IFNULL( CASE tt.device_type WHEN 'electrical_fire_alarm' THEN tt.count END, 0 ) ) AS 'electrical_fire_alarm_count',
+                max( IFNULL( CASE tt.device_type WHEN 'automatic_sprinkler' THEN tt.count END, 0 ) ) AS 'automatic_sprinkler_count',
+                max( IFNULL( CASE tt.device_type WHEN 'smoke_detector' THEN tt.count END, 0 ) ) AS 'smoke_detector_count',
+                max( IFNULL( CASE tt.device_type WHEN 'charging_pile' THEN tt.count END, 0 ) ) AS 'charging_pile_count',
+                max( IFNULL( CASE tt.device_type WHEN 'fire_hose' THEN tt.count END, 0 ) ) AS 'fire_hose_count',
+                max( IFNULL( CASE tt.device_type WHEN 'in_fire_hydrant' THEN tt.count END, 0 ) ) AS 'in_fire_hydrant_count',
+                max( IFNULL( CASE tt.device_type WHEN 'gas_detector' THEN tt.count END, 0 ) ) AS 'gas_detector_count'
+            FROM
+                (
+            SELECT
+                t.app_id,
+                t.company_name,
+                sum( t.count ) AS count,
+                t.device_type
+            FROM
+                (
+            SELECT
+                a.app_id,
+                a.company_name,
+                count( * ) AS count,
+	            (select TYPE_VALUE  from SYS_DICTIONARY where CODE_VALUE = d.type) AS device_type
+            FROM
+                DATA_DEVICE d,
+                app a
+            WHERE
+                d.logic_status = '1'
+                AND d.app_id = a.app_id
+                AND d.tenant_id = :TENANT_ID
+            GROUP BY
+                a.app_id,
+                a.company_name,
+                d.type
+                ) t
+            GROUP BY
+                t.app_id,
+                t.company_name,
+                t.device_type
+                ) tt
+            GROUP BY
+                tt.app_id,
+                tt.company_name
+            order by tt.company_name
+            LIMIT :start , :end
+        ]]>
+        </psql>
+        <tsql><![CDATA[
+        SELECT count(*) as tcount FROM(
+            SELECT
+                tt.app_id,
+                tt.company_name,
+	            (select count(distinct d1.affiliated_unit ) from DATA_DEVICE d1 where d1.app_id = tt.app_id) as affiliated_unit_count,
+                max( IFNULL( CASE tt.device_type WHEN 'machine' THEN tt.count END, 0 ) ) AS 'machine_count',
+                max( IFNULL( CASE tt.device_type WHEN 'electrical_fire_alarm' THEN tt.count END, 0 ) ) AS 'electrical_fire_alarm_count',
+                max( IFNULL( CASE tt.device_type WHEN 'automatic_sprinkler' THEN tt.count END, 0 ) ) AS 'automatic_sprinkler_count',
+                max( IFNULL( CASE tt.device_type WHEN 'smoke_detector' THEN tt.count END, 0 ) ) AS 'smoke_detector_count',
+                max( IFNULL( CASE tt.device_type WHEN 'charging_pile' THEN tt.count END, 0 ) ) AS 'charging_pile_count',
+                max( IFNULL( CASE tt.device_type WHEN 'fire_hose' THEN tt.count END, 0 ) ) AS 'fire_hose_count',
+                max( IFNULL( CASE tt.device_type WHEN 'in_fire_hydrant' THEN tt.count END, 0 ) ) AS 'in_fire_hydrant_count',
+                max( IFNULL( CASE tt.device_type WHEN 'gas_detector' THEN tt.count END, 0 ) ) AS 'gas_detector_count'
+            FROM
+                (
+            SELECT
+                t.app_id,
+                t.company_name,
+                sum( t.count ) AS count,
+                t.device_type
+            FROM
+                (
+            SELECT
+                a.app_id,
+                a.company_name,
+                count( * ) AS count,
+	            (select TYPE_VALUE  from SYS_DICTIONARY where CODE_VALUE = d.type) AS device_type
+            FROM
+                DATA_DEVICE d,
+                app a
+            WHERE
+                d.logic_status = '1'
+                AND d.app_id = a.app_id
+                AND d.tenant_id = :TENANT_ID
+            GROUP BY
+                a.app_id,
+                a.company_name,
+                d.type
+                ) t
+            GROUP BY
+                t.app_id,
+                t.company_name,
+                t.device_type
+                ) tt
+            GROUP BY
+                tt.app_id,
+                tt.company_name
+            order by tt.company_name ) y
+        ]]></tsql>
+    </GET_DEVICE_FOR_PLATFORM>
+
+    <!-- 当日报警数量分布 -->
+    <GET_ONEDAY_EVENT_FOR_TYPE>
+        <sql><![CDATA[
+            SELECT
+                t.device_type,
+                count( el.id ) AS count
+            FROM
+                DATA_EVENT_INFO el,
+                (
+            SELECT
+                d.id,
+	            (select TYPE_VALUE  from SYS_DICTIONARY where CODE_VALUE = d.type) AS device_type
+            FROM
+                DATA_DEVICE d
+            WHERE
+                d.tenant_id = :TENANT_ID
+                ) t
+            WHERE
+                el.device_id = t.id
+                AND el.create_time >= :SEARCH_TIME
+            GROUP BY
+                t.device_type
+        ]]></sql>
+    </GET_ONEDAY_EVENT_FOR_TYPE>
+
+    <GET_TYPES>
+        <sql><![CDATA[
+            SELECT
+                sd.CODE_VALUE
+            FROM
+                SYS_DICTIONARY sd
+            WHERE
+                sd.TYPE_VALUE = 'DEVICE_CATEGORY'
+                AND sd.`STATUS` = '1'
+                AND sd.CODE_VALUE <> 'hydraulic_pressure_gauge'
+        ]]></sql>
+    </GET_TYPES>
+</qrys>
+

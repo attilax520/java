@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 日志系统 信息查询 -->
+    <log_list>
+        <sql><![CDATA[
+		SELECT
+        L.ID,
+        L.USER_ID,
+        L.USER_NAME,
+        L.REQUEST_IP,
+        L.TYPE,
+        CASE L.STATUS
+        WHEN 1 THEN '异常日志'
+        WHEN 0 THEN '操作日志'
+        ELSE '登录日志' END AS LOG_TYPE,
+        L.CREATE_TIME
+        FROM
+        SYS_LOG L
+        WHERE 1=1
+        {1}
+        ORDER BY CREATE_TIME DESC
+        ]]></sql>
+        <psql><![CDATA[
+		SELECT
+        L.ID,
+        L.USER_ID,
+        L.USER_NAME,
+        L.REQUEST_IP,
+        L.TYPE,
+        CASE L.STATUS
+        WHEN 1 THEN '异常日志'
+        WHEN 0 THEN '操作日志'
+        ELSE '登录日志' END AS LOG_TYPE,
+        L.CREATE_TIME
+        FROM
+        SYS_LOG L
+        WHERE 1=1
+        {1}
+        ORDER BY CREATE_TIME DESC
+        LIMIT :start,:end
+    ]]></psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            COUNT(1) AS tcount
+            FROM
+            SYS_LOG L
+            WHERE 1=1
+            {1}
+            ]]>
+        </tsql>
+        <params>
+            <begin>
+                <index>1</index>
+                <con>AND L.CREATE_TIME <![CDATA[>]]> :?</con>
+                <type>char</type>
+            </begin>
+            <finish>
+                <index>1</index>
+                <con>AND L.CREATE_TIME <![CDATA[<]]>:?</con>
+                <type>char</type>
+            </finish>
+            <type>
+                <index>1</index>
+                <con>AND L.TYPE LIKE :?</con>
+                <type>char</type>
+            </type>
+            <log_type>
+                <index>1</index>
+                <con>AND L.STATUS = :?</con>
+                <type>char</type>
+            </log_type>
+        </params>
+    </log_list>
+</qrys>

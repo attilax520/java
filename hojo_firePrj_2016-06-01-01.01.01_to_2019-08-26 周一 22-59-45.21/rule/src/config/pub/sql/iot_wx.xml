@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <!--dtset_unit_info>
+        <sql><![CDATA[
+		SELECT b.CODE_NAME, a.* FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+		where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT b.CODE_NAME, a.* FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from UNIT_INFO
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_CODE>
+                <index>1</index>
+                <con>and UNIT_CODE like :?</con>
+                <type>char</type>
+            </UNIT_CODE>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <UNIT_ADDRESS>
+                <index>1</index>
+                <con>and UNIT_ADDRESS like :?</con>
+                <type>char</type>
+            </UNIT_ADDRESS>
+            <UNIT_TYPE>
+                <index>1</index>
+                <con>and UNIT_TYPE= :?</con>
+                <type>char</type>
+            </UNIT_TYPE>
+            <UNIT_FLAG>
+                <index>1</index>
+                <con>and UNIT_FLAG= :?</con>
+                <type>char</type>
+            </UNIT_FLAG>
+        </params>
+    </dtset_unit_info -->
+    <iot_WX_MENUE>
+        <sql><![CDATA[
+        SELECT * FROM WX_MENUE
+        where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT * FROM WX_MENUE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from WX_MENUE
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </iot_WX_MENUE>
+    <iot_WX_ROLE>
+        <sql><![CDATA[
+        SELECT * FROM WX_ROLE
+        where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT * FROM WX_ROLE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from WX_ROLE
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </iot_WX_ROLE>
+    <iot_WX_USER_ROLE>
+        <sql><![CDATA[
+        SELECT * FROM WX_USER_ROLE
+        where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT * FROM WX_USER_ROLE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from WX_USER_ROLE
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </iot_WX_USER_ROLE>
+    <iot_WX_ROLE_MENUE>
+        <sql><![CDATA[
+        SELECT * FROM WX_ROLE_MENUE
+        where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT * FROM WX_ROLE_MENUE
+		where 1=1 {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from WX_ROLE_MENUE
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </iot_WX_ROLE_MENUE>
+
+</qrys>

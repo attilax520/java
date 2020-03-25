@@ -1,0 +1,31 @@
+{
+  "traceId": "c0a8643615656830412836249d5ad5",
+  "eventId": 10386,
+  "gmtModified": 1565683042000,
+  "address": "西湖区转塘街道鲤鱼山街18号",
+  "eventType": {
+    "code": "officeEventTypeCode",
+    "name": "官方事件库",
+    "desc": "开箱初始化创建"
+  },
+  "gmtCreate": 1565683042000,
+  "deviceInfo": {
+    "iotId": "2mmOcgnNHNJN0aEuFiBRd0at01",
+    "productKey": "a14OAfz7cl2",
+    "deviceName": "d896e0001c000176"
+  },
+  "eventDefId": 10386,
+  "recordId": 526098,
+  "eventLevel": {
+    "name": "特级重大",
+    "priority": 1
+  },
+  "messageType": "EVENT_RECORD_UPDATED",
+  "geoLocation": {
+    "lng": "120.081663",
+    "alt": "0.0",
+    "lat": "30.127838"
+  },
+  "eventName": "感烟设备-烟雾警报",
+  "status": "PROCESSING"
+}

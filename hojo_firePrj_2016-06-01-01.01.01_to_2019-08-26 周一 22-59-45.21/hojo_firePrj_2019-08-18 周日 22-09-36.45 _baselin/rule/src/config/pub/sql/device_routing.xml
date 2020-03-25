@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <device_routing_query>
+        <sql>
+            select dr.ID,dr.ROUTING_NAME,dr.ROUTING_STATUS,dr.ROUNT_END_TIME,tur.USER_ID,su.NAME
+            FROM DEVICE_ROUTING dr
+            LEFT JOIN
+            TROUNT_USER_REL tur
+            ON tur.TROUNT_ID=dr.ID
+            LEFT JOIN SYS_USER su
+            ON tur.USER_ID=su.ID
+         </sql>
+    </device_routing_query>
+    <device_routing_id_query>
+    <sql><![CDATA[
+            select tel.TROUNT_EVENT_ID,dre.EVENT_NAME,dre.ID
+            from
+            TROUNT_EVENT_REL tel
+            LEFT JOIN DEVICE_ROUNTING_EVENT dre
+            ON tel.TROUNT_EVENT_ID=dre.ID
+            WHERE 1= 1 AND tel.TROUNT_ID = :TROUNT_ID
+      ]]></sql>
+    </device_routing_id_query>
+    <device_isrounted>
+        <sql>
+            select edr.TROUNT_EVENT_ID,
+            avg(edr.DEVICE_STATUS) as STATUS
+            from DEVICE_ROUNTING_EVENT dre
+            LEFT JOIN EVENT_DEVICE_REL edr
+            ON dre.ID=edr.TROUNT_EVENT_ID
+            WHERE 1= 1 AND dre.ID = :TROUNT_EVENT_ID
+            GROUP BY edr.TROUNT_EVENT_ID
+        </sql>
+    </device_isrounted>
+
+    <rounted-device>
+        <sql>
+            <![CDATA[
+            select DEVICE_STATUS,DEVICE_ID
+            from EVENT_DEVICE_REL
+            WHERE 1= 1 AND TROUNT_EVENT_ID= :TROUNT_EVENT_ID
+            ]]>
+        </sql>
+    </rounted-device>
+
+    <!--获取巡检事件管理的设备-->
+    <get_rount_device_name>
+        <sql>
+            <![CDATA[
+                 SELECT b.ID, JSON_EXTRACT(b.DEVICE_DATA,'$.name') DEVICE_NAME
+                FROM EVENT_DEVICE_REL a
+ 						LEFT JOIN IOT_DEVICE b ON a.DEVICE_ID = b.ID
+            ]]>
+        </sql>
+        <params>
+            <TROUNT_EVENT_ID>
+                <index>1</index>
+                <con>and a.TROUNT_EVENT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_EVENT_ID>
+        </params>
+    </get_rount_device_name>
+
+    <!---->
+    <get_rount_event_device>
+        <sql>
+            <![CDATA[
+             SELECT * FROM (
+               SELECT
+                    a.REQ_IP as DEVICE_TYPE,b.CODE_NAME, a.ID,a.REMARK AS ADDRESS,a.UNIT_ID,a.ARCHITECTURE_ID,a.DEPT_ID
+                    FROM IOT_DEVICE a
+                       LEFT JOIN SYS_DICTIONARY b ON a.REQ_IP = b.CODE_VALUE
+                    WHERE 1= 1 {1} AND a.TENANT_ID =  :TENANT_ID
+               AND (a.REQ_IP is not null AND a.REQ_IP != '')
+               UNION all
+               SELECT t.DEVICE_TYPE,b.CODE_NAME,t.ID,
+               JSON_UNQUOTE(JSON_EXTRACT(t.DEVICE_DATA,'$.address')) as ADDRESS, t.UNIT_ID,t.ARCHITECTURE_ID,t.DEPT_ID
+               FROM (
+               SELECT
+                    a.*,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE
+                    FROM IOT_DEVICE a
+                    WHERE 1=1 {1}
+                        AND a.TENANT_ID =  :TENANT_ID
+               ) t
+               LEFT JOIN SYS_DICTIONARY b ON t.DEVICE_TYPE = b.CODE_VALUE
+               WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+               ) tab1
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </get_rount_event_device>
+
+    <query_trount_deivce_all>
+        <sql>
+            <![CDATA[
+            SELECT * FROM
+			(
+                    SELECT  a.ID,d.CODE_NAME as DEVICE_NAME, a.REMARK as DEVICE_ADDRESS,
+											a.UNIT_ID, a.DEVICE_STATE,
+                      a.REQ_IP as DEVICE_TYPE
+                        FROM IOT_DEVICE a
+                            LEFT JOIN SYS_DICTIONARY d ON a.REQ_IP = d.CODE_VALUE
+                            WHERE a.TENANT_ID =  :TENANT_ID
+                        AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                        UNION all
+                    SELECT t.ID,d.CODE_NAME as DEVICE_NAME,t.DEVICE_ADDRESS, t.UNIT_ID,t.DEVICE_STATE,t.DEVICE_TYPE FROM (
+                    SELECT
+                    JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+										JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.name')) as DEVICE_NAME,
+										JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as DEVICE_ADDRESS,
+										a.ID,
+										a.ARCHITECTURE_ID,a.DEVICE_STATE,a.UNIT_ID
+                    FROM IOT_DEVICE a  WHERE 1=1
+                    AND a.TENANT_ID = :TENANT_ID
+                ) t, SYS_DICTIONARY d
+								WHERE t.DEVICE_TYPE = d.CODE_VALUE
+									AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                ) tab WHERE 1=1 {1}
+				ORDER BY tab.DEVICE_ADDRESS
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND tab.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE>
+                <index>2</index>
+                <con>AND tab.DEVICE_TYPE != :? </con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <ID>
+                <index>3</index>
+                <con>AND tab.ID =:?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </query_trount_deivce_all>
+</qrys>

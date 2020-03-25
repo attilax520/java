@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+   <!-- 获取 租户下 所有建筑 按类型统计结果-->
+    <fire_web_architecture_type_count>
+        <sql><![CDATA[
+		SELECT
+             count(*) count,
+            b.CODE_NAME proname
+        FROM ARCHITECTURE_INFO a
+        LEFT JOIN SYS_DICTIONARY b
+        ON a.ARCHITECTURE_TYPE = b.CODE_VALUE
+        WHERE a.TENANT_ID= :TENANT_ID
+        GROUP BY b.CODE_NAME
+	]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_web_architecture_type_count>
+
+    <!-- 获取 租户下 单位所属建筑数量-->
+    <fire_architecture_type_count_tmp>
+        <sql><![CDATA[
+    select 224 as count ,'公共建筑'  as proname  from dual  union all
+    select 10 as count ,'居住建筑'  as proname  from dual union all
+    select 6 as count ,'工业建筑'  as proname  from dual
+	]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con> AND a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_architecture_type_count_tmp>
+    <!-- 获取 租户下 单位所属建筑数量-->
+    <fire_architecture_type_count>
+        <sql><![CDATA[
+		SELECT
+             count(*) count,
+            b.CODE_NAME proname
+        FROM UNIT_INFO a
+        LEFT JOIN SYS_DICTIONARY b
+        ON a.ARCHI_UNIT_TYPE = b.CODE_VALUE
+        WHERE a.TENANT_ID= :TENANT_ID
+        and a.UNIT_FLAG in (0,1)
+        {1}
+
+        GROUP BY b.CODE_NAME
+	]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con> AND a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_architecture_type_count>
+<!--    根据单位id 或者 关联附件id 、附件业务类型 得到相关记录-->
+    <fire_web_unit_attac>
+        <sql><![CDATA[
+		SELECT * FROM UNIT_ATTAC WHERE 1=1 {1}
+	]]></sql>
+        <params>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND DEPT_ID= :?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <ATTAC_ID>
+                <index>3</index>
+                <con>AND ATTAC_ID= :?</con>
+                <type>char</type>
+            </ATTAC_ID>
+            <ATTAC_BUSINESS_TYPE>
+                <index>4</index>
+                <con>AND ATTAC_BUSINESS_TYPE= :?</con>
+                <type>char</type>
+            </ATTAC_BUSINESS_TYPE>
+            <FILE_TYPE>
+                <index>5</index>
+                <con>AND FILE_TYPE =:?</con>
+                <type>char</type>
+            </FILE_TYPE>
+        </params>
+    </fire_web_unit_attac>
+    <!--获取附件列表-->
+    <fire_web_attac_info>
+        <sql><![CDATA[
+        SELECT
+            b.*,a.ATTAC_BUSINESS_TYPE
+        FROM
+            UNIT_ATTAC a,
+            ATTACHMENT_INFO b
+        WHERE 1=1 {1}
+        AND a.ATTAC_ID = b.ID
+      --  AND b.TENANT_ID =:TENANT_ID
+        ]]></sql>
+        <psql><![CDATA[
+        SELECT
+            b.*,a.UNIT_ID,a.ATTAC_BUSINESS_TYPE
+        FROM
+            UNIT_ATTAC a,
+            ATTACHMENT_INFO b
+        WHERE 1=1 {1}
+        AND a.ATTAC_ID = b.ID
+       --  AND b.TENANT_ID =:TENANT_ID
+    order by CREATE_TIME DESC
+    limit :start , :end
+]]></psql>
+        <tsql><![CDATA[
+        SELECT
+            count(*) as tcount
+        FROM
+            UNIT_ATTAC a,
+            ATTACHMENT_INFO b
+        WHERE 1=1 {1}
+        AND a.ATTAC_ID = b.ID
+       -- AND b.TENANT_ID =:TENANT_ID
+]]></tsql>
+        <params>
+            <ATTAC_BUSINESS_TYPE>
+                <index>1</index>
+                <con>AND a.ATTAC_BUSINESS_TYPE = :?</con>
+                <type>char</type>
+            </ATTAC_BUSINESS_TYPE>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND b.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEPT_ID>
+                <index>3</index>
+                <con>AND b.DEPT_ID = :?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <ATTA_NAME>
+                <index>4</index>
+                <con>AND b.ATTA_NAME like :?</con>
+                <type>char</type>
+            </ATTA_NAME>
+            <FILE_TYPE>
+                <index>5</index>
+                <con>AND b.FILE_TYPE =:?</con>
+                <type>char</type>
+            </FILE_TYPE>
+            <TENANT_ID>
+                <index>6</index>
+                <con>AND b.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <UNIT_ID>
+                <index>7</index>
+                <con>	AND b.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_web_attac_info>
+    <!--获取 单位巡检任务统计结果-->
+    <fire_web_routing_task_count>
+        <sql><![CDATA[
+
+				SELECT  proname, sum(count) as count from (
+				SELECT CODE_NAME as proname,0 as count FROM SYS_DICTIONARY
+				WHERE TYPE_VALUE = 'ROUTING_STATUS'  AND CODE_VALUE <> 'ROUTING_STATUS'
+				GROUP BY CODE_NAME
+				UNION ALL
+			  SELECT b.CODE_NAME as proname, count(a.ROUTING_STATUS) as count FROM DEVICE_ROUTING a
+				LEFT JOIN SYS_DICTIONARY b ON a.ROUTING_STATUS = b.CODE_VALUE
+				AND b.TYPE_VALUE = 'ROUTING_STATUS'
+				WHERE 1= 1 AND a.TENANT_ID = :TENANT_ID {1}
+				GROUP BY b.CODE_NAME ) tab1
+				GROUP BY proname
+
+        ]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_web_routing_task_count>
+
+    <!--三级单位内的饼图巡检任务统计-->
+    <fire_web_rount_pie_count>
+        <sql>
+            <![CDATA[
+                SELECT  MAX(CASE tab1.proname WHEN '未完成' THEN tab1.count ELSE 0 END ) 'unfinished',
+                        MAX(CASE tab1.proname WHEN '已完成' THEN tab1.count ELSE 0 END ) 'finished',
+                        MAX(CASE tab1.proname WHEN '任务超时' THEN tab1.count ELSE 0 END ) 'overtime'
+                    from (
+                        SELECT b.CODE_NAME as proname, count(a.ROUTING_STATUS) as count
+                        FROM DEVICE_ROUTING a
+                        LEFT JOIN SYS_DICTIONARY b ON a.ROUTING_STATUS = b.CODE_VALUE
+                        AND b.TYPE_VALUE = 'ROUTING_STATUS' AND CODE_VALUE <> 'ROUTING_STATUS'
+                        WHERE 1= 1 {1} AND a.TENANT_ID = :TENANT_ID
+                        GROUP BY b.CODE_NAME
+                        ) tab1
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </fire_web_rount_pie_count>
+
+   <!-- 根据文件id 获取文件记录-->
+    <fire_web_attac_by_id>
+        <sql><![CDATA[
+            SELECT * FROM ATTACHMENT_INFO
+            WHERE 1=1 {1}
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND ID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </fire_web_attac_by_id>
+    <!--获取 巡检任务用户-->
+    <fire_web_routing_user_rel>
+        <sql><![CDATA[
+        SELECT
+            a.USER_ID user_id,
+            b. NAME name
+        FROM
+            TROUNT_USER_REL a
+        LEFT JOIN SYS_USER b ON a.USER_ID = b.ID
+        WHERE
+            1=1 AND a.TENANT_ID= :TENANT_ID
+        GROUP BY
+            a.USER_ID
+        ]]></sql>
+    </fire_web_routing_user_rel>
+    <!--每个人的 巡检任务统计  SELECT
+            COUNT(*) count,
+            b.ROUTING_STATUS status
+        FROM
+            TROUNT_USER_REL a,
+            DEVICE_ROUTING b
+        WHERE 1=1 {1}
+        AND a.TROUNT_ID = b.ID
+        GROUP BY
+            b.ROUTING_STATUS-->
+    <fire_web_routing_user_task_count>
+        <sql><![CDATA[
+            SELECT
+                u.name as USER_NAME,
+                MAX(CASE t.ROUTING_STATUS WHEN '0' THEN t.count ELSE 0 END ) 'unfinished',
+                MAX(CASE t.ROUTING_STATUS WHEN '1' THEN t.count ELSE 0 END ) 'finished',
+                MAX(CASE t.ROUTING_STATUS WHEN '2' THEN t.count ELSE 0 END ) 'overtime',t.USER_ID from (
+                SELECT
+                        b.ROUTING_STATUS,a.USER_ID,COUNT(*) count
+                FROM
+                    DEVICE_ROUTING b
+                                LEFT JOIN  TROUNT_USER_REL a ON a.TROUNT_ID = b.ID
+                WHERE 1=1 AND b.TENANT_ID = :TENANT_ID
+                       {1}
+                GROUP BY
+                    b.ROUTING_STATUS,a.USER_ID
+                ) t
+                LEFT JOIN SYS_USER u ON u.ID = t.USER_ID
+                GROUP BY t.USER_ID
+        ]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND b.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <USER_IDS>
+                <index>2</index>
+                <con>AND a.USER_ID in (:?)</con>
+                <type>char</type>
+            </USER_IDS>
+        </params>
+    </fire_web_routing_user_task_count>
+    <!--设备状态、报警类型、误报率统计-->
+    <fire_web_device_status_count>
+        <sql><![CDATA[
+        SELECT
+            ID,APP_ID,ARCHITECTURE_ID,DEVICE_STATE,UPDATE_TIME
+        FROM
+            IOT_DEVICE
+        WHERE 1=1 {1}
+            AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+        <params>
+            <DEVICE_STATE>
+                <index>1</index>
+                <con>AND DEVICE_STATE = :?</con>
+                <type>char</type>
+            </DEVICE_STATE>
+            <APP_ID>
+                <index>1</index>
+                <con>AND APP_ID = :?</con>
+                <type>char</type>
+            </APP_ID>
+            <DICTRICT_ID>
+                <index>1</index>
+                <con>AND DICTRICT_ID = :?</con>
+                <type>char</type>
+            </DICTRICT_ID>
+            <START_TIME>
+                <index>1</index>
+                <con>AND UPDATE_TIME >= :?</con>
+                <type>char</type>
+            </START_TIME>
+            <END_TIME>
+                <index>1</index>
+                <con>AND :? >= UPDATE_TIME</con>
+                <type>char</type>
+            </END_TIME>
+        </params>
+    </fire_web_device_status_count>
+    <!--获取巡检任务列表-->
+    <fire_web_routing_task>
+        <sql><![CDATA[
+        SELECT
+            *
+        FROM
+            DEVICE_ROUTING
+        WHERE 1=1 {1}
+            AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+        <params>
+            <ROUTING_STATUS>
+                <index>1</index>
+                <con>AND ROUTING_STATUS = :?</con>
+                <type>char</type>
+            </ROUTING_STATUS>
+            <START_TIME>
+                <index>1</index>
+                <con>AND UPDATE_TIME >= :?</con>
+                <type>char</type>
+            </START_TIME>
+            <END_TIME>
+                <index>1</index>
+                <con>AND :? >= UPDATE_TIME</con>
+                <type>char</type>
+            </END_TIME>
+        </params>
+    </fire_web_routing_task>
+    <!--获取建筑信息-->
+    <fire_web_architecture_info>
+        <sql><![CDATA[
+        SELECT
+            *
+        FROM
+            ARCHITECTURE_INFO
+        WHERE 1=1 {1}
+            AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND ID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </fire_web_architecture_info>
+    <!--报警信息列表-->
+    <fire_web_warn_info_list>
+        <sql><![CDATA[
+        SELECT
+            b.ARCHITECTURE_NAME arc_name,
+            a.DEVICE_STATE device_state,
+            c.APP_NAME device_name,
+            a.IMEI imei,
+            a.FLOOR floor,
+            a.UPDATE_TIME update_time
+        FROM
+            IOT_DEVICE a
+        LEFT JOIN ARCHITECTURE_INFO b ON a.ARCHITECTURE_ID = b.ID
+        LEFT JOIN IOT_DEVICE_TYPE c ON a.APP_ID = c.ID
+        WHERE 1=1 {1}
+            AND a.TENANT_ID = :TENANT_ID
+            AND device_state = 'warn'
+        ]]></sql>
+        <params>
+            <START_UPDATE_TIME>
+                <index>1</index>
+                <con>AND a.UPDATE_TIME >= :?</con>
+                <type>char</type>
+            </START_UPDATE_TIME>
+            <END_UPDATE_TIME>
+                <index>1</index>
+                <con>AND :? >= a.UPDATE_TIME</con>
+                <type>char</type>
+            </END_UPDATE_TIME>
+        </params>
+    </fire_web_warn_info_list>
+    <!--单位报警未处理-->
+    <fire_web_unit_warn_none_execute>
+        <sql><![CDATA[
+        SELECT
+            b.UNIT_NAME unit_name,
+            COUNT(b.UNIT_NAME) warn_count
+        FROM
+            IOT_DEVICE a
+        LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+        WHERE 1=1 {1}
+            AND a.TENANT_ID = :TENANT_ID
+            AND a.DEVICE_STATE = 'warn'
+        GROUP BY
+            b.UNIT_NAME
+        ]]></sql>
+    </fire_web_unit_warn_none_execute>
+    <!--获取单位信息统计-->
+    <fire_web_unit_count>
+        <sql><![CDATA[
+        SELECT
+            COUNT(*) count
+        FROM
+            UNIT_INFO
+        WHERE 1=1 {1}
+            AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+        <params>
+            <CREATE_TIME>
+                <index>1</index>
+                <con>AND :? >= CREATE_TIME</con>
+                <type>char</type>
+            </CREATE_TIME>
+        </params>
+    </fire_web_unit_count>
+    <!--根据在线用户id 获取用户机构id-->
+    <fire_web_ssid_unitid>
+        <!--AND b.TENANT_ID = :TENANT_ID-->
+        <sql><![CDATA[
+        SELECT
+            b.DEPT_ID
+        FROM
+            SYS_ONLINE_USER a,
+            SYS_USER b
+        WHERE 1=1 {1}
+            AND a.USER_ID = b.ID
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND a.ID = :? </con>
+                <type>char</type>
+            </ID>
+        </params>
+    </fire_web_ssid_unitid>
+    <!--危险源数量统计-->
+    <get_dangerous_source_count>
+        <sql><![CDATA[
+            select count(1)as tcount from UNIT_INFO UI where UI.UNIT_FLAG =2 AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+    </get_dangerous_source_count>
+    <!--消防站数量统计-->
+    <get_fire_station_count>
+        <sql><![CDATA[
+            select count(1)as tcount from UNIT_INFO UI where UI.UNIT_FLAG =3 AND TENANT_ID = :TENANT_ID
+        ]]></sql>
+    </get_fire_station_count>
+
+</qrys>

@@ -1,0 +1,961 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 企业基本信息接口 -->
+    <index_baseInfo>
+        <sql>
+            <![CDATA[
+		SELECT
+        I.ID,
+        I.UNIT_CODE,
+        I.UNIT_NAME,
+        I.UNIT_ADDRESS,
+        I.LONGITUDE,
+        I.LATITUDE,
+        I.ARCHIT_AREA,
+        I.FIRE_SAFE_PERSON,
+        I.FIRE_SAFE_PRESON_TELPHONE,
+        I.FIRE_SAFE_CUSTODIAN,
+        I.FIRE_SAFE_CUSTODIAN_TELHONE,
+        I.UNIT_ICON,
+        I.ARCHI_UNIT_TYPE,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='R' ORDER BY M.END_TIME DESC LIMIT 0,1 ) AS REPAIR_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='R' ORDER BY M.END_TIME DESC LIMIT 0,1) AS REPAIR_END,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='C' ORDER BY M.END_TIME DESC LIMIT 0,1) AS CHECK_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='C' ORDER BY M.END_TIME DESC LIMIT 0,1) AS CHECK_END,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='A' ORDER BY M.END_TIME DESC LIMIT 0,1) AS ASSET_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='A' ORDER BY M.END_TIME DESC LIMIT 0,1) AS ASSET_END
+        FROM
+        SYS_USER R,
+        UNIT_INFO I
+        WHERE
+        1=1
+        {1}
+        AND R.DEPT_ID=I.DEPT_ID
+    ]]>
+        </sql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>AND R.ID= :?</con>
+                <type>char</type>
+            </USER_ID>
+        </params>
+    </index_baseInfo>
+    <!-- 企业基本信息-消控室信息 -->
+    <fire_room_info>
+        <sql>
+            <![CDATA[
+		SELECT
+        R.ID,
+        R.FIRE_ROOM_NAME,
+        R.TELPHONE,
+        R.LINKMAN,
+        R.LINEMAN_TELPHONE
+        FROM
+        FIRE_ROOM R
+        WHERE
+        1=1
+        {1}
+    ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </id>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND R.TENANT_ID =:? </con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </fire_room_info>
+    <!-- 企业基本信息-微型消防站信息 -->
+    <fire_station_info>
+        <sql>
+            <![CDATA[
+		SELECT
+        R.ID,
+        R.`NAME`,
+        R.LINKMAN,
+        R.LINEMAN_PHONE,
+        (SELECT COUNT(1) FROM FIRE_STATION_FIREMEN F WHERE F.FIRE_STATION_ID=R.ID) AS COUNT
+        FROM
+        FIRE_STATION R
+        WHERE
+        1=1
+        AND R.DELETED='0'
+        {1}
+    ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </id>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND R.TENANT_ID =:? </con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </fire_station_info>
+    <!-- 企业基本信息接口_第三方 -->
+    <index_baseInfo_third>
+        <sql>
+            <![CDATA[
+		SELECT
+		I.ID,
+        I.UNIT_CODE,
+        I.UNIT_NAME,
+        (SELECT A.company_name FROM app A where A.app_id=I.app_id) AS COMPARY_NAME,
+        I.UNIT_ADDRESS,
+        I.LONGITUDE,
+        I.LATITUDE,
+        I.UNIT_ICON,
+        I.ARCHI_UNIT_TYPE,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='R' ORDER BY M.END_TIME DESC LIMIT 0,1 ) AS REPAIR_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='R' ORDER BY M.END_TIME DESC LIMIT 0,1) AS REPAIR_END,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='C' ORDER BY M.END_TIME DESC LIMIT 0,1) AS CHECK_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='C' ORDER BY M.END_TIME DESC LIMIT 0,1) AS CHECK_END,
+        (SELECT M.COMPARY_NAME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='A' ORDER BY M.END_TIME DESC LIMIT 0,1) AS ASSET_NAME,
+        (SELECT M.END_TIME FROM UNIT_MAINTENANCE M WHERE M.UNIT_ID=I.ID AND M.TYPE='A' ORDER BY M.END_TIME DESC LIMIT 0,1) AS ASSET_END,
+        I.FIRE_SAFE_PERSON AS LEADER,
+        I.FIRE_SAFE_PRESON_TELPHONE AS LEADER_PHONE,
+        I.FIRE_SAFE_CUSTODIAN AS MANAGE_LEADER,
+        I.FIRE_SAFE_CUSTODIAN_TELHONE AS MANAGE_LEADER_PHONE,
+        I.FIRE_SAFE_PERSON,
+        I.FIRE_SAFE_PRESON_TELPHONE,
+        I.FIRE_SAFE_CUSTODIAN,
+        I.FIRE_SAFE_CUSTODIAN_TELHONE,
+        I.ARCHIT_AREA AS AREA
+        FROM
+        UNIT_INFO I
+        WHERE
+        1=1
+        {1}
+    ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND I.ID=:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </index_baseInfo_third>
+    <!-- 分系统报警数 -->
+    <system_alarms>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS fire_alarm_system,
+        IFNULL(SUM(T.parent_id='81'),0) AS independent_fire_detection,
+        IFNULL(SUM(T.parent_id='72'),0) AS electrical_fire_warning,
+        IFNULL(SUM(T.parent_id='76'),0) AS fire_protection_water,
+        IFNULL(SUM(T.parent_id='78'),0) AS gas_monitoring,
+        IFNULL(SUM(T.parent_id='69'),0) AS charging_pile
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DICTIONARY Y,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        AND Y.is_alarm='1'
+        AND I.create_time > UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        AND D.type=T.type
+    ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND D.unit_id= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </system_alarms>
+    <!-- 第三方平台-分系统报警数 -->
+    <system_alarms_third>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS fire_alarm_system,
+        IFNULL(SUM(T.parent_id='81'),0) AS independent_fire_detection,
+        IFNULL(SUM(T.parent_id='72'),0) AS electrical_fire_warning,
+        IFNULL(SUM(T.parent_id='76'),0) AS fire_protection_water,
+        IFNULL(SUM(T.parent_id='78'),0) AS gas_monitoring,
+        IFNULL(SUM(T.parent_id='69'),0) AS charging_pile
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        UNIT_INFO U,
+        DATA_DICTIONARY Y,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        AND D.unit_id=U.ID
+        {1}
+        AND Y.is_alarm='1'
+        AND I.create_time > UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        AND D.type=T.type
+    ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND U.ID= :?</con>
+                <type>char</type>
+            </unit_id>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND D.tenant_id = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </system_alarms_third>
+    <!-- 统计数据-已接入设备数量 -->
+    <installed_count>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS fire_alarm_system,
+        IFNULL(SUM(T.parent_id='81'),0) AS independent_fire_detection,
+        IFNULL(SUM(T.parent_id='72'),0) AS electrical_fire_warning,
+        IFNULL(SUM(T.parent_id='76'),0) AS fire_protection_water,
+        IFNULL(SUM(T.parent_id='78'),0) AS gas_monitoring,
+        IFNULL(SUM(T.parent_id='69'),0) AS charging_pile
+        FROM
+        DATA_DEVICE D,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND D.type=T.type
+    ]]>
+        </sql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>AND R.USER_ID= :?</con>
+                <type>char</type>
+            </USER_ID>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <UNIT_ID>
+                <index>3</index>
+                <con>AND D.unit_id = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </installed_count>
+    <!-- 第三方平台-统计数据-已接入设备数量 -->
+    <installed_count_third>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS fire_alarm_system,
+        IFNULL(SUM(T.parent_id='81'),0) AS independent_fire_detection,
+        IFNULL(SUM(T.parent_id='72'),0) AS electrical_fire_warning,
+        IFNULL(SUM(T.parent_id='76'),0) AS fire_protection_water,
+        IFNULL(SUM(T.parent_id='78'),0) AS gas_monitoring,
+        IFNULL(SUM(T.parent_id='69'),0) AS charging_pile
+        FROM
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND D.unit_id=U.ID
+        AND D.type=T.type
+    ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND U.ID= :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </installed_count_third>
+    <!-- 统计数据-设备完好率统计 -->
+    <statistics>
+        <sql>
+            <![CDATA[
+		SELECT
+        IF(AA.A=0,'-',ROUND(((AA.A-BB.A)/AA.A*100),2)) AS fire_alarm_system,
+        IF(AA.B=0,'-',ROUND(((AA.B-BB.B)/AA.B*100),2)) AS independent_fire_detection,
+        IF(AA.C=0,'-',ROUND(((AA.C-BB.C)/AA.C*100),2)) AS electrical_fire_warning,
+        IF(AA.D=0,'-',ROUND(((AA.D-BB.D)/AA.D*100),2)) AS fire_protection_water,
+        IF(AA.E=0,'-',ROUND(((AA.E-BB.E)/AA.E*100),2)) AS gas_monitoring,
+        IF(AA.F=0,'-',ROUND(((AA.F-BB.F)/AA.F*100),2)) AS charging_pile
+        FROM
+        (SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS A,
+        IFNULL(SUM(T.parent_id='81'),0) AS B,
+        IFNULL(SUM(T.parent_id='72'),0) AS C,
+        IFNULL(SUM(T.parent_id='76'),0) AS D,
+        IFNULL(SUM(T.parent_id='78'),0) AS E,
+        IFNULL(SUM(T.parent_id='69'),0) AS F
+        FROM
+        DATA_DEVICE D,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND D.type=T.type) AA,
+        (SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS A,
+        IFNULL(SUM(T.parent_id='81'),0) AS B,
+        IFNULL(SUM(T.parent_id='72'),0) AS C,
+        IFNULL(SUM(T.parent_id='76'),0) AS D,
+        IFNULL(SUM(T.parent_id='78'),0) AS E,
+        IFNULL(SUM(T.parent_id='69'),0) AS F
+        FROM
+        DATA_DEVICE D,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND D.type=T.type
+        AND CONCAT(D.is_alarm,D.is_fault) IN ('10','01','11')) BB
+    ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND D.UNIT_ID =:? </con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </statistics>
+    <!-- 第三方平台-统计数据-设备完好率统计 -->
+    <statistics_third>
+        <sql>
+            <![CDATA[
+		SELECT
+        IF(AA.A=0,'-',ROUND(((AA.A-BB.A)/AA.A*100),2)) AS fire_alarm_system,
+        IF(AA.B=0,'-',ROUND(((AA.B-BB.B)/AA.B*100),2)) AS independent_fire_detection,
+        IF(AA.C=0,'-',ROUND(((AA.C-BB.C)/AA.C*100),2)) AS electrical_fire_warning,
+        IF(AA.D=0,'-',ROUND(((AA.D-BB.D)/AA.D*100),2)) AS fire_protection_water,
+        IF(AA.E=0,'-',ROUND(((AA.E-BB.E)/AA.E*100),2)) AS gas_monitoring,
+        IF(AA.F=0,'-',ROUND(((AA.F-BB.F)/AA.F*100),2)) AS charging_pile
+        FROM
+        (SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS A,
+        IFNULL(SUM(T.parent_id='81'),0) AS B,
+        IFNULL(SUM(T.parent_id='72'),0) AS C,
+        IFNULL(SUM(T.parent_id='76'),0) AS D,
+        IFNULL(SUM(T.parent_id='78'),0) AS E,
+        IFNULL(SUM(T.parent_id='69'),0) AS F
+        FROM
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND U.ID=D.unit_id
+        AND D.type=T.type) AA,
+        (SELECT
+        IFNULL(SUM(T.parent_id='74'),0) AS A,
+        IFNULL(SUM(T.parent_id='81'),0) AS B,
+        IFNULL(SUM(T.parent_id='72'),0) AS C,
+        IFNULL(SUM(T.parent_id='76'),0) AS D,
+        IFNULL(SUM(T.parent_id='78'),0) AS E,
+        IFNULL(SUM(T.parent_id='69'),0) AS F
+        FROM
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        DATA_DEVICE_TYPE T
+        WHERE 1=1
+        {1}
+        AND U.ID=D.unit_id
+        AND D.type=T.type
+        AND CONCAT(D.is_alarm,D.is_fault) IN ('10','01','11')) BB
+    ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND U.ID= :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </statistics_third>
+    <!-- 第三方平台 左侧区域查询 -->
+    <left_region>
+        <sql>
+            <![CDATA[
+		SELECT
+        D.ID,
+        D.`NAME`,
+        D.PARENT_ID
+        FROM
+        SYS_DISTRICT D
+        WHERE
+        1=1
+        {1}
+    ]]>
+        </sql>
+        <params>
+            <EXT2>
+                <index>1</index>
+                <con>AND D.EXT2=:?</con>
+                <type>char</type>
+            </EXT2>
+            <PARENT_ID>
+                <index>1</index>
+                <con>AND D.PARENT_ID=:?</con>
+                <type>char</type>
+            </PARENT_ID>
+        </params>
+    </left_region>
+    <!-- 第三方 单位列表 -->
+    <third_unit_list>
+        <sql>
+            <![CDATA[
+		SELECT
+        *
+        FROM
+        thirdUnitList_View V
+        where 1=1
+        {1}
+    ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+		SELECT
+        *
+        FROM
+        thirdUnitList_View V
+        where 1=1
+        {1}
+        limit :start , :end
+    ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+		SELECT
+        count(1) as tcount
+        FROM
+        thirdUnitList_View V
+        where 1=1
+        {1}
+    ]]>
+        </tsql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND V.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+            <name>
+                <index>1</index>
+                <con>AND V.unit_name like :?</con>
+                <type>char</type>
+            </name>
+            <app_id>
+                <index>1</index>
+                <con>AND V.app_id =:?</con>
+                <type>char</type>
+            </app_id>
+        </params>
+    </third_unit_list>
+    <!-- 第三方 平台列表 -->
+    <third_plat_list>
+        <sql>
+            <![CDATA[
+		SELECT
+        (SELECT A.company_name FROM app A WHERE A.app_id=V.app_id) AS company_name,
+        (SELECT A.app_id FROM app A WHERE A.app_id=V.app_id) AS app_id,
+        SUM(V.total) AS total,
+        SUM(V.fire_alarm_system) AS fire_alarm_system,
+        SUM(V.independent_fire_detection) AS independent_fire_detection,
+        SUM(V.electrical_fire_warning) AS electrical_fire_warning,
+        SUM(V.fire_protection_water) AS fire_protection_water,
+        SUM(V.gas_monitoring) AS gas_monitoring,
+        SUM(V.charging_pile) AS charging_pile,
+        '1' AS state
+        FROM
+        thirdUnitList_View V
+        WHERE 1=1
+         AND app_id is not null
+        {1}
+        GROUP BY app_id
+    ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+		SELECT
+        (SELECT A.company_name FROM app A WHERE A.app_id=V.app_id) AS company_name,
+        (SELECT A.app_id FROM app A WHERE A.app_id=V.app_id) AS app_id,
+        SUM(V.total) AS total,
+        SUM(V.fire_alarm_system) AS fire_alarm_system,
+        SUM(V.independent_fire_detection) AS independent_fire_detection,
+        SUM(V.electrical_fire_warning) AS electrical_fire_warning,
+        SUM(V.fire_protection_water) AS fire_protection_water,
+        SUM(V.gas_monitoring) AS gas_monitoring,
+        SUM(V.charging_pile) AS charging_pile,
+        '1' AS state
+        FROM
+        thirdUnitList_View V
+        WHERE 1=1
+         AND app_id is not null
+        {1}
+        GROUP BY app_id
+        limit :start , :end
+    ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+		select count(1) as tcount from (
+		SELECT
+        count(1) as tcount
+        FROM
+        thirdUnitList_View V
+        WHERE 1=1
+         AND app_id is not null
+        {1}
+        GROUP BY app_id) AS TC
+    ]]>
+        </tsql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND V.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+            <name>
+                <index>1</index>
+                <con>AND V.app_name LIKE :?</con>
+                <type>char</type>
+            </name>
+        </params>
+    </third_plat_list>
+    <!-- 首页-单位列表-数据统计 -->
+    <unitStatistic>
+        <sql>
+            <![CDATA[
+        SELECT
+        (SELECT COUNT(1) FROM UNIT_INFO U WHERE U.UNIT_FLAG = '1' {1}) AS COUNT,
+        IFNULL(SUM(I.ARCHITECTURE_TYPE='LIVE'),0) AS LIVE,
+        IFNULL(SUM(I.ARCHITECTURE_TYPE='COMMON'),0) AS COMMON,
+        IFNULL(SUM(I.ARCHITECTURE_TYPE='INDUSTRIAL'),0) AS INDUSTRIAL
+        FROM
+        ARCHITECTURE_INFO I
+        WHERE 1=1
+        AND I.UNIT_ID IN ( SELECT U.ID FROM UNIT_INFO U WHERE U.UNIT_FLAG = '1' {1} )
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND U.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+            <app_id>
+                <index>1</index>
+                <con>AND U.APP_ID=:?</con>
+                <type>char</type>
+            </app_id>
+        </params>
+    </unitStatistic>
+    <!-- 首页-平台列表-数据统计-今天日报警数 -->
+    <platTodayAlarms>
+        <sql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS COUNT
+        FROM
+        DATA_EVENT_INFO I,
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        app A
+        WHERE
+        1=1
+        AND U.UNIT_FLAG='1'
+        {1}
+        AND U.ID=D.UNIT_ID
+        AND D.ID=I.DEVICE_ID
+        AND U.APP_ID=A.app_id
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND U.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+            <name>
+                <index>1</index>
+                <con>AND A.company_name LIKE :?</con>
+                <type>char</type>
+            </name>
+        </params>
+    </platTodayAlarms>
+    <!-- 首页-平台列表-数据统计-第三方平台数 -->
+    <platCount>
+        <sql>
+            <![CDATA[
+        SELECT COUNT(1) COUNT FROM(
+        SELECT
+        COUNT(1)
+        FROM
+        thirdUnitList_View V
+        WHERE 1=1
+        AND app_id is not null
+        {1}
+        GROUP BY app_id) AS C
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND V.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+            <name>
+                <index>1</index>
+                <con>AND V.app_name LIKE :?</con>
+                <type>char</type>
+            </name>
+        </params>
+    </platCount>
+    <!-- 首页-平台列表-数据统计-统计连接状态-10天内 -->
+    <connectState>
+        <sql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS COUNT,
+        A.app_id,
+        A.company_name
+        FROM
+        DATA_EVENT_INFO I,
+        DATA_DEVICE D,
+        UNIT_INFO U,
+        app A
+        WHERE
+        1=1
+        AND U.UNIT_FLAG='1'
+        {1}
+        AND U.ID=D.UNIT_ID
+        AND D.ID=I.DEVICE_ID
+        AND U.APP_ID=A.app_id
+        AND I.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE) - INTERVAL 30 DAY)*1000
+        GROUP BY U.APP_ID
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND U.AREA_ID=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </connectState>
+
+    <!-- 首页-平台列表-根据appid获得平台信息 -->
+    <appInfo>
+        <sql>
+        <![CDATA[
+        SELECT
+        A.app_id,
+        A.company_address,
+        A.company_name,
+        A.contact,
+        A.contact_phone,
+        (SELECT D.NAME FROM SYS_DISTRICT D WHERE D.ID=A.REGION) AS region
+        FROM
+        app A
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <APP_ID>
+                <index>1</index>
+                <con>AND A.app_id=:?</con>
+                <type>char</type>
+            </APP_ID>
+        </params>
+    </appInfo>
+
+    <!-- 平台日常管理-二维码列表 -->
+    <TROUNT_QRCODE>
+        <sql>
+            <![CDATA[
+            SELECT
+            ID,
+            QRCODE_NAME,
+            INSTALL_ADDRESS,
+            NATURE_OPTION
+            FROM
+            TROUNT_QRCODE
+            where 1=1
+            {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+            SELECT
+            *
+            FROM
+            TROUNT_QRCODE
+            where 1=1
+            {1}
+            limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            count(1) as tcount
+            FROM
+            TROUNT_QRCODE
+            where 1=1
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <!--<start>
+                <index>1</index>
+                <con>limit :?,</con>
+                <type>int</type>
+            </start>
+            <end>
+                <index>1</index>
+                <con>:?</con>
+                <type>int</type>
+            </end>-->
+            <begin>
+                <index>1</index>
+                <con>AND update_time <![CDATA[>]]> :?</con>
+                <type>char</type>
+            </begin>
+            <finish>
+                <index>1</index>
+                <con>AND update_time <![CDATA[< ]]> :?</con>
+                <type>char</type>
+            </finish>
+            <install_address>
+                <index>1</index>
+                <con>AND install_address LIKE :?</con>
+                <type>char</type>
+            </install_address>
+            <qrcode_name>
+                <index>1</index>
+                <con>AND qrcode_name LIKE :?</con>
+                <type>char</type>
+            </qrcode_name>
+            <unit_id>
+                <index>1</index>
+                <con>AND unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+            <nature_option>
+                <index>1</index>
+                <con>AND nature_option = :?</con>
+                <type>char</type>
+            </nature_option>
+            <nature>
+                <index>1</index>
+                <con>AND nature_option in (:?)</con>
+                <type>chars</type>
+            </nature>
+        </params>
+    </TROUNT_QRCODE>
+
+    <!-- 综合管理-联网设备管理 -->
+    <machine_list>
+        <sql>
+            <![CDATA[
+            SELECT
+            M.id,
+            M.device_code,
+            M.name,
+            M.longitude,
+            M.latitude,
+            M.address,
+            M.zone_code,
+            M.zone,
+            M.app_id,
+            M.tenant_id,
+            (SELECT a.company_name FROM app  a WHERE a.app_id=M.app_id) as app_name,
+            M.machine_version,
+            M.mainframe_version,
+            M.butt_joint_type,
+            M.analytic_method,
+            M.inspection_time,
+            M.inspection_res,
+            M.inspection_status,
+            (SELECT COUNT(*) FROM DATA_MACHINE_RECORD_INFO WHERE record_type = 1 AND machine_info_id = M.id)as routing_times,
+            M.heartbeat_interval,
+            M.unit_id
+            FROM
+            DATA_MACHINE_INFO M
+            WHERE
+            1=1
+            AND M.logic_status='1'
+            {1}
+
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+            SELECT
+            M.id,
+            M.device_code,
+            M.name,
+            M.longitude,
+            M.latitude,
+            M.address,
+            M.zone_code,
+            M.zone,
+            M.app_id,
+            (SELECT a.company_name FROM app  a WHERE a.app_id=M.app_id) as app_name,
+            M.machine_version,
+            M.mainframe_version,
+            M.butt_joint_type,
+            M.analytic_method,
+            M.inspection_time,
+            M.inspection_res,
+            M.inspection_status,
+            (SELECT COUNT(*) FROM DATA_MACHINE_RECORD_INFO WHERE record_type = 1 AND machine_info_id = M.id)as routing_times,
+            M.heartbeat_interval,
+            M.unit_id
+            FROM
+            DATA_MACHINE_INFO M
+            WHERE
+            1=1
+            AND M.logic_status='1'
+            {1}
+            limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            COUNT(1) AS tcount
+            FROM
+            DATA_MACHINE_INFO M
+            WHERE
+            1=1
+            AND M.logic_status='1'
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <device_code>
+                <index>1</index>
+                <con> and M.device_code = :?</con>
+                <type>char</type>
+            </device_code>
+            <name>
+                <index>1</index>
+                <con> and M.name like '%':?'%'</con>
+                <type>char</type>
+            </name>
+            <unit_id>
+                <index>1</index>
+                <con> and M.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+            <unit_name>
+                <index>1</index>
+                <con> and EXISTS (select 1 from UNIT_INFO u where u.ID = M.unit_id and u.UNIT_NAME like '%':?'%')</con>
+                <type>char</type>
+            </unit_name>
+            <zone_code>
+                <index>1</index>
+                <con> and M.zone_code = :?</con>
+                <type>char</type>
+            </zone_code>
+        </params>
+    </machine_list>
+    <!-- 获取app列表 -->
+    <app_list>
+        <sql>
+        <![CDATA[
+            select
+            a.app_id,
+            a.company_name
+            from
+            app a
+            where
+            1=1
+        ]]>
+        </sql>
+        <params>
+            <start>
+                <index>1</index>
+                <con>limit :?,</con>
+                <type>int</type>
+            </start>
+        </params>
+    </app_list>
+
+    <!-- 用传 巡检记录 -->
+    <machine_record_list>
+        <sql>
+            <![CDATA[
+            SELECT *,FROM_UNIXTIME(create_time/1000, '%Y-%m-%d %H:%i:%s') unix_create_time FROM DATA_MACHINE_RECORD_INFO WHERE 1 = 1
+            {1}
+            ORDER BY create_time DESC
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+            SELECT *,FROM_UNIXTIME(create_time/1000, '%Y-%m-%d %H:%i:%s') unix_create_time FROM DATA_MACHINE_RECORD_INFO WHERE 1 = 1
+            {1}
+            ORDER BY create_time DESC
+            limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            SELECT COUNT(*) tcount FROM DATA_MACHINE_RECORD_INFO WHERE 1 = 1
+            {1}
+            ORDER BY create_time DESC
+        ]]>
+        </tsql>
+        <params>
+            <record_type>
+                <index>1</index>
+                <con>and record_type = :?</con>
+                <type>int</type>
+            </record_type>
+            <machine_info_id>
+                <index>2</index>
+                <con>and machine_info_id = :?</con>
+                <type>char</type>
+            </machine_info_id>
+            <start_time>
+                <index>3</index>
+                <con><![CDATA[ and FROM_UNIXTIME(create_time/1000, '%Y-%m-%d %h:%i:%s') >= :? ]]></con>
+                <type>char</type>
+            </start_time>
+            <end_time>
+                <index>4</index>
+                <con><![CDATA[ and FROM_UNIXTIME(create_time/1000, '%Y-%m-%d %h:%i:%s') <= :? ]]></con>
+                <type>char</type>
+            </end_time>
+        </params>
+    </machine_record_list>
+</qrys>

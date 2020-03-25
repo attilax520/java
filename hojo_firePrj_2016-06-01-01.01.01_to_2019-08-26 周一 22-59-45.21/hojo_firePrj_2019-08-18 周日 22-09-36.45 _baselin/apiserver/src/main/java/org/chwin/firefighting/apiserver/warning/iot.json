@@ -1,0 +1,17 @@
+{
+  "instanceId": "525376",
+  "messageType": "EVENT_USER_TASK_CREATION",
+  "customForm": "[{\"label\":\"智慧消防是否处置成功\",\"type\":\"input\",\"key\":\"JOINT_APP_RETURN_FIELD_27682655\"}]",
+  "bizContent": {
+    "iotId": "2mmOcgnNHNJN0aEuFiBRd0at01",
+    "address": "西湖区转塘街道鲤鱼山街18号",
+    "bizType": 1,
+    "geoLocation": "{\"altitude\":\"0.0\",\"latitude\":\"30.127838\",\"longitude\":\"120.081663\"}",
+    "eventName": "感烟设备-烟雾警报",
+    "eventLevelName": "特级重大",
+    "priority": 1,
+    "deviceName": "d896e0001c000176"
+  },
+  "timeoutDuration": -1,
+  "taskId": 12121
+}

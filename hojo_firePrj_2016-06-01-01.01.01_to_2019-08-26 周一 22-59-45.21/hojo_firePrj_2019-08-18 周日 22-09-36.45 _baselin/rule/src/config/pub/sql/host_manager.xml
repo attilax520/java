@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_host_manager>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME
+		from HOST_MANAGER a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		  a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME
+		from HOST_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		order by CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from HOST_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <HOST_NUMBER>
+                <index>1</index>
+                <con>and a.HOST_NUMBER like :?</con>
+                <type>char</type>
+            </HOST_NUMBER>
+            <HOST_BRAND>
+                <index>1</index>
+                <con>and a.HOST_BRAND like :?</con>
+                <type>char</type>
+            </HOST_BRAND>
+            <HOST_MODEL>
+                <index>1</index>
+                <con>and a.HOST_MODEL like :?</con>
+                <type>char</type>
+            </HOST_MODEL>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FIRE_ROOM_ID>
+                <index>1</index>
+                <con>and a.FIRE_ROOM_ID= :?</con>
+                <type>char</type>
+            </FIRE_ROOM_ID>
+            <NET_DEVICE_CONNECTION>
+                <index>1</index>
+                <con>and a.NET_DEVICE_CONNECTION like :?</con>
+                <type>char</type>
+            </NET_DEVICE_CONNECTION>
+            <INSTALLATION_INTERFACE>
+                <index>1</index>
+                <con>and a.INSTALLATION_INTERFACE like :?</con>
+                <type>char</type>
+            </INSTALLATION_INTERFACE>
+            <DETECTION_POINT_TOTAL>
+                <index>1</index>
+                <con>and a.DETECTION_POINT_TOTAL= :?</con>
+                <type>char</type>
+            </DETECTION_POINT_TOTAL>
+            <DETECTION_POINT_NUMBER>
+                <index>1</index>
+                <con>and a.DETECTION_POINT_TOTAL= :?</con>
+                <type>char</type>
+            </DETECTION_POINT_NUMBER>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <FIRE_ROOM_NAME>
+                <index>1</index>
+                <con>and c.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+        </params>
+    </dtset_host_manager>
+
+</qrys>

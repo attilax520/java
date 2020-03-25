@@ -1,0 +1,16 @@
+{
+	xtype:'uxview',flex:1,
+	title:'测试',
+	store:Ext.create('Ext.data.Store',{
+		fields:['date','num1','num2','num3',],
+		data:[ 
+			{date:'周一',num1:120,num2:220,num3:150,},
+			{date:'周二',num1:132,num2:182,num3:232,},
+			{date:'周三',num1:101,num2:191,num3:201,},
+			{date:'周四',num1:134,num2:234,num3:154,},
+			{date:'周五',num1:90,num2:290,num3:190,},
+			{date:'周六',num1:230,num2:330,num3:330,},
+			{date:'周日',num1:210,num2:310,num3:410,}
+		]
+	})
+}

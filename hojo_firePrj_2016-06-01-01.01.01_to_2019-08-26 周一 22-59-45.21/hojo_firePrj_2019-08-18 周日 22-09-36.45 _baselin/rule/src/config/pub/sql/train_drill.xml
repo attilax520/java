@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!-- 消防安全培训/疏散演练列表 -->
+    <train_drill_list>
+        <sql><![CDATA[
+            SELECT td.*,(SELECT COUNT(*) FROM TRAIN_DRILL_ATTAC_REL R WHERE R.train_drill_id = td.id) AS file_count
+            FROM TRAIN_DRILL_RECORD td
+            WHERE 1=1
+            {1}
+            ORDER BY td.train_drill_time DESC
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT td.*,(SELECT COUNT(*) FROM TRAIN_DRILL_ATTAC_REL r WHERE r.train_drill_id = td.id) AS file_count
+            FROM TRAIN_DRILL_RECORD td
+            WHERE 1=1
+            {1}
+            ORDER BY td.train_drill_time DESC
+                LIMIT :start,:end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) tcount
+            FROM TRAIN_DRILL_RECORD td
+            WHERE 1=1
+            {1}
+            ORDER BY train_drill_time DESC
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and td.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <train_drill_name>
+                <index>2</index>
+                <con> and td.train_drill_name like '%':?'%' </con>
+                <type>char</type>
+            </train_drill_name>
+            <unit_id>
+                <index>3</index>
+                <con> and td.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <type>
+                <index>4</index>
+                <con> and td.type = :? </con>
+                <type>char</type>
+            </type>
+        </params>
+    </train_drill_list>
+
+    <!-- 消防安全培训/疏散演练-文件列表 -->
+    <train_drill_file_list>
+        <sql><![CDATA[
+            SELECT
+                b.*
+            FROM
+                TRAIN_DRILL_ATTAC_REL a,
+                ATTACHMENT_INFO b
+            WHERE 1=1 {1}
+            AND a.ATTAC_ID = b.ID
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT
+                b.*
+            FROM
+                TRAIN_DRILL_ATTAC_REL a,
+                ATTACHMENT_INFO b
+            WHERE 1=1 {1}
+            AND a.ATTAC_ID = b.ID
+                LIMIT :start,:end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) tcount
+            FROM
+                TRAIN_DRILL_ATTAC_REL a,
+                ATTACHMENT_INFO b
+            WHERE 1=1 {1}
+            AND a.ATTAC_ID = b.ID
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and b.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <train_drill_id>
+                <index>2</index>
+                <con> and a.train_drill_id = :? </con>
+                <type>char</type>
+            </train_drill_id>
+            <unit_id>
+                <index>3</index>
+                <con> and b.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <atta_name>
+                <index>4</index>
+                <con> and b.atta_name like '%':?'%' </con>
+                <type>char</type>
+            </atta_name>
+            <UNIT_ID>
+                <index>5</index>
+                <con>AND b.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </train_drill_file_list>
+</qrys>
+

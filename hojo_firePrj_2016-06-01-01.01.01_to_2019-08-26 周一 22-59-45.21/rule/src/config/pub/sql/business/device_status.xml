@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!-- 根据设备类型,查询下属设备类型 -->
+    <qry_device_type_by_parent>
+        <sql><![CDATA[
+        SELECT
+            t.type ,t.name
+        FROM
+            DATA_DEVICE_TYPE t,
+            (
+        SELECT DISTINCT
+            substring_index( substring_index( a.ids, ',', b.num + 1 ), ',',- 1 ) AS id
+        FROM
+            DATA_DEVICE_TYPE a,
+            CM_BASE_NUM b,
+            DATA_DEVICE_TYPE c
+        WHERE
+            b.num < ( length( a.ids ) - length( REPLACE ( a.ids, ',', '' ) ) + 1 )
+            AND substring_index( a.ids, ',', 1 ) = c.id
+            AND c.type = :device_type
+            ) t1
+        WHERE
+            t.id = t1.id
+        ]]></sql>
+    </qry_device_type_by_parent>
+
+    <!-- 独立式火灾报警探测器,设备状态查询 -->
+    <qry_smoke_device_status>
+        <psql><![CDATA[
+        select * from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            CONCAT(d.is_online,'') as is_online,
+            d.type,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1008' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS smoke_concentration,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1011' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS smoke_electricity,
+            null as smoke_temp,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1' {1}
+            ) t
+            order by t.is_online is null,t.smoke_electricity is null ,t.is_online asc,t.smoke_electricity asc,t.create_time desc
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+        select count(*) tcount from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            d.is_online,
+            d.type,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1008' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS smoke_concentration,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1011' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS smoke_electricity,
+            null as smoke_temp,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1'{1}
+            ) t
+            order by t.is_online is null,t.smoke_electricity is null ,t.is_online asc,t.smoke_electricity asc,t.create_time desc
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and d.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND d.type in ( :? )</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>2</index>
+                <con>and IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <unit_id>
+                <index>4</index>
+                <con> and d.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <app_id>
+                <index>5</index>
+                <con> and u.APP_ID = :? </con>
+                <type>char</type>
+            </app_id>
+            <area_id>
+                <index>6</index>
+                <con> and u.AREA_ID = :? </con>
+                <type>char</type>
+            </area_id>
+        </params>
+    </qry_smoke_device_status>
+
+    <!-- 消防水系统,设备状态查询 -->
+    <qry_water_device_status>
+        <psql><![CDATA[
+        select * from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            CONCAT(d.is_online,'') as is_online,
+            d.type,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1051' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS water_press,
+             (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1061' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS water_level,
+             case d.type
+             when 'hydraulic_pressure_gauge' then (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1050' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 )
+             when 'wireless_liquid_level' then (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1060' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 )
+             else NULL
+             end as water_electricity,
+            d.create_time
+            FROM
+                DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+            WHERE
+            d.logic_status = '1' {1}
+            ) t
+            order by t.is_online is null ,t.water_electricity is null,t.is_online asc,t.water_electricity asc,t.create_time desc
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+        select count(*) tcount from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            d.is_online,
+            d.type,
+            (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1051' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS water_press,
+             (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1061' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 ) AS water_level,
+             case d.type
+             when 'hydraulic_pressure_gauge' then (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1050' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 )
+             when 'wireless_liquid_level' then (SELECT e.event_value FROM DATA_EVENT_INFO e left join DATA_DICTIONARY dd on e.event_type = dd.type WHERE e.device_id = d.id AND dd.type = '1060' and dd.device_type = d.type ORDER BY e.event_time DESC LIMIT 1 )
+             else NULL
+             end as water_electricity,
+            d.create_time
+            FROM
+                DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+            WHERE
+            d.logic_status = '1' {1}
+            ) t
+            order by t.is_online is null ,t.water_electricity is null,t.is_online asc,t.water_electricity asc,t.create_time desc
+        ]]></tsql>
+        <params>
+             <TENANT_ID>
+                <index>1</index>
+                <con> and d.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND d.type in ( :? )</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>2</index>
+                <con>and IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <unit_id>
+                <index>4</index>
+                <con> and d.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <app_id>
+                <index>5</index>
+                <con> and u.APP_ID = :? </con>
+                <type>char</type>
+            </app_id>
+            <area_id>
+                <index>6</index>
+                <con> and u.AREA_ID = :? </con>
+                <type>char</type>
+            </area_id>
+        </params>
+    </qry_water_device_status>
+
+    <!-- 气体监测系统,设备状态查询 -->
+    <qry_gas_device_status>
+        <psql><![CDATA[
+        select * from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            CONCAT(d.is_online,'') as is_online,
+            d.type,
+            null AS gas_electricity,
+            (select dei.event_type FROM DATA_EVENT_INFO dei  WHERE  d.id = dei.device_id ORDER BY dei.create_time DESC LIMIT 1) as event_type,
+            (select dei.event_value FROM DATA_EVENT_INFO dei WHERE  d.id = dei.device_id  ORDER BY dei.create_time DESC LIMIT 1) as gas_concentration,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1' {1}
+            ) t
+            order by t.is_online is null,t.gas_electricity  is null ,t.is_online asc,t.gas_electricity asc,t.create_time desc
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+        select count(*) tcount from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            d.is_online,
+            d.type,
+             null AS gas_electricity,
+            (select dei.event_type FROM DATA_EVENT_INFO dei  WHERE  d.id = dei.device_id ORDER BY dei.create_time DESC LIMIT 1) as event_type,
+            (select dei.event_value FROM DATA_EVENT_INFO dei WHERE  d.id = dei.device_id  ORDER BY dei.create_time DESC LIMIT 1) as gas_concentration,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1'{1}
+            ) t
+            order by t.is_online is null,t.gas_electricity  is null ,t.is_online asc,t.gas_electricity asc,t.create_time desc
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and d.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND d.type in ( :? )</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>2</index>
+                <con>and IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <unit_id>
+                <index>4</index>
+                <con> and d.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <app_id>
+                <index>5</index>
+                <con> and u.APP_ID = :? </con>
+                <type>char</type>
+            </app_id>
+            <area_id>
+                <index>6</index>
+                <con> and u.AREA_ID = :? </con>
+                <type>char</type>
+            </area_id>
+        </params>
+    </qry_gas_device_status>
+
+    <!-- 电气火灾预警系统,设备状态查询 -->
+    <qry_electrical_fire_device_status>
+        <psql><![CDATA[
+        select * from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            CONCAT(d.is_online,'') as is_online,
+            d.type,
+            JSON_EXTRACT(d.extend_data,'$.RemElec') AS electrical_fire_last_current,
+            JSON_EXTRACT(d.extend_data,'$.BoxTmp ') as electrical_fire_temp,
+            JSON_EXTRACT(d.extend_data,'$.AElec') as electrical_fire_now_current ,
+            JSON_EXTRACT(d.extend_data,'$.AVoltage') as electrical_fire_press,
+            JSON_EXTRACT(d.extend_data,'$.AElec') as AElec,
+            JSON_EXTRACT(d.extend_data,'$.BElec') as BElec,
+            JSON_EXTRACT(d.extend_data,'$.CElec') as CElec,
+            JSON_EXTRACT(d.extend_data,'$.ATmp') as ATmp,
+            JSON_EXTRACT(d.extend_data,'$.BTmp') as BTmp,
+            JSON_EXTRACT(d.extend_data,'$.CTmp') as CTmp,
+            JSON_EXTRACT(d.extend_data,'$.AVoltage') as AVoltage,
+            JSON_EXTRACT(d.extend_data,'$.BVoltage') as BVoltage,
+            JSON_EXTRACT(d.extend_data,'$.CVoltage') as CVoltage,
+            null as electrical_fire_electricity,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1'  {1}
+            ) t
+            order by t.is_online is null ,t.electrical_fire_electricity is null,t.is_online asc,t.electrical_fire_electricity asc,t.create_time desc
+            LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+        select count(*) tcount from
+        (SELECT
+            d.id,
+            d.name,
+	        IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) as address,
+            d.is_online,
+            d.type,
+            JSON_EXTRACT(d.extend_data,'$.RemElec') AS electrical_fire_last_current,
+            JSON_EXTRACT(d.extend_data,'$.BoxTmp ') as electrical_fire_temp,
+            JSON_EXTRACT(d.extend_data,'$.AElec') as electrical_fire_now_current ,
+            JSON_EXTRACT(d.extend_data,'$.AVoltage') as electrical_fire_press,
+            JSON_EXTRACT(d.extend_data,'$.AElec') as AElec,
+            JSON_EXTRACT(d.extend_data,'$.BElec') as BElec,
+            JSON_EXTRACT(d.extend_data,'$.CElec') as CElec,
+            JSON_EXTRACT(d.extend_data,'$.ATmp') as ATmp,
+            JSON_EXTRACT(d.extend_data,'$.BTmp') as BTmp,
+            JSON_EXTRACT(d.extend_data,'$.CTmp') as CTmp,
+            JSON_EXTRACT(d.extend_data,'$.AVoltage') as AVoltage,
+            JSON_EXTRACT(d.extend_data,'$.BVoltage') as BVoltage,
+            JSON_EXTRACT(d.extend_data,'$.CVoltage') as CVoltage,
+            null as electrical_fire_electricity,
+            d.create_time
+        FROM
+            DATA_DEVICE d
+			left join UNIT_INFO u on d.unit_id = u.id
+        WHERE
+            d.logic_status = '1' {1}
+            ) t
+            order by t.is_online is null ,t.electrical_fire_electricity is null,t.is_online asc,t.electrical_fire_electricity asc,t.create_time desc
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and d.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND d.type in ( :? )</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>2</index>
+                <con>and IFNULL(d.address,(select UNIT_ADDRESS from UNIT_INFO where ID = d.unit_id)) like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <unit_id>
+                <index>4</index>
+                <con> and d.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <app_id>
+                <index>5</index>
+                <con> and u.APP_ID = :? </con>
+                <type>char</type>
+            </app_id>
+            <area_id>
+                <index>6</index>
+                <con> and u.AREA_ID = :? </con>
+                <type>char</type>
+            </area_id>
+        </params>
+    </qry_electrical_fire_device_status>
+
+    <qry_fire_alarm_device_status>
+        <psql><![CDATA[
+        select d.* from DATA_MACHINE_UNIT d
+			left join UNIT_INFO u on d.unit_id = u.id
+        where 1 = 1  {1}
+        order by  d.fire_status is null , d.fault_status is null, d.supervise_status is null,d.shield_status is null,d.electric_status is null,d.electric_status2 is null , d.bus_status is null,d.power_status is null ,d.fire_status desc , d.fault_status desc, d.supervise_status asc,d.shield_status asc,d.electric_status desc,d.electric_status2 desc , d.bus_status desc,d.power_status desc,d.create_time desc
+        LIMIT :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+        select count(d.id) tcount from DATA_MACHINE_UNIT d
+			left join UNIT_INFO u on d.unit_id = u.id
+	    where 1 = 1  {1}
+        order by  d.fire_status is null , d.fault_status is null, d.supervise_status is null,d.shield_status is null,d.electric_status is null,d.electric_status2 is null , d.bus_status is null,d.power_status is null ,d.fire_status desc , d.fault_status desc, d.supervise_status asc,d.shield_status asc,d.electric_status desc,d.electric_status2 desc , d.bus_status desc,d.power_status desc,d.create_time desc
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and d.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND d.device_type_code in ( :? )</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>2</index>
+                <con>and d.installed_address like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <is_bj>
+                <index>4</index>
+                <con><![CDATA[and d.device_type_code <> '1']]></con>
+                <type>char</type>
+            </is_bj>
+            <parent_id>
+                <index>5</index>
+                <con>and d.parent_id = :?</con>
+                <type>char</type>
+            </parent_id>
+            <unit_id>
+                <index>4</index>
+                <con> and d.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <app_id>
+                <index>5</index>
+                <con> and u.APP_ID = :? </con>
+                <type>char</type>
+            </app_id>
+            <area_id>
+                <index>6</index>
+                <con> and u.AREA_ID = :? </con>
+                <type>char</type>
+            </area_id>
+        </params>
+    </qry_fire_alarm_device_status>
+
+    <qry_data_machine_info_list>
+        <sql><![CDATA[
+            SELECT dm.* FROM DATA_MACHINE_INFO dm WHERE dm.logic_status = '1' {1}
+        ]]></sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and dm.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <ID>
+                <index>2</index>
+                <con> and dm.id = :? </con>
+                <type>char</type>
+            </ID>
+            <app_id>
+                <index>3</index>
+                <con> and dm.app_id = :? </con>
+                <type>char</type>
+            </app_id>
+            <device_code>
+                <index>4</index>
+                <con> and dm.device_code = :? </con>
+                <type>char</type>
+            </device_code>
+        </params>
+    </qry_data_machine_info_list>
+
+    <qry_machine_event_list>
+        <sql><![CDATA[
+            SELECT
+                m.NAME,
+                m.device_code,
+	            m.address,
+                u.UNIT_NAME unit_name,
+                d.type_desc event_value,
+                FROM_UNIXTIME(e.event_time/1000, '%Y-%m-%d %H:%i:%s')event_time
+            FROM
+                DATA_MACHINE_EVENT_INFO e LEFT JOIN DATA_DICTIONARY d on e.event_type=d.type,
+                DATA_MACHINE_INFO m LEFT JOIN UNIT_INFO u on m.unit_id = u.id
+            WHERE
+                e.machine_info_id = m.id
+                AND e.is_machine = 1
+                {1}
+                ORDER BY e.event_time DESC
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT
+                m.NAME,
+                m.device_code,
+	            m.address,
+                u.UNIT_NAME unit_name,
+                d.type_desc event_value,
+                FROM_UNIXTIME(e.event_time/1000, '%Y-%m-%d %H:%i:%s')event_time
+            FROM
+                DATA_MACHINE_EVENT_INFO e LEFT JOIN DATA_DICTIONARY d on e.event_type=d.type,
+                DATA_MACHINE_INFO m LEFT JOIN UNIT_INFO u on m.unit_id = u.id
+            WHERE
+                e.machine_info_id = m.id
+                AND e.is_machine = 1
+                {1}
+                ORDER BY e.event_time DESC
+                LIMIT :start,:end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) tcount
+            FROM
+                DATA_MACHINE_EVENT_INFO e LEFT JOIN DATA_DICTIONARY d on e.event_type=d.type,
+                DATA_MACHINE_INFO m LEFT JOIN UNIT_INFO u on m.unit_id = u.id
+            WHERE
+                e.machine_info_id = m.id
+                AND e.is_machine = 1
+                {1}
+                ORDER BY e.event_time DESC
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and m.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <device_code>
+                <index>2</index>
+                <con> and m.device_code like '%':?'%' </con>
+                <type>char</type>
+            </device_code>
+            <unit_id>
+                <index>3</index>
+                <con> and m.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <start_time>
+                <index>4</index>
+                <con><![CDATA[ and FROM_UNIXTIME(e.event_time/1000, '%Y-%m-%d %h:%i:%s') >= :? ]]></con>
+                <type>char</type>
+            </start_time>
+            <end_time>
+                <index>5</index>
+                <con><![CDATA[ and FROM_UNIXTIME(e.event_time/1000, '%Y-%m-%d %h:%i:%s') <= :? ]]></con>
+                <type>char</type>
+            </end_time>
+            <type_flag>
+                <index>6</index>
+                <con> and e.type_flag = :? </con>
+                <type>char</type>
+            </type_flag>
+            <unit_name>
+                <index>7</index>
+                <con> and u.UNIT_NAME like '%':?'%' </con>
+                <type>char</type>
+            </unit_name>
+            <device_name>
+                <index>8</index>
+                <con> and m.NAME like '%':?'%' </con>
+                <type>char</type>
+            </device_name>
+        </params>
+    </qry_machine_event_list>
+    <!--查询用传的解析方式-->
+    <qry_machine_analytic_method>
+        <sql>
+            <![CDATA[
+                SELECT * FROM DATA_ANALYTIC_METHOD
+            ]]>
+        </sql>
+    </qry_machine_analytic_method>
+
+</qrys>
+

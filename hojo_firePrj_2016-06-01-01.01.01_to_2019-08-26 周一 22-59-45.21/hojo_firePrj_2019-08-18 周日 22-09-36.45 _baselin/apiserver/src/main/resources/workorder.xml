@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<!-- todox o91 jeig nameespace will be   attach resultType zuchen yg  fullNameClass for map -->
+<mapper namespace="/">
+    <select id="管委会派单给物业流程" parameterType="Map" resultType="Map">
+
+        select #{id} as 'idval';
+        <if test="id == ''">
+            SIGNAL SQLSTATE 'HY000' SET MESSAGE_TEXT = 'id is empty' ;
+        </if>
+        <if test="id == null">
+            SIGNAL SQLSTATE 'HY000' SET MESSAGE_TEXT = 'id is null' ;
+        </if>
+
+        <if test="property == null">
+            SIGNAL SQLSTATE 'HY000' SET MESSAGE_TEXT = 'Property is null' ;
+        </if>
+        update workorder set Property=#{property} where id = #{id};
+        set @loginfo = json_object('Property', #{Property}, 'porocess', '管委会派单给物业流程', 'HiddenDescript',
+        #{HiddenDescript}, 'id', #{id});
+        insert oplog(oper, event) values (#{ProblemReporter}, @loginfo);
+    </select>
+
+    <select id="物业派单给维保流程" parameterType="Map" resultType="Map">
+  update workorder set Maintenance=#{Maintenance},Maintenance_id=#{maintenance_id},ProcessResult='处理中',states='已派单' where id = #{id};
+  set @loginfo =
+                json_object('Property', #{Property}, 'porocess', '物业派单给维保流程', 'HiddenDescript', #{HiddenDescript},
+                'id',
+                            #{id});
+        insert oplog(oper, event) values (#{ProblemReporter}, @loginfo);
+    select 'ok';
+
+     </select>
+<!-- qry gazid order word -->
+    <select id="mainCmpNmlQry" parameterType="Map" resultType="Map">
+  select * from warn_v where maintenance_personnel_id=#{loginUserInfo.uid}
+
+    </select>
+    <!-- and pmc dispatch to it;s mem  -->
+    <select id="维保公司派单给维保人员流程" parameterType="Map" resultType="Map">
+  update workorder set maintenance_personnel_id=#{maintenance_personnel_id},ProcessResult='处理中',states='已派单' where id = #{id};
+  set @loginfo =
+                json_object('Property', #{Property}, 'porocess', '维保公司派单给维保人员流程', 'HiddenDescript', #{HiddenDescript},
+                'id',
+                            #{id});
+        insert oplog(oper, event) values (#{ProblemReporter}, @loginfo);
+    select 'ok';
+    </select>
+
+    <!-- paide    query ,,from warn.xml -->
+
+    <select id="处理派单流程" parameterType="Map" resultType="Map">
+  update workorder set LivePhoto =#{LivePhoto },Descript=#{Descript },ProcessResult='已处理待确认'  where id = #{id};
+  set @loginfo =    json_object('states', #{states}, 'porocess', '处理派单流程', 'HiddenDescript', #{HiddenDescript},
+                'id',   #{id});
+  insert oplog(oper, event) values (#{ProblemReporter}, @loginfo);
+    select 'ok';
+     </select>
+
+    <select id="确认派单完成流程" parameterType="Map" resultType="Map">
+  update workorder set confirmer_id =#{confirmer_id } ,states='已完成',ProcessResult='处理结果已确认'  where id = #{id};
+  set @loginfo =    json_object('confirmer_id', #{confirmer_id}, 'porocess', '确认派单完成流程', 'HiddenDescript', #{HiddenDescript},
+                'id',   #{id});
+  insert oplog(oper, event) values (#{ProblemReporter}, @loginfo);
+
+  select  'ok' rzt,3344 taskid,'data' data;
+    </select>
+
+    <select id="workorder_detail" parameterType="Map" resultType="Map">
+select * from workorder where id=#{id}
+    </select>
+</mapper>

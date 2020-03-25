@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="aliyun-java-sdk-core-3.3.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/apiserver/libs/aliyun-java-sdk-core-3.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/apiserver/libs/aliyun-java-sdk-dysmsapi-1.1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/apiserver/libs/api-client.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

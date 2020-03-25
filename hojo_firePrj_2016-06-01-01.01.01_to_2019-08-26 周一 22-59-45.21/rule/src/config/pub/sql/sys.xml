@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+	<pub_swap_query>
+        <sql><![CDATA[
+		select
+		 *
+		from TEST_SWAP_OWEFEE_RECORD
+		where 1=1 {1}
+		order by ID ASC
+	]]></sql>
+        <psql><![CDATA[
+		select 
+		 * 
+		from TEST_SWAP_OWEFEE_RECORD
+		where 1=1 {1}  
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select 
+			count(*) as tcount 
+		from TEST_SWAP_OWEFEE_RECORD  
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <plate_no1>
+                <index>1</index>
+                <con>and plate_no= :?</con>
+                <type>char</type>
+            </plate_no1>
+
+            <ID>
+                <index>2</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </pub_swap_query>
+
+    <data_set_query>
+        <sql><![CDATA[
+		select
+		 *
+		from SYS_DATASET
+		where 1=1 {1}
+		order by CODE ASC
+		]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+            <CODE>
+                <index>2</index>
+                <con>and CODE= :?</con>
+                <type>char</type>
+            </CODE>
+        </params>
+    </data_set_query>
+
+    <rpt_design_query>
+        <sql><![CDATA[
+		select
+		 rpt.*
+		from SYS_DESIGN_RPT rpt
+		left join SYS_DICTIONARY d ON rpt.TYPE = d.CODE_VALUE AND d.TYPE_VALUE = 'RPT_TYPE'
+		where 1 = 1 {1}
+		order by rpt.ORDER_NUM ASC
+		]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and rpt.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <CODE>
+                <index>2</index>
+                <con>and rpt.CODE= :?</con>
+                <type>char</type>
+            </CODE>
+            <STATUS>
+                <index>3</index>
+                <con>and rpt.STATUS= :?</con>
+                <type>int</type>
+            </STATUS>
+            <TYPE>
+                <index>4</index>
+                <con>and rpt.TYPE= :?</con>
+                <type>char</type>
+            </TYPE>
+			<DSGN_TYPE>
+				<index>5</index>
+				<con>and rpt.DSGN_TYPE= :?</con>
+				<type>char</type>
+			</DSGN_TYPE>
+			<NOT_DSGN_TYPE>
+				<index>6</index>
+				<con>and (rpt.DSGN_TYPE != 1 or rpt.DSGN_TYPE IS NULL)</con>
+				<type>char</type>
+			</NOT_DSGN_TYPE>
+		</params>
+    </rpt_design_query>
+
+	 <!--    日志配置 SYS_LOG_CFG  -->
+    <!--查询日志配置-->
+    <log_cfg_query>
+        <sql><![CDATA[
+		select
+		 *
+		from SYS_LOG_CFG
+		where 1=1 {1}
+		]]></sql>
+        <params>
+            <DELETED>
+                <index>1</index>
+                <con>and DELETED= :?</con>
+                <type>char</type>
+            </DELETED>
+            <TABLE_NAME>
+                <index>2</index>
+                <con>and TABLE_NAME= :?</con>
+                <type>char</type>
+            </TABLE_NAME>
+            <ACTION>
+                <index>3</index>
+                <con>and ACTION= :?</con>
+                <type>char</type>
+            </ACTION>
+            <COLUMN_NAME>
+                <index>4</index>
+                <con>and COLUMN_NAME= :?</con>
+                <type>char</type>
+            </COLUMN_NAME>
+            <ACTION_URL>
+                <index>5</index>
+                <con>and ACTION_URL= :?</con>
+                <type>char</type>
+            </ACTION_URL>
+            <DESCRIPTION>
+                <index>6</index>
+                <con>and DESCRIPTION LIKE :?</con>
+                <type>char</type>
+            </DESCRIPTION>
+        </params>
+    </log_cfg_query>
+
+    <log_cfg_query_page>
+        <sql><![CDATA[
+		select
+		 *
+		from SYS_LOG_CFG
+		where 1=1 {1} ORDER BY CREATE_TIME ASC
+		]]></sql>
+        <psql><![CDATA[
+		select
+		 *
+		from SYS_LOG_CFG
+		where 1=1 {1}
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from SYS_LOG_CFG
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <DELETED>
+                <index>1</index>
+                <con>and DELETED= :?</con>
+                <type>char</type>
+            </DELETED>
+            <ACTION>
+                <index>2</index>
+                <con>and ACTION= :?</con>
+                <type>char</type>
+            </ACTION>
+            <DESCRIPTION>
+                <index>3</index>
+                <con>and DESCRIPTION LIKE :?</con>
+                <type>char</type>
+            </DESCRIPTION>
+        </params>
+    </log_cfg_query_page>
+
+    <pub_user_qry>
+        <sql><![CDATA[
+		SELECT
+			u.*,
+			t.LONGITUDE,
+			t.LATITUDE,
+			r.ROLE_ID,
+			sr.`NAME` ROLE_NAME
+		FROM
+			SYS_USER u
+			LEFT JOIN SYS_USER_ROLE_REL r ON u.ID = r.USER_ID
+			LEFT JOIN SYS_ROLE sr ON r.ROLE_ID = sr.ID,
+			SYS_TENANT t
+		WHERE
+			1 = 1
+			AND u.TENANT_ID = t.ID
+			AND u.DELETED = 0 {1}
+	]]></sql>
+        <params>
+			<ID>
+				<index>1</index>
+				<con>and u.ID= :? </con>
+				<type>char</type>
+			</ID>
+            <ACCOUNT>
+                <index>2</index>
+                <con>and u.ACCOUNT= :? </con>
+                <type>char</type>
+            </ACCOUNT>
+            <STATUS>
+                <index>3</index>
+                <con>and u.STATUS= :? </con>
+                <type>char</type>
+            </STATUS>
+        </params>
+    </pub_user_qry>
+
+	<user_query_role_id>
+        <sql>
+            SELECT ROLE_ID FROM SYS_USER_ROLE_REL
+			WHERE USER_ID = :USER_ID
+        </sql>
+    </user_query_role_id>
+
+	<user_query_dept_id>
+        <sql>
+            SELECT DEPT_ID FROM SYS_USER_DEPT_REL
+			WHERE USER_ID=:USER_ID
+        </sql>
+    </user_query_dept_id>
+
+	<!-- SYS_USER -->
+    <user_query_list>
+        <sql>
+			SELECT 
+			 U.* ,
+			 D.NAME AS DEPT_NAME
+			FROM 
+			 SYS_USER U LEFT JOIN SYS_DEPT D ON U.DEPT_ID=D.ID
+			WHERE
+			 1=1 AND U.DELETED = 0
+			{1}
+			 ORDER BY
+			 U.CREATE_TIME
+        </sql>
+		<psql>
+			SELECT
+			U.* ,
+			D.NAME AS DEPT_NAME
+			FROM
+			SYS_USER U LEFT JOIN SYS_DEPT D ON U.DEPT_ID=D.ID
+			WHERE
+			1=1 AND U.DELETED = 0
+			{1}
+			ORDER BY
+			U.CREATE_TIME
+			LIMIT :start,:end
+		</psql>
+		<tsql>
+			<![CDATA[
+            SELECT
+			count(1) as tcount
+			FROM
+			SYS_USER U LEFT JOIN SYS_DEPT D ON U.DEPT_ID=D.ID
+			WHERE
+			1=1 AND U.DELETED = 0
+			{1}
+            ]]>
+		</tsql>
+        <params>
+			<TENANT_ID>
+				<index>1</index>
+				<con>AND U.TENANT_ID =:?</con>
+				<type>char</type>
+			</TENANT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>and U.DEPT_ID =:?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <ACCOUNT>
+                <index>2</index>
+                <con>and U.ACCOUNT LIKE :?</con>
+                <type>char</type>
+            </ACCOUNT>
+            <NAME>
+                <index>3</index>
+                <con>and U.NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+            <LOGIN_USER_DEPT>
+                <index>4</index>
+                <con>and U.DEPT_ID IN (:?)</con>
+                <type>chars</type>
+            </LOGIN_USER_DEPT>
+        </params>
+    </user_query_list>
+
+    <!-- SYS_DEPT 机构管理 -->
+    <!--查询列表-->
+    <dept_query_list>
+        <sql>
+            select * from SYS_DEPT where 1=1
+			AND DELETED = 0 {1}
+			order by order_num
+        </sql>
+        <params>
+			<TENANT_ID>
+				<index>1</index>
+				<con> AND TENANT_ID = :?</con>
+				<type>char</type>
+			</TENANT_ID>
+            <ID>
+                <index>1</index>
+                <con>and ID IN (:?)</con>
+                <type>chars</type>
+            </ID>
+            <LOGIN_USER_DEPT>
+                <index>2</index>
+                <con>and ID IN (:?)</con>
+                <type>chars</type>
+            </LOGIN_USER_DEPT>
+        </params>
+    </dept_query_list>
+
+	<!--根据条件查询-->
+	<sys_permission_list>
+		<sql>
+			<![CDATA[
+				SELECT
+				DISTINCT P.*
+			FROM
+				SYS_PERMISSION P,
+				SYS_ROLE_PERMISSION_REL RPR,
+				SYS_USER_ROLE_REL URR
+			WHERE
+				P.ID=RPR.PERMISSION_ID
+			AND
+				URR.ROLE_ID=RPR.ROLE_ID
+			AND P.DELETED = 0
+			AND P.TYPE != '00'
+			   {1}
+			ORDER BY P.ORDER_NUM ASC
+			]]>
+
+		</sql>
+		<params>
+			<NAME>
+				<index>1</index>
+				<con> AND P.NAME LIKE :?</con>
+				<type>char</type>
+			</NAME>
+			<ID>
+				<index>2</index>
+				<con> AND P.ID IN (:?)</con>
+				<type>chars</type>
+			</ID>
+			<USER_ID>
+				<index>3</index>
+				<con> AND URR.USER_ID =:? 
+				</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</sys_permission_list>
+
+	<!--根据条件查询-->
+	<sys_permission_all>
+		<sql>
+			SELECT
+				P.*
+			FROM 
+				SYS_PERMISSION P
+			WHERE
+				1=1 and DELETED = 0
+			 {1}
+			ORDER BY P.ORDER_NUM ASC
+		</sql>
+		<params>
+			<NAME>
+				<index>1</index>
+				<con> AND P.NAME LIKE :?</con>
+				<type>char</type>
+			</NAME>
+			<ID>
+				<index>2</index>
+				<con> AND P.ID IN (:?)</con>
+				<type>chars</type>
+			</ID>
+		</params>
+	</sys_permission_all>
+
+	<sys_role_list>
+		<sql>
+			SELECT
+				P.*
+			FROM 
+				SYS_ROLE P
+			WHERE
+				1=1
+			{1}
+			ORDER BY P.ORDER_NUM ASC
+		</sql>
+		<params>
+			<TENANT_ID>
+				<index>1</index>
+				<con> AND P.TENANT_ID = :?</con>
+				<type>char</type>
+			</TENANT_ID>
+			<NAME>
+				<index>1</index>
+				<con> AND P.NAME LIKE :?</con>
+				<type>char</type>
+			</NAME>
+			<ID>
+				<index>2</index>
+				<con> AND P.ID IN (:?)</con>
+				<type>chars</type>
+			</ID>
+		</params>
+	</sys_role_list>
+
+	<!--查询区域信息列表-->
+	<sys_query_area_list>
+		<sql>
+			<![CDATA[
+				SELECT
+					D.*
+				FROM
+					SYS_DISTRICT D
+				WHERE 1 = 1  {1}
+			]]>
+		</sql>
+		<params>
+			<PARENT_ID>
+				<index>1</index>
+				<con> AND D.PARENT_ID = :? </con>
+				<type>char</type>
+			</PARENT_ID>
+			<ID>
+				<index>2</index>
+				<con> OR D.ID = :? </con>
+				<type>char</type>
+			</ID>
+			<LEVEL>
+				<index>3</index>
+				<con> OR D.LEVEL = :? </con>
+				<type>char</type>
+			</LEVEL>
+		</params>
+	</sys_query_area_list>
+
+	<sys_online_user_info>
+		<sql><![CDATA[
+			SELECT
+			 U.NAME,
+			 U.TENANT_ID,
+			 U.ID,
+			 U.IS_SUPER_ADMIN
+			FROM 
+				SYS_ONLINE_USER OU,SYS_USER U
+			WHERE 
+				OU.USER_ID=U.ID
+			AND U.DELETED = 0 {1}
+		]]></sql>
+		<params>
+			<SID>
+				<index>1</index>
+				<con>and OU.ID= :?</con>
+				<type>char</type>
+			</SID>
+			<TENANT_ID>
+				<index>2</index>
+				<con>AND U.TENANT_ID = :?</con>
+				<type>char</type>
+			</TENANT_ID>
+		</params>
+	</sys_online_user_info>
+
+
+	<!--根据用户ID获得单位ID-->
+	<GET_UNIT_ID_BY_USERID>
+		<sql><![CDATA[
+			SELECT
+			I.ID
+			FROM
+			SYS_USER U,
+			UNIT_INFO I
+			WHERE
+			1=1
+			{1}
+			AND U.DEPT_ID=I.DEPT_ID
+		]]></sql>
+		<params>
+			<ID>
+				<index>1</index>
+				<con>AND U.ID=:?</con>
+				<type>char</type>
+			</ID>
+		</params>
+	</GET_UNIT_ID_BY_USERID>
+
+	<pub_online_rmv>
+		<sql><![CDATA[
+			delete from SYS_ONLINE_USER where UNIX_TIMESTAMP() > (UNIX_TIMESTAMP(CREATE_TIME)+24*60*60) AND SOURCE_TYPE = '0' {1}
+		]]></sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>and USER_ID= :?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</pub_online_rmv>
+
+	<pub_online_rmv_now>
+		<sql>
+			delete from SYS_ONLINE_USER  where USER_ID = :USER_ID
+		</sql>
+	</pub_online_rmv_now>
+	<user_remove_role_rel>
+		<sql>
+			delete from SYS_USER_ROLE_REL where user_id =:USER_ID
+		</sql>
+	</user_remove_role_rel>
+
+	<user_remove_unit_rel>
+		<sql>
+			delete from SYS_USER_UNIT_REL where user_id =:USER_ID
+		</sql>
+	</user_remove_unit_rel>
+
+	<user_remove_dept_rel>
+		<sql>
+			delete from SYS_USER_DEPT_REL where USER_ID =:USER_ID
+		</sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>and USER_ID= :?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</user_remove_dept_rel>
+	<role_remove_per_rel>
+		<sql>
+			delete from SYS_ROLE_PERMISSION_REL where ROLE_ID =:ROLE_ID
+		</sql>
+	</role_remove_per_rel>
+
+	<role_remove_dept_chirdren_rel>
+		<sql>
+			delete from SYS_ROLE_PERMISSION_REL where 1=1 {1}
+		</sql>
+		<params>
+			<ROLE_ID>
+				<index>1</index>
+				<con> AND ROLE_ID = :? </con>
+				<type>char</type>
+			</ROLE_ID>
+			<PERMISSION_IDS>
+				<index>2</index>
+				<con> AND PERMISSION_ID IN (:?) </con>
+				<type>chars</type>
+			</PERMISSION_IDS>
+		</params>
+	</role_remove_dept_chirdren_rel>
+
+
+	<dictionary_query_by_type>
+		<sql>
+			SELECT 
+				CODE_NAME,CODE_VALUE,substring_index(TYPE_VALUE,",",1)TYPE_VALUE FROM (
+				SELECT GROUP_CONCAT(CODE_NAME order by ORDER_NUM ASC)CODE_NAME,
+				GROUP_CONCAT(CODE_VALUE order by ORDER_NUM ASC)CODE_VALUE,
+				GROUP_CONCAT(distinct TYPE_VALUE order by ORDER_NUM ASC)TYPE_VALUE
+			FROM (
+				SELECT SD.*
+				FROM SYS_DICTIONARY SD LEFT JOIN (
+				SELECT TYPE_NAME bname,MIN(ORDER_NUM) border
+				FROM SYS_DICTIONARY WHERE 1=1 {1} GROUP BY TYPE_NAME)B
+				ON SD.TYPE_NAME =B.bname
+				WHERE
+				SD.ID NOT IN (SELECT ifnull(PARENT_ID,'') FROM SYS_DICTIONARY)
+				AND SD.ORDER_NUM >= B.border
+			)A GROUP BY TYPE_NAME) C
+		</sql>
+		<sql2>
+			SELECT 
+				CODE_NAME,CODE_VALUE ,TYPE_VALUE
+			FROM
+				SYS_DICTIONARY 
+			WHERE 
+			 TYPE_VALUE!=CODE_VALUE 
+			ORDER BY ORDER_NUM
+		</sql2>
+		<params>
+			<TYPE_VALUE>
+				<index>1</index>
+				<con>AND TYPE_VALUE IN (:?)</con>
+				<type>chars</type>
+			</TYPE_VALUE>
+		</params>
+	</dictionary_query_by_type>
+
+	<permission_query_role_id>
+        <sql>
+            select PERMISSION_ID from SYS_ROLE_PERMISSION_REL
+			WHERE ROLE_ID= :ROLE_ID
+			AND IS_CHECKED = '1'
+        </sql>
+    </permission_query_role_id>
+
+	<sys_tenant_info>
+		<sql>
+			SELECT * FROM SYS_TENANT order by create_time asc
+		</sql>
+		<psql>
+			<![CDATA[
+			SELECT * FROM SYS_TENANT order by create_time asc
+			LIMIT :start,:end
+		]]></psql>
+		<tsql>
+			<![CDATA[
+            SELECT count(1) as tcount FROM SYS_TENANT order by create_time asc
+            ]]>
+		</tsql>
+	</sys_tenant_info>
+
+	<lager_render_user_menu>
+		<sql>
+			<![CDATA[
+				SELECT
+				DISTINCT P.* FROM
+					SYS_PERMISSION P,
+					SYS_ROLE_PERMISSION_REL RPR,
+					SYS_USER_ROLE_REL URR
+				WHERE
+					P.ID=RPR.PERMISSION_ID
+				AND
+					URR.ROLE_ID=RPR.ROLE_ID
+				AND P.DELETED = 0
+				AND P.PERMISSION = 'LARGE' {1}
+				ORDER BY P.ORDER_NUM ASC
+			]]>
+		</sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>AND URR.USER_ID = :?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</lager_render_user_menu>
+
+	<!--查询人员姓名-->
+	<get_user_name>
+		<sql><![CDATA[
+		select NAME from SYS_USER U
+		where 1=1 {1}
+		]]></sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>and U.ID= :?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</get_user_name>
+
+	<!--根据当前单位-->
+	<get_dept_by_unit>
+		<sql>
+			<![CDATA[
+				SELECT * FROM UNIT_INFO WHERE TENANT_ID = :TENANT_ID {1}
+			]]>
+		</sql>
+		<params>
+			<ID>
+				<index>1</index>
+				<con>AND ID =:?</con>
+				<type>char</type>
+			</ID>
+		</params>
+	</get_dept_by_unit>
+	<!--根据id 查询当前单位-->
+	<get_unit_by_id>
+		<sql>
+			<![CDATA[
+				SELECT
+				I.ID
+				FROM
+				SYS_USER U,
+				UNIT_INFO	I
+				WHERE
+				1=1
+				{1}
+				AND U.DEPT_ID=I.DEPT_ID
+			]]>
+		</sql>
+		<params>
+			<ID>
+				<index>1</index>
+				<con>AND U.ID =:?</con>
+				<type>char</type>
+			</ID>
+		</params>
+	</get_unit_by_id>
+
+	<!-- 根据条件查询某角色下的用户 -->
+    <qry_users_by_role>
+        <sql><![CDATA[
+            SELECT U.ID,U.`NAME`,R.CODE FROM SYS_USER U
+            LEFT JOIN SYS_USER_ROLE_REL UR ON UR.USER_ID = U.ID
+            LEFT JOIN SYS_ROLE R ON R.ID = UR.ROLE_ID
+            WHERE 1 = 1 AND U.DELETED = 0 AND R.DELETED = 0
+            {1}
+        ]]></sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND U.TENANT_ID =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <CODE>
+                <index>2</index>
+                <con>AND R.CODE IN (:?)</con>
+                <type>char</type>
+            </CODE>
+        </params>
+    </qry_users_by_role>
+
+    <!--根据登录的账号查询它的角色信息-->
+    <query_role_by_login_user>
+        <sql>
+            <![CDATA[
+                SELECT * FROM SYS_USER_ROLE_REL WHERE 1 =1 {1}
+            ]]>
+        </sql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>AND USER_ID =:?</con>
+                <type>char</type>
+            </USER_ID>
+        </params>
+    </query_role_by_login_user>
+
+	<!--配置是否开通短信-->
+	<UPDATE_USER_MESSAGE_OPEN>
+		<sql>
+			<![CDATA[
+				UPDATE SYS_USER SET IS_TELPHONE_MESSAGE = :IS_TELPHONE_MESSAGE WHERE 1=1 {1}
+			]]>
+		</sql>
+		<params>
+			<ID>
+				<index>1</index>
+				<con>ID = :?</con>
+				<type>char</type>
+			</ID>
+		</params>
+	</UPDATE_USER_MESSAGE_OPEN>
+
+	<!-- 根据SSID信息查询用户信息 -->
+	<SELECT_USER_INFO_BY_SSID>
+		<sql>
+			<![CDATA[
+				SELECT su.* FROM SYS_ONLINE_USER sou , SYS_USER su
+				WHERE sou.USER_ID = su.ID {1}
+			]]>
+		</sql>
+		<params>
+			<SSID>
+				<index>1</index>
+				<con>AND sou.ID = :?</con>
+				<type>char</type>
+			</SSID>
+		</params>
+	</SELECT_USER_INFO_BY_SSID>
+</qrys>

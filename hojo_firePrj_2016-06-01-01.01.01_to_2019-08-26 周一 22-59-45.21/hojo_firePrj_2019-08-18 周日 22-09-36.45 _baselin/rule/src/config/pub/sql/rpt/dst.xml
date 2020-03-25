@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<qrys>
+
+	<dst_order_list>
+		<psql>
+			SELECT
+			V.ORDER_ID AS ID,
+			V.ORDER_NO,
+			B.VIRTUAL_CODE,
+			V.PLATE_NO,
+			V.PLATE_COLOR,
+			clr.CODE_NAME as PLATE_COLOR_NAME,
+			P.NAME AS PARKNAME,
+			V.DURATIONS,
+			V.ARRIVE_TIME,
+			V.LEAVE_TIME,
+			V.STATE,
+			V.PARK_FEE/100 as PARK_FEE,
+			V.PAID_FEE/100 as PAID_FEE,
+			(V.PARK_FEE-V.PAID_FEE)/100 as OWE_FEE,
+			CV.BUSI_TYPE AS CAR_BUSI_TYPE,
+			CV.TYPE AS CAR_TYPE
+			FROM
+            VIEW_PARKING_ORDER_RECORD V
+				LEFT JOIN BUSI_BERTH B ON V.EXTERNAL_ID=B.ID
+				LEFT JOIN CUST_VEHICLE CV ON V.VEHICLE_ID = CV.ID
+				LEFT JOIN SYS_DICTIONARY clr on clr.TYPE_VALUE='PLATE_COLOR' and V.PLATE_COLOR=clr.CODE_VALUE ,
+				BUSI_PARK P
+			WHERE V.ARRIVE_PARK_ID=P.ID {1} order by V.ARRIVE_TIME DESC
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			select
+			count(V.ID) as tcount
+			FROM
+			VIEW_PARKING_ORDER_RECORD V
+			LEFT JOIN BUSI_BERTH B ON V.EXTERNAL_ID=B.ID
+			LEFT JOIN CUST_VEHICLE CV ON V.VEHICLE_ID = CV.ID
+			LEFT JOIN SYS_DICTIONARY clr on clr.TYPE_VALUE='PLATE_COLOR' and V.PLATE_COLOR=clr.CODE_VALUE ,
+			BUSI_PARK P
+			where  V.ARRIVE_PARK_ID=P.ID  {1}
+        </tsql>
+		<params>
+			<ORDER_NO>
+				<index>1</index>
+				<con>AND V.ORDER_NO = :?</con>
+				<type>char</type>
+			</ORDER_NO>
+			<PLATE_NO>
+				<index>2</index>
+				<con>AND V.PLATE_NO = :?</con>
+				<type>char</type>
+			</PLATE_NO>
+			<PARK_NAME>
+				<index>3</index>
+				<con>AND P.NAME like :? </con>
+				<type>char</type>
+			</PARK_NAME>
+			<TIME_START>
+				<index>4</index>
+				<con>AND V.ARRIVE_TIME &gt;= :?</con>
+				<type>char</type>
+			</TIME_START>
+			<TIME_END>
+				<index>5</index>
+				<con>AND V.ARRIVE_TIME &lt;= :?</con>
+				<type>char</type>
+			</TIME_END>
+			<MOBILE>
+				<index>6</index>
+				<con>AND V.VEHICLE_ID IN
+					(SELECT rel.VEHICLE_ID
+					FROM CUST_CUSTOMER_VEHICLE_REL rel
+					WHERE rel.CUSTOMER_ID IN
+					(SELECT cus.ID FROM CUST_CUSTOMER cus
+					WHERE cus.MOBILE = :?))
+				</con>
+				<type>char</type>
+			</MOBILE>
+			<ORDER_ID>
+				<index>7</index>
+				<con>AND V.ORDER_ID = :?</con>
+				<type>char</type>
+			</ORDER_ID>
+			<CODE>
+				<index>8</index>
+				<con>AND B.VIRTUAL_CODE = :?</con>
+				<type>char</type>
+			</CODE>
+		</params>
+	</dst_order_list>
+
+	<dst_trade_list>
+		<psql>
+			SELECT 
+			 O.ID,
+			 O.SUBJECT,
+			 O.ORDER_NO,
+			 O.CUSTOMER_CODE,
+			 O.SUCCESS_TIME,
+			 O.BUSI_TYPE,
+			 BT.CODE_NAME AS BUSI_TYPE_NAME,
+			 O.AMOUNT,
+			 O.PRINCIPAL_AMOUNT,
+			 O.EXTRA_PRINCIPAL_AMOUNT,
+			 O.PAY_TYPE,
+			 PT.CODE_NAME AS PAY_TYPE_NAME
+			FROM 
+			  FANC_TRADE_ORDER O 
+			  LEFT JOIN SYS_DICTIONARY BT ON BT.TYPE_VALUE='PARKING_BUSI_TYPE' AND BT.CODE_VALUE=O.BUSI_TYPE
+			  LEFT JOIN SYS_DICTIONARY PT ON PT.TYPE_VALUE='PAY_TYPE' AND PT.CODE_VALUE=O.PAY_TYPE
+			WHERE 1=1 and O.order_state = '200' {1}
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT
+				count(O.ID) as tcount
+			FROM 
+			  FANC_TRADE_ORDER O 
+			where 1=1 and O.order_state = '200' {1}
+		</tsql>
+		<params>
+			<ORDER_NO>
+				<index>1</index>
+				<con>and O.ORDER_NO like :?</con>
+				<type>char</type>
+			</ORDER_NO>
+			<TIME_START>
+				<index>8</index>
+				<con>and O.SUCCESS_TIME &gt;=  :?</con>
+				<type>date</type>
+			</TIME_START>
+			<TIME_END>
+				<index>9</index>
+				<con>and O.SUCCESS_TIME  &lt;= :?</con>
+				<type>date</type>
+			</TIME_END>
+		</params>
+	</dst_trade_list>
+
+	<dst_month_list>
+		<psql>
+			SELECT 
+			 M.ID ,
+			 CA.ACCOUNT,
+			 CV.PLATE_NO,
+			 CV.PLATE_COLOR,
+			 clr.CODE_NAME AS PLATE_COLOR_NAME,
+			 M.START_DATE,
+			 M.END_DATE,
+			 M.ID AS MONTHLY_ID,
+			 M.TYPE,
+			 DT.CODE_NAME AS TYPE_NAME,
+			 M.STATUS,
+			 DS.CODE_NAME AS STATUS_NAME,
+			 M.AMOUNT
+			FROM 
+			 BUSI_MONTHLY_APPLY MA,
+			 BUSI_MONTHLY_INFO M
+			 LEFT JOIN SYS_DICTIONARY DT ON DT.TYPE_VALUE='IS_RENEW' AND M.TYPE=DT.CODE_VALUE
+			 LEFT JOIN SYS_DICTIONARY DS ON DS.TYPE_VALUE='MONTHLY_STATE' AND M.STATUS=DS.CODE_VALUE,
+			 CUST_VEHICLE CV LEFT JOIN SYS_DICTIONARY clr on clr.TYPE_VALUE='PLATE_COLOR' and CV.PLATE_COLOR=clr.CODE_VALUE ,
+			 CUST_ACCOUNT CA 
+			WHERE 
+			 MA.ID=M.MONTHLY_APPLY_ID AND 
+			 MA.CUSTOMER_ID=CA.CUSTOMER_ID AND
+			 MA.VEHICLE_ID=CV.ID AND
+			 M.DELETED=0 {1} 
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT 
+			 COUNT(M.ID) AS tcount
+			FROM 
+			 BUSI_MONTHLY_APPLY MA,
+			 BUSI_MONTHLY_INFO M,
+			 CUST_VEHICLE CV,
+			 CUST_ACCOUNT CA 
+			WHERE 
+			 MA.ID=M.MONTHLY_APPLY_ID AND 
+			 MA.CUSTOMER_ID=CA.CUSTOMER_ID AND
+			 MA.VEHICLE_ID=CV.ID AND
+			 M.DELETED=0  {1}
+		</tsql>
+		<params>
+			<ACCOUNT>
+				<index>1</index>
+				<con>and CA.ACCOUNT like :?</con>
+				<type>char</type>
+			</ACCOUNT>
+			<PLATE_NO>
+				<index>2</index>
+				<con>and CV.PLATE_NO like :?</con>
+				<type>char</type>
+			</PLATE_NO>
+			<TIME_START>
+				<index>3</index>
+				<con>and M.START_DATE &gt;=  :?</con>
+				<type>date</type>
+			</TIME_START>
+			<TIME_END>
+				<index>4</index>
+				<con>and M.START_DATE  &lt;= :?</con>
+				<type>date</type>
+			</TIME_END>
+		</params>
+	</dst_month_list>
+
+	<dst_complaint_list>
+		<psql>
+			SELECT 
+				T.ID,
+				IFNULL(T.CLIENT_NAME,C.CN_NAME) CLIENT_NAME,
+				IFNULL(T.PHONE,C.MOBILE) PHONE,
+				T.TYPE,
+				T.COME_FROM,
+				T.COMPLAIN_TIME,
+				T.IS_FINISH,
+				T.FINISH_TIME
+			FROM 
+			 TASK_COMPLAIN_RECORD T 
+			 LEFT JOIN CUST_CUSTOMER C ON C.ID=T.CLIENT_ID
+			LEFT JOIN CUST_ACCOUNT A ON C.ID=A.CUSTOMER_ID
+			WHERE  
+			 T.EXTERNAL_ID IS NUll {1} 
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT 
+				COUNT(T.ID) AS tcount
+			FROM 
+			 TASK_COMPLAIN_RECORD T 
+			 LEFT JOIN CUST_CUSTOMER C ON C.ID=T.CLIENT_ID
+			LEFT JOIN CUST_ACCOUNT A ON C.ID=A.CUSTOMER_ID
+			WHERE  
+			 T.EXTERNAL_ID IS NUll {1}
+		</tsql>
+		<params>
+			<ACCOUNT>
+				<index>1</index>
+				<con>and A.ACCOUNT = :?</con>
+				<type>char</type>
+			</ACCOUNT>
+			<TIME_START>
+				<index>3</index>
+				<con>and T.COMPLAIN_TIME &gt;=  :?</con>
+				<type>date</type>
+			</TIME_START>
+			<TIME_END>
+				<index>4</index>
+				<con>and T.COMPLAIN_TIME  &lt;= :?</con>
+				<type>date</type>
+			</TIME_END>
+			<IS_FINISH>
+				<index>5</index>
+				<con>and T.IS_FINISH  = :?</con>
+				<type>char</type>
+			</IS_FINISH>
+		</params>
+	</dst_complaint_list>
+
+	<dst_push_msg_list>
+		<psql>
+			 SELECT   T.ID,
+				  T.TOPIC,
+				  T.TYPE,
+				  T.MSG,
+				  T.PARK_RECORD_ID,
+				  T.BERTH_CODE,
+				  T.MSG_TIME,
+				  T.BERTH_ID,
+				  T.DELETED,
+				  T.CREATE_TIME,
+				  T.UPDATE_TIME,
+				  T.DATA_EXTEND
+				FROM  PUSH_MQTT_MSGS T 
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT 
+				COUNT(T.ID) AS tcount
+			FROM 
+			 PUSH_MQTT_MSGS T 
+		</tsql>
+		<params>
+			<TOPIC>
+				<index>1</index>
+				<con>and T.TOPIC like :?</con>
+				<type>char</type>
+			</TOPIC>
+			<TIME_START>
+				<index>2</index>
+				<con>and T.MSG_TIME &gt;=  :?</con>
+				<type>date</type>
+			</TIME_START>
+			<TIME_END>
+				<index>3</index>
+				<con>and T.MSG_TIME  &lt;= :?</con>
+				<type>date</type>
+			</TIME_END>
+		</params>
+	</dst_push_msg_list> 
+
+	<people_word_statics>
+		<sql>
+			SELECT * FROM BUSI_COLLECTOR
+		</sql>
+	</people_word_statics>
+
+	<fanc_trade_paycount_ds>
+		<sql>
+			SELECT
+			(CASE WHEN FTO.PAY_TYPE = 11 THEN "现金"
+			WHEN FTO.PAY_TYPE > 30 AND FTO.PAY_TYPE <![CDATA[<]]> 40 THEN "支付宝"
+			WHEN FTO.PAY_TYPE > 40 AND FTO.PAY_TYPE <![CDATA[<]]> 50 THEN "微信"
+			END ) PAY_TYPE1,COUNT(FTO.ID) PAY_COUNT
+			FROM FANC_TRADE_ORDER FTO WHERE FTO.ORDER_STATE = '200' GROUP BY PAY_TYPE1
+		</sql>
+	</fanc_trade_paycount_ds>
+	<fanc_trade_query_paytype_ds>
+		<sql>
+			SELECT
+			DATE_FORMAT(FTO.SUCCESS_TIME, "%Y-%m-%d") DATE,
+			SUM(FTO.ACTUAL_AMOUNT) AMOUNT,
+			IFNULL(SUM(CASE WHEN FTO.PAY_TYPE > 30 AND FTO.PAY_TYPE <![CDATA[<]]> 40  THEN FTO.ACTUAL_AMOUNT END),0) ALIPAY_AMOUNT,
+			IFNULL(SUM(CASE WHEN FTO.PAY_TYPE > 40 AND FTO.PAY_TYPE <![CDATA[<]]> 50  THEN FTO.ACTUAL_AMOUNT END),0) WECHAT_AMOUNT,
+			IFNULL(sum(CASE WHEN FTO.PAY_TYPE = 11 THEN FTO.ACTUAL_AMOUNT END),0) CARD_AMOUNT
+			FROM FANC_TRADE_ORDER FTO WHERE FTO.ORDER_STATE = '200' GROUP BY DATE ORDER BY DATE DESC limit 0,5
+		</sql>
+	</fanc_trade_query_paytype_ds>
+	<fanc_account_charge_record>
+		<psql>
+            SELECT FA.CODE,FACR.AMOUNT,FACR.BALANCE_BEFORE,FACR.BALANCE_AFTER,FACR.CREATE_TIME,
+            BT.CODE_NAME AS BUSI_TYPE_NAME,BT1.CODE_NAME AS FUND_DIRECTION
+            FROM FANC_ACCOUNT_CHARGE_RECORD FACR
+            LEFT JOIN SYS_DICTIONARY BT ON BT.TYPE_VALUE='PARKING_BUSI_TYPE' AND BT.CODE_VALUE=FACR.BUSI_TYPE
+            LEFT JOIN SYS_DICTIONARY BT1 ON BT1.TYPE_VALUE='FUND_DIRECTION' AND BT1.CODE_VALUE=FACR.FUND_DIRECTION
+            LEFT JOIN FANC_ACCOUNT_SUB FA ON FA.ID = FACR.ACCOUNT_SUB_ID
+            ORDER BY FACR.CREATE_TIME DESC
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT
+			COUNT(T.ID) AS tcount
+			FROM
+			FANC_ACCOUNT_CHARGE_RECORD T
+		</tsql>
+	</fanc_account_charge_record>
+
+	<!--车辆认证列表查询-->
+	<dst_driving_license_list>
+		<psql>
+			SELECT
+			v.ID AS VEHICLE_ID,
+			dl.ID AS DRIVING_LICENSE_ID,
+			c.CN_NAME,
+			v.PLATE_NO,
+			v.PLATE_COLOR,
+			clr.CODE_NAME AS PLATE_COLOR_NAME,
+			dl.ATTACH_POSITIVE_ID,
+			dl.ATTACH_VICE_ID
+			FROM
+			CUST_VEHICLE v
+			LEFT JOIN CUST_DRIVING_LICENSE dl ON v.DRIVING_LICENSE_ID = dl.ID
+			LEFT JOIN SYS_DICTIONARY clr ON clr.TYPE_VALUE = 'PLATE_COLOR' AND v.PLATE_COLOR = clr.CODE_VALUE
+			LEFT JOIN CUST_CUSTOMER_VEHICLE_REL ccv on ccv.VEHICLE_ID=v.ID
+			LEFT JOIN CUST_CUSTOMER c on ccv.CUSTOMER_ID=c.ID
+			where dl.DELETED=0 and v.DRIVING_LICENSE_ID is not NULL {1}
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT
+			COUNT(dl.ID) AS tcount
+			FROM
+			CUST_VEHICLE v
+			LEFT JOIN CUST_DRIVING_LICENSE dl ON v.DRIVING_LICENSE_ID = dl.ID
+			LEFT JOIN SYS_DICTIONARY clr ON clr.TYPE_VALUE = 'PLATE_COLOR' AND v.PLATE_COLOR = clr.CODE_VALUE
+			LEFT JOIN CUST_CUSTOMER_VEHICLE_REL ccv on ccv.VEHICLE_ID=v.ID
+			LEFT JOIN CUST_CUSTOMER c on ccv.CUSTOMER_ID=c.ID
+			where dl.DELETED=0 and v.DRIVING_LICENSE_ID is not NULL {1}
+		</tsql>
+		<params>
+			<PLATE_NO>
+				<index>1</index>
+				<con>and v.PLATE_NO like :?</con>
+				<type>char</type>
+			</PLATE_NO>
+			<TIME_START>
+				<index>2</index>
+				<con>and dl.CREATE_TIME &gt;=  :?</con>
+				<type>date</type>
+			</TIME_START>
+			<TIME_END>
+				<index>3</index>
+				<con>and dl.CREATE_TIME  &lt;= :?</con>
+				<type>date</type>
+			</TIME_END>
+		</params>
+	</dst_driving_license_list>
+
+
+	<!--工单历史查询-->
+	<dst_task_his_list>
+		<psql>
+			select
+			t.ID,
+			t.TYPE,
+			tnc.NAME AS TYPE_NAME,
+			tnc.INFO_PATH,
+			t.URGENCY,
+			t.CODE,
+			IFNULL(cr.COME_FROM,t.SOURCE) AS COME_FROM,
+			t.`STATUS`,
+			t.CREATE_TIME,
+			t.HANDLER_ID,
+			h.NAME AS HANDLER_NAME,
+			t.BEGIN_TIME,
+			t.CLOSE_TIME
+			From
+			TASK_RECORD t
+			LEFT JOIN TASK_COMPLAIN_RECORD cr on t.COME_FROM=cr.ID
+			LEFT JOIN TASK_NODE_CONFIG tnc2 ON t.CURRENT_NODE_ID = tnc2.ID
+			LEFT JOIN SYS_USER h ON t.HANDLER_ID=h.ID,
+			TASK_NODE_CONFIG  tnc
+			WHERE
+			t.TYPE=tnc.TASK_TYPE {1}
+			ORDER BY t.UPDATE_TIME
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT
+			COUNT(t.ID) AS tcount
+			FROM
+			TASK_RECORD t
+			LEFT JOIN TASK_COMPLAIN_RECORD cr on t.COME_FROM=cr.ID
+			LEFT JOIN TASK_NODE_CONFIG tnc2 ON t.CURRENT_NODE_ID = tnc2.ID
+			LEFT JOIN SYS_USER h ON t.HANDLER_ID=h.ID,
+			TASK_NODE_CONFIG tnc
+			WHERE
+			t.TYPE=tnc.TASK_TYPE {1}
+		</tsql>
+		<params>
+			<CODE>
+				<index>1</index>
+				<con>AND t.CODE like :?</con>
+				<type>char</type>
+			</CODE>
+			<TYPE>
+				<index>2</index>
+				<con>AND t.TYPE= :?</con>
+				<type>char</type>
+			</TYPE>
+			<SOURCE>
+				<index>2</index>
+				<con>AND t.SOURCE= :?</con>
+				<type>char</type>
+			</SOURCE>
+			<STATUS>
+				<index>3</index>
+				<con>AND t.STATUS= :?</con>
+				<type>char</type>
+			</STATUS>
+			<START_TIME>
+				<index>5</index>
+				<con>AND t.CREATE_TIME &gt;= :?</con>
+				<type>date</type>
+			</START_TIME>
+			<END_TIME>
+				<index>6</index>
+				<con>AND t.CREATE_TIME &lt;= :?</con>
+				<type>date</type>
+			</END_TIME>
+			<URGENCY>
+				<index>7</index>
+				<con>AND t.URGENCY &lt;= :?</con>
+				<type>char</type>
+			</URGENCY>
+		</params>
+	</dst_task_his_list>
+	<dst_online_more_park>
+		<psql>
+			SELECT
+			BP.ID,
+			BP.NAME,
+			(SELECT BC.NAME FROM BUSI_COLLECTOR BC WHERE BC.ID = BCAR.COLLECTOR_ID) COLLECTOR_NAME,
+			(SELECT NAME
+			FROM SYS_DEPT SD
+			WHERE SD.ID = BPS.DEPT_ID) DEPT_NAME,
+			COUNT(BB.ID)                BERTH_COUNT,
+			COUNT(CASE WHEN EXISTS(SELECT 1 FROM BUSI_BERTH_STATUS BBS where BBS.BERTH_ID = BB.ID AND BBS.STATUS = "0") THEN 1 END) IDLE_NUM
+			FROM BUSI_PARK BP
+			LEFT JOIN BUSI_COLLECTOR_ATTENDANCE_RECORD BCAR ON BCAR.PARK_ID = BP.ID AND BCAR.DUTY_STATUS = "00"
+			LEFT JOIN BUSI_PARK_SECTION BPS ON BPS.ID = BP.PARK_SECTION_ID
+			LEFT JOIN BUSI_BERTH BB ON BB.ID IN (SELECT BPBR.BERTH_ID
+			FROM BUSI_PARK_BERTH_REL BPBR)
+			WHERE 1 = 1 {1}
+			GROUP BY BP.ID, BP.NAME, BPS.DEPT_ID, BP.ADDRESS,BP.PARK_MODE,
+			BP.DISTRIBUTION,BCAR.COLLECTOR_ID
+			LIMIT :start , :end
+		</psql>
+		<tsql>
+			SELECT
+			COUNT(BP.ID) tcount
+			FROM BUSI_PARK BP
+			LEFT JOIN BUSI_COLLECTOR_ATTENDANCE_RECORD BCAR ON BCAR.PARK_ID = BP.ID AND BCAR.DUTY_STATUS = "00"
+			LEFT JOIN BUSI_PARK_SECTION BPS ON BPS.ID = BP.PARK_SECTION_ID
+			LEFT JOIN BUSI_BERTH BB ON BB.ID IN (SELECT BPBR.BERTH_ID
+			FROM BUSI_PARK_BERTH_REL BPBR)
+			WHERE 1 = 1 {1}
+		</tsql>
+		<params>
+			<PARK_SECTION_ID>
+				<index>1</index>
+				<con>and BP.park_section_id =:?</con>
+				<type>char</type>
+			</PARK_SECTION_ID>
+			<PARK_ID>
+				<index>2</index>
+				<con>and BP.ID =:?</con>
+				<type>char</type>
+			</PARK_ID>
+		</params>
+	</dst_online_more_park>
+</qrys>

@@ -1,0 +1,3 @@
+{
+	xtype:'uxstaticchart',content:'测试文字',fontsize:30
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--
+        <properties resource="db.properties"></properties>
+    -->
+    <properties>
+        <property name="dialect" value="mysql"/>
+    </properties>
+
+
+    <settings>
+        <!-- 允许或不允许多种结果集从一个单独的语句中返回（需要适合的驱动）。 系统默认值是true，设置只是为了展示出来 -->
+        <setting name="multipleResultSetsEnabled" value="true"/>
+
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!--
+            <setting name="defaultExecutorType" value="REUSE" />
+            -->
+        <setting name="defaultStatementTimeout" value="30000"/>
+    </settings>
+
+    <typeAliases>
+        <typeAlias alias="JsonHandlerAlias" type="org.chwin.firefighting.apiserver.data.JsonHandler"/>
+    </typeAliases>
+    <!--自定义类型处理器-->
+    <typeHandlers>
+        <typeHandler handler="org.chwin.firefighting.apiserver.data.JsonHandler"></typeHandler>
+    </typeHandlers>
+    <plugins>
+        <!-- need the ordr,,the plugin order is on evni top-->
+        <!-- com.github.pagehelper为PageHelper类所在包名 -->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 方言 -->
+            <!--
+            <property name="dialect" value="mysql"/>
+            -->
+            <!-- 该参数默认为false -->
+            <!-- 设置为true时，使用RowBounds分页会进行count查询 -->
+            <property name="rowBoundsWithCount" value="true"/>
+        </plugin>
+    </plugins>
+
+    <environments default="mysql">
+
+        <environment id="mysql">
+            <transactionManager type="JDBC"></transactionManager>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver"/>
+                <property name="url" value="${mysql.url}"/>
+                <property name="username" value="${mysql.username}"/>
+                <property name="password" value="${mysql.password}"/>
+                <property name="poolMaximumIdleConnections" value="0"/>
+                <property name="poolMaximumActiveConnections" value="10"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <mapper class="org.chwin.firefighting.apiserver.data.MybatisMapperCls"/>
+        <mapper resource="datamp.xml"/>
+        <mapper resource="warn.xml"/>
+        <mapper resource="workorder.xml"/>
+        <!--
+
+             <mapper resource="cn/freeteam/model/OperlogsMapper.xml"/>
+             -->
+    </mappers>
+
+
+</configuration>

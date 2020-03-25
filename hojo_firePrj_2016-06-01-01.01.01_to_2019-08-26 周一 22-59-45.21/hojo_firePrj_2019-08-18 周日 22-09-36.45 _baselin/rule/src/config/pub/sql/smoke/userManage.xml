@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 账号管理User_info 信息 -->
+    <user_list>
+        <sql><![CDATA[
+		SELECT
+        U.ID,
+        U.ACCOUNT,
+        U.`NAME`,
+        IF(U.GENDER=1,'男','女') GENDER,
+        U.PHONE,
+        IF(U.IS_SUPER_ADMIN=1,'是','否') MANAGER,
+        IF(U.`STATUS`=1,'有效','失效') `STATUS`,
+        IF(U.IS_FOREVER=1,'永久','否') FOREVER,
+        (SELECT D.`NAME` FROM SYS_DEPT D WHERE D.ID=U.DEPT_ID) DEPT_NAME
+        FROM SYS_USER U
+        WHERE 1=1
+        AND U.DELETED='0'
+        {1}
+        ORDER BY U.CREATE_TIME DESC
+        ]]></sql>
+        <psql><![CDATA[
+		SELECT
+        U.ID,
+        U.ACCOUNT,
+        U.`NAME`,
+        CASE U.GENDER
+        WHEN '1' THEN '男'
+        WHEN '2' THEN '女'
+        WHEN '3' THEN '不详'
+        ELSE '空值' END  AS GENDER_VALUE,
+        U.GENDER AS GENDER,
+        U.PHONE,
+        U.EMAIL,
+        IF(U.IS_SUPER_ADMIN=1,'是','否') MANAGER,
+        IF(U.`STATUS`=1,'有效','失效') STATUS_VALUE,
+        U.STATUS AS STATUS,
+        IF(U.IS_FOREVER=1,'永久','否') FOREVER,
+        U.DEPT_ID,
+        (SELECT D.`NAME` FROM SYS_DEPT D WHERE D.ID=U.DEPT_ID) DEPT_NAME
+        FROM SYS_USER U
+        WHERE 1=1
+
+        AND U.DELETED='0'
+        {1}
+        ORDER BY U.CREATE_TIME DESC
+        LIMIT :start,:end
+    ]]></psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            count(1) as tcount
+            FROM SYS_USER U
+            WHERE 1=1
+            AND U.DELETED='0'
+            {1}
+            ]]>
+        </tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND U.TENANT_ID in (:?)</con>
+                <type>char</type>
+            </TENANT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND U.DEPT_ID=:?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND U.NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+        </params>
+    </user_list>
+    <!-- 住户管理Resident 信息 -->
+    <resident_list>
+        <sql><![CDATA[
+		SELECT
+        R.ID,
+        R.`NAME`,
+        CASE R.GENDER
+        WHEN '1' THEN '男'
+        WHEN '2' THEN '女'
+        WHEN '3' THEN '不详'
+        ELSE '空值' END  AS GENDER_VALUE,
+        R.GENDER,
+        R.DEPT_ID,
+        (SELECT D.`NAME` FROM SYS_DEPT D WHERE D.ID=R.DEPT_ID) DEPT_NAME,
+        R.UNIT_ID,
+        (SELECT D.UNIT_NAME FROM UNIT_INFO D WHERE D.ID=R.UNIT_ID AND DELETED='0') UNIT_NAME,
+        (SELECT D.UNIT_ADDRESS FROM UNIT_INFO D WHERE D.ID=R.UNIT_ID AND DELETED='0') UNIT_ADDRESS,
+        R.PHONE,
+        R.CONTACT,
+        R.CONTACT_PHONE
+        FROM
+        SP_RESIDENT R
+        WHERE 1=1
+        AND R.DELETED='0'
+        {1}
+        ORDER BY R.CREATE_TIME DESC
+        ]]></sql>
+        <psql><![CDATA[
+		SELECT
+        R.ID,
+        R.`NAME`,
+        CASE R.GENDER
+        WHEN '1' THEN '男'
+        WHEN '2' THEN '女'
+        WHEN '3' THEN '不详'
+        ELSE '空值' END  AS GENDER_VALUE,
+        R.GENDER,
+        R.DEPT_ID,
+        (SELECT D.`NAME` FROM SYS_DEPT D WHERE D.ID=R.DEPT_ID) DEPT_NAME,
+        R.UNIT_ID,
+        (SELECT D.UNIT_NAME FROM UNIT_INFO D WHERE D.ID=R.UNIT_ID AND DELETED='0') UNIT_NAME,
+        (SELECT D.UNIT_ADDRESS FROM UNIT_INFO D WHERE D.ID=R.UNIT_ID AND DELETED='0') UNIT_ADDRESS,
+        R.PHONE,
+        R.CONTACT,
+        R.CONTACT_PHONE
+        FROM
+        SP_RESIDENT R
+        WHERE 1=1
+        AND R.DELETED='0'
+        {1}
+        ORDER BY R.CREATE_TIME DESC
+        LIMIT :start,:end
+    ]]></psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            count(1) as tcount
+            FROM
+            SP_RESIDENT R
+            WHERE 1=1
+            AND R.DELETED='0'
+            {1}
+            ORDER BY R.CREATE_TIME DESC
+            ]]>
+        </tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND R.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND R.DEPT_ID=:?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </resident_list>
+    <!-- 机构信息 信息 -->
+    <dept_list>
+        <sql><![CDATA[
+		SELECT
+        *
+        FROM
+        SYS_DEPT D
+        WHERE 1=1
+        {1}
+        ]]></sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND D.NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+        </params>
+    </dept_list>
+    <!-- 根据机构id 获得单位信息 -->
+    <unit_list_by_dept_id>
+        <sql><![CDATA[
+		SELECT
+        U.ID,
+        U.UNIT_NAME,
+        U.UNIT_NAME AS value,
+        U.UNIT_ADDRESS
+        FROM
+        UNIT_INFO U
+        WHERE 1=1
+        AND U.DELETED='0'
+        {1}
+        ]]></sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND U.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND U.DEPT_ID in (:?)</con>
+                <type>char</type>
+            </DEPT_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND U.UNIT_NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+            <DELETED>
+                <index>1</index>
+                <con>AND U.DELETED = :?</con>
+                <type>char</type>
+            </DELETED>
+            <userId>
+                <index>1</index>
+                <con>AND U.ID IN (SELECT R.UNIT_ID FROM SYS_USER_UNIT_REL R WHERE R.USER_ID=:?)
+                    OR  U.ID NOT IN (SELECT R.UNIT_ID FROM SYS_USER_UNIT_REL R WHERE R.USER_ID<![CDATA[<>]]>:?)
+                </con>
+                <type>char</type>
+            </userId>
+        </params>
+    </unit_list_by_dept_id>
+    <!-- 获取用户管辖单位范围 -->
+    <user_unit_rel>
+        <sql><![CDATA[
+		SELECT
+        I.ID,
+        I.UNIT_NAME,
+        I.UNIT_ADDRESS
+        FROM
+        SYS_USER_UNIT_REL R,
+        UNIT_INFO I
+        WHERE 1=1
+        AND R.UNIT_ID=I.ID
+        {1}
+        ]]></sql>
+        <psql><![CDATA[
+		SELECT
+        I.ID,
+        I.UNIT_NAME,
+        I.UNIT_ADDRESS
+        FROM
+        SYS_USER_UNIT_REL R,
+        UNIT_INFO I
+        WHERE 1=1
+        AND R.UNIT_ID=I.ID
+        AND I.DELETED='0'
+        {1}
+        LIMIT :start,:end
+    ]]></psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            count(1) as tcount
+            FROM
+            SYS_USER_UNIT_REL R,
+            UNIT_INFO I
+            WHERE 1=1
+            AND R.UNIT_ID=I.ID
+            AND I.DELETED='0'
+            {1}
+            ]]>
+        </tsql>
+        <params>
+            <USER_ID>
+                <index>1</index>
+                <con>AND R.USER_ID=:?</con>
+                <type>char</type>
+            </USER_ID>
+        </params>
+    </user_unit_rel>
+    <!-- 查看机构下是否有子机构 -->
+    <check_dept_sub>
+        <sql><![CDATA[
+		SELECT
+        count(1) as count
+        FROM
+        SYS_DEPT D
+        WHERE 1=1
+        {1}
+        ]]></sql>
+        <params>
+            <PARENT_ID>
+                <index>1</index>
+                <con>AND D.PARENT_ID=:?</con>
+                <type>char</type>
+            </PARENT_ID>
+        </params>
+    </check_dept_sub>
+    <!-- 根据ssid获得deptid -->
+    <query_dept_id_by_ssid>
+        <sql><![CDATA[
+		SELECT
+        U.DEPT_ID
+        FROM
+        SYS_ONLINE_USER O,
+        SYS_USER U
+        WHERE 1=1
+        AND O.USER_ID=U.ID
+        {1}
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND O.ID=:?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </query_dept_id_by_ssid>
+    <!--机构删除时，添加校验，如果有关联的机构-管理员关联记录-->
+    <check_dept_unit_exist>
+        <sql><![CDATA[
+		SELECT
+        COUNT(*) as count
+        FROM
+        UNIT_INFO R
+        WHERE 1=1
+        AND R.DELETED='0'
+        {1}
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND R.DEPT_ID=:?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </check_dept_unit_exist>
+</qrys>

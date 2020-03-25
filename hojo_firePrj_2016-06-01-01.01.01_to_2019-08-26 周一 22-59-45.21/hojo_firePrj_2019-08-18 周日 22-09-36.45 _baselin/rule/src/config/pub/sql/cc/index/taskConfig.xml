@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!--日常管理模块-巡检任务-->
+
+    <!-- 巡检任务配置 列表 -->
+    <task_config_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        D.ID,
+        D.ROUTING_NAME,
+        D.ROUNT_START_TIME,
+        D.ROUNT_END_TIME,
+        D.RELEVANT,
+        D.ROUTING_CYCLE
+        FROM
+        DEVICE_ROUTING_CONFIG D
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+        SELECT
+        D.ID,
+        D.ROUTING_NAME,
+        D.ROUNT_START_TIME,
+        D.ROUNT_END_TIME,
+        D.RELEVANT,
+        D.ROUTING_CYCLE
+        FROM
+        DEVICE_ROUTING_CONFIG D
+        WHERE
+        1=1
+        {1}
+        limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+        SELECT
+        count(1) as tcount
+        FROM
+        DEVICE_ROUTING_CONFIG D
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </tsql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND D.tenant_id=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </task_config_list>
+
+    <!-- 巡检任务 列表 -->
+    <task_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        *
+        FROM
+        DEVICE_ROUTING R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+        SELECT
+        *,
+        (SELECT
+        PHONE
+        FROM
+        TROUNT_USER_REL T,
+        SYS_USER U
+        WHERE
+        1=1
+        AND R.DEVICE_ROUTING_CONFIG=T.DEVICE_ROUTING_CONFIG
+        AND T.USER_ID=U.ID
+        LIMIT 0,1
+        ) AS PHONE
+        FROM
+        DEVICE_ROUTING R
+        WHERE
+        1=1
+        {1}
+        ORDER BY R.ROUNT_END_TIME DESC
+        limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS tcount
+        FROM
+        DEVICE_ROUTING R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </tsql>
+        <params>
+            <status>
+                <index>1</index>
+                <con>AND R.ROUTING_STATUS=:?</con>
+                <type>char</type>
+            </status>
+            <name>
+                <index>2</index>
+                <con>AND R.ROUTING_NAME LIKE :?</con>
+                <type>char</type>
+            </name>
+            <person>
+                <index>3</index>
+                <con>AND R.REMARK LIKE :?</con>
+                <type>char</type>
+            </person>
+            <begin>
+                <index>4</index>
+                <con>AND :?  <![CDATA[<=]]>  R.ROUNT_START_TIME </con>
+                <type>char</type>
+            </begin>
+            <finish>
+                <index>5</index>
+                <con>AND :?  <![CDATA[>=]]>  R.ROUNT_END_TIME</con>
+                <type>char</type>
+            </finish>
+            <UNIT_ID>
+                <index>6</index>
+                <con>AND R.UNIT_ID in( :?)</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </task_list>
+
+    <!-- 巡检-人员选择列表 -->
+    <task_person_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        U.ID,
+        U.`NAME`,
+        S.`NAME` AS ROLE,
+        U.PHONE
+        FROM
+        SYS_USER U,
+        SYS_USER_ROLE_REL R,
+        SYS_ROLE S,
+        UNIT_INFO ui
+        WHERE
+        1=1
+        {1}
+        AND ui.DEPT_ID = U.DEPT_ID
+        AND U.ID=R.USER_ID
+        AND R.ROLE_ID=S.ID
+        AND S.`CODE`='TASK'
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND U.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <ROLE_ID>
+                <index>1</index>
+                <con>AND S.ID=:?</con>
+                <type>char</type>
+            </ROLE_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND U.`NAME` LIKE :?</con>
+                <type>char</type>
+            </NAME>
+            <UNIT_ID>
+                <index>4</index>
+                <con>AND ui.ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+
+    </task_person_list>
+
+    <!-- 获得巡检相关角色 -->
+    <task_role_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        R.ID,
+        R.NAME
+        FROM
+        SYS_ROLE R
+        WHERE
+        1=1
+        AND R.DELETED='0'
+        AND R.`CODE`='TASK'
+        ]]>
+        </sql>
+    </task_role_list>
+
+    <!-- 获得巡检任务统计数据 -->
+    <task_statistics>
+        <sql>
+            <![CDATA[
+        SELECT
+        IFNULL((
+        SELECT
+        COUNT(DISTINCT U.USER_ID)
+        FROM
+        SYS_ROLE R,
+        SYS_USER_ROLE_REL U
+        WHERE
+        1=1
+        AND R.`CODE`='TASK'
+        AND R.ID=U.ROLE_ID
+        ),0)
+        AS PERSON,
+        IFNULL(SUM(R.ROUTING_STATUS='0' AND TO_DAYS(NOW()) BETWEEN R.ROUNT_START_TIME AND R.ROUNT_END_TIME),0) AS TODAY_TASK,
+        IFNULL(SUM(R.ROUTING_STATUS='1' AND TO_DAYS(UPDATE_TIME)=TO_DAYS(NOW())),0) AS TODAY_FINISH,
+        IFNULL(SUM(R.ROUTING_STATUS='2'),0) AS DELAY
+        FROM
+        DEVICE_ROUTING R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </task_statistics>
+
+
+    <!-- 获得根配置任务关联的人员信息 -->
+    <get_user_by_config_id>
+        <sql>
+            <![CDATA[
+        SELECT
+        DISTINCT R.USER_ID as ID
+        FROM
+        TROUNT_USER_REL R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND R.DEVICE_ROUTING_CONFIG=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </get_user_by_config_id>
+
+    <!-- 获得根配置任务关联的二维码信息 -->
+    <get_qrcode_by_config_id>
+        <sql>
+            <![CDATA[
+        SELECT
+        DISTINCT R.TROUNT_QRCODE_ID as ID
+        FROM
+        DEVICE_TROUNT_REL R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND R.DEVICE_ROUTING_CONFIG=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </get_qrcode_by_config_id>
+    <!-- 获得任务关联的二维码信息,通过任务ID -->
+    <get_qrcode_by_trount_id>
+        <sql>
+            <![CDATA[
+        SELECT
+        Q.qrcode_name AS NAME,
+        Q.install_address AS ADDRESS,
+        Q.nature_option AS TYPE,
+        R.IS_TROUNT,
+        R.TROUNT_TIME,
+        R.TROUNT_CONTENT,
+        R.PHOTO_URL
+        FROM
+        DEVICE_TROUNT_REL R,
+        TROUNT_QRCODE Q
+        WHERE
+        1=1
+        {1}
+        AND R.TROUNT_QRCODE_ID=Q.ID
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+        SELECT
+        Q.qrcode_name AS NAME,
+        Q.install_address AS ADDRESS,
+        Q.nature_option AS TYPE,
+        R.IS_TROUNT,
+        R.TROUNT_TIME,
+        R.TROUNT_CONTENT,
+        R.PHOTO_URL
+        FROM
+        DEVICE_TROUNT_REL R,
+        TROUNT_QRCODE Q
+        WHERE
+        1=1
+        {1}
+        AND R.TROUNT_QRCODE_ID=Q.ID
+        limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+        SELECT
+        count(1) as tcount
+        FROM
+        DEVICE_TROUNT_REL R,
+        TROUNT_QRCODE Q
+        WHERE
+        1=1
+        {1}
+        AND R.TROUNT_QRCODE_ID=Q.ID
+        ]]>
+        </tsql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND R.TROUNT_ID=:?</con>
+                <type>char</type>
+            </id>
+            <status>
+                <index>1</index>
+                <con>AND R.IS_TROUNT=:?</con>
+                <type>char</type>
+            </status>
+        </params>
+    </get_qrcode_by_trount_id>
+
+    <!-- 更新任务 相关人员字段 -->
+    <update_trount_remark>
+        <sql>
+            <![CDATA[
+        UPDATE DEVICE_ROUTING SET {1}
+        ]]>
+        </sql>
+        <params>
+            <REMARK>
+                <index>1</index>
+                <con> REMARK=:?</con>
+                <type>char</type>
+            </REMARK>
+            <DEVICE_ROUTING_CONFIG>
+                <index>1</index>
+                <con> WHERE DEVICE_ROUTING_CONFIG=:?</con>
+                <type>char</type>
+            </DEVICE_ROUTING_CONFIG>
+        </params>
+    </update_trount_remark>
+    <!--获得状态为1即未完成的，且系统时间已经超过了任务结束时间，任务列表id-->
+    <SP_GET_UNFINISHED>
+        <sql><![CDATA[
+        SELECT
+            ID
+        FROM
+            DEVICE_ROUTING
+        WHERE
+        1=1
+        AND ROUTING_STATUS = '1'
+        AND SYSDATE() > ROUNT_END_TIME
+	]]></sql>
+    </SP_GET_UNFINISHED>
+    <!--获得状态为0即未开始的，且系统时间已经到了开始时间，任务列表id-->
+    <SP_GET_UNBEGIN>
+        <sql><![CDATA[
+        SELECT
+            ID
+        FROM
+            DEVICE_ROUTING
+        WHERE
+        1=1
+        AND ROUTING_STATUS = '0'
+        AND SYSDATE() < ROUNT_END_TIME
+        AND SYSDATE() > ROUNT_START_TIME
+	]]></sql>
+    </SP_GET_UNBEGIN>
+</qrys>

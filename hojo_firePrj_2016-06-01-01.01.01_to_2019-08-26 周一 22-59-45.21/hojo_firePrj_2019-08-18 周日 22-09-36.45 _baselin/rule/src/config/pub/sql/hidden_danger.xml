@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!-- 数量 -->
+    <qry_danger_count>
+        <sql><![CDATA[
+            SELECT
+            (SELECT DISTINCT count(deal_by) from HIDDEN_DANGER_RECORD WHERE 1 =1 {1})AS deal_by_count,
+            (SELECT DISTINCT count(id) from HIDDEN_DANGER_RECORD WHERE 1=1 {1})AS all_danger_count,
+            (SELECT DISTINCT count(id) from HIDDEN_DANGER_RECORD WHERE TO_DAYS(create_time) = TO_DAYS(now()) {1})AS today_danger_count,
+            (SELECT DISTINCT count(id) from HIDDEN_DANGER_RECORD WHERE order_status = 1 AND deal_expect_time < now() AND ( confirm_result is null or confirm_result = 0 ) {1})AS timeout_danger_count,
+            (SELECT DISTINCT count(id) from HIDDEN_DANGER_RECORD WHERE confirm_result = 1 {1})AS deal_danger_count
+            FROM dual
+        ]]></sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <unit_id>
+                <index>2</index>
+                <con> and unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </qry_danger_count>
+
+    <!-- 隐患列表 -->
+    <hidden_danger_list>
+        <sql><![CDATA[
+            SELECT
+                r.*,
+                u1.`NAME` create_by_name,
+                u2.`NAME` order_by_name,
+                u3.`NAME` deal_by_name,
+                CASE r.deal_result
+                WHEN 0 THEN '未处理'
+                WHEN 1 THEN
+                    CASE r.confirm_result
+                    WHEN 1 THEN '处理结果已确认'
+                    ELSE '处理结果未确认'
+                    END
+                END  process_result
+            FROM
+                HIDDEN_DANGER_RECORD r
+                LEFT JOIN SYS_USER u1 ON r.create_by = u1.ID
+                LEFT JOIN SYS_USER u2 ON r.order_by = u2.ID
+                LEFT JOIN SYS_USER u3 ON r.deal_by = u3.ID
+            WHERE 1=1
+            {1}
+            ORDER BY r.deal_result ASC,r.create_time DESC
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT
+                r.*,
+                u1.`NAME` create_by_name,
+                u2.`NAME` order_by_name,
+                u3.`NAME` deal_by_name,
+                CASE r.deal_result
+                WHEN 0 THEN '未处理'
+                WHEN 1 THEN
+                    CASE r.confirm_result
+                    WHEN 1 THEN '处理结果已确认'
+                    ELSE '处理结果未确认'
+                    END
+                END  process_result
+            FROM
+                HIDDEN_DANGER_RECORD r
+                LEFT JOIN SYS_USER u1 ON r.create_by = u1.ID
+                LEFT JOIN SYS_USER u2 ON r.order_by = u2.ID
+                LEFT JOIN SYS_USER u3 ON r.deal_by = u3.ID
+            WHERE 1=1
+            {1}
+            ORDER BY r.deal_result ASC,r.create_time DESC
+            LIMIT :start,:end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT
+                count(*) tcount
+            FROM
+                HIDDEN_DANGER_RECORD r
+                LEFT JOIN SYS_USER u1 ON r.create_by = u1.ID
+                LEFT JOIN SYS_USER u2 ON r.order_by = u2.ID
+                LEFT JOIN SYS_USER u3 ON r.deal_by = u3.ID
+            WHERE 1=1
+            {1}
+            ORDER BY r.deal_result ASC,r.create_time DESC
+        ]]></tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and r.tenant_id = :? </con>
+                <type>char</type>
+            </TENANT_ID>
+            <unit_id>
+                <index>2</index>
+                <con> and r.unit_id = :? </con>
+                <type>char</type>
+            </unit_id>
+            <danger_type>
+                <index>3</index>
+                <con> and r.danger_type = :? </con>
+                <type>char</type>
+            </danger_type>
+            <deal_by_name>
+                <index>4</index>
+                <con> and u3.`NAME` LIKE '%':?'%' </con>
+                <type>char</type>
+            </deal_by_name>
+            <deal_start_time>
+                <index>5</index>
+                <con> <![CDATA[ and DATE_FORMAT(r.deal_real_time,'%Y-%m-%d') >= :? ]]></con>
+                <type>char</type>
+            </deal_start_time>
+            <deal_end_time>
+                <index>6</index>
+                <con> <![CDATA[ and DATE_FORMAT(r.deal_real_time,'%Y-%m-%d') <= :? ]]></con>
+                <type>char</type>
+            </deal_end_time>
+            <deal_result>
+                <index>7</index>
+                <con> and r.deal_result = :? </con>
+                <type>char</type>
+            </deal_result>
+            <confirm_result>
+                <index>8</index>
+                <con> and
+                   ( case :?
+                    when 0 then (r.confirm_result = 0 or r.confirm_result is null)
+                    else r.confirm_result = :?
+                    end
+                    )
+                </con>
+                <type>char</type>
+            </confirm_result>
+            <danger_location>
+                <index>9</index>
+                <con> and r.danger_location LIKE '%':?'%' </con>
+                <type>char</type>
+            </danger_location>
+            <deal_by>
+                <index>10</index>
+                <con> and r.deal_by = :? </con>
+                <type>char</type>
+            </deal_by>
+        </params>
+    </hidden_danger_list>
+</qrys>
+

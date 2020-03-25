@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"  "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+
+<!-- todox o91 jeig nameespace will be   attach resultType zuchen yg  fullNameClass for map -->
+<mapper namespace="/" >
+
+    <resultMap id="rm" type="map"></resultMap>
+    <resultMap id="rm2" type="map"></resultMap>
+    <resultMap id="rm3" type="map"></resultMap>
+    <resultMap id="rm4" type="map"></resultMap>
+    <resultMap id="rm5" type="map"></resultMap>
+    <select id="retMltRzt" parameterType="map" resultMap="rm,rm2">
+select 'ok';select  'msg' ; select 'rzt';
+    </select>
+
+    <select id="listRecentlyLoginUsrMood" parameterType="map" resultType="map">
+    <!-- loginUserInfo.role_id  -->
+
+
+
+
+      <choose>
+          <when test="dbg_pmclogin != null">
+              select 'pmcadmin' as role_id,'uidxx' uid
+          </when>
+          <when test="dbg_mainlogin != null">
+              select 'mainadmin' as role_id,'uidxx' uid
+          </when>
+          <when test="dbg_adminlogin != null">
+              select 'gwh' as role_id,'uidxx' uid
+          </when>
+          <when test="dbg_normallogin != null">
+              select 'pmcnormal' as role_id,'uid1314' uid,'uacc123' acc
+          </when>
+          <otherwise>
+              select * from  onlineUser where tkid=#{tkid}
+          </otherwise>
+      </choose>
+
+    </select>
+
+
+</mapper>

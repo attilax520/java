@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 首页->数据分析->报警数量统计 -->
+    <devices_alarm_count>
+        <sql>
+            SELECT SUM(COUNT) as COUNT,DATE FROM
+            (SELECT COUNT(1) AS COUNT,DATE_FORMAT(b.UPDATE_TIME,'%Y-%m-%d') AS DATE
+            FROM IOT_DEVICE_BUSINESS as a
+            JOIN (SELECT * FROM IOT_DEVICE) as b on a.DEVICE_ID = b.ID
+            WHERE b.DEVICE_STATE = 'warn' {1}
+            GROUP BY
+            DATE_FORMAT(b.UPDATE_TIME,'%Y-%m-%d')
+            UNION
+            SELECT COUNT(1) AS COUNT,DATE_FORMAT(b.UPDATE_TIME,'%Y-%m-%d') AS DATE
+            FROM IOT_ZXY_BUSINESS as a
+            JOIN (SELECT * FROM IOT_DEVICE) as b on a.IOT_DEVICE_ID = b.ID
+            WHERE b.DEVICE_STATE = 'warn' {1}
+            GROUP BY
+            DATE_FORMAT(b.UPDATE_TIME,'%Y-%m-%d')
+            ) as x
+            GROUP BY
+            x.DATE
+        </sql>
+        <params>
+            <BEGIN_TIME>
+                <index>1</index>
+                <con>and b.UPDATE_TIME >= :?</con>
+                <type>char</type>
+            </BEGIN_TIME>
+            <END_TIME>
+                <index>2</index>
+                <con>
+                    <![CDATA[
+                    and b.UPDATE_TIME <= :?
+                ]]>
+                </con>
+                <type>char</type>
+            </END_TIME>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>and b.DEV_TYPE = :?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <DEVICE_STATUS>
+                <index>4</index>
+                <con>and b.DEVICE_STATE = :?</con>
+                <type>char</type>
+            </DEVICE_STATUS>
+            <UNIT_ID>
+                <index>5</index>
+                <con>and b.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </devices_alarm_count>
+
+
+    <!--设备详情查看里面的报警历史统计-->
+    <device_history_alarm_list>
+        <sql>
+            <![CDATA[
+                select  atime as  HAPPENTIME,
+                    if(counts is null,0 ,counts) as counts
+                    from(
+                    SELECT  DATE_FORMAT(ADDDATE( :BEGIN_TIME,  numlist.num ),'%Y-%m-%d') AS atime
+                    FROM CM_BASE_NUM AS numlist
+                    where ADDDATE( :BEGIN_TIME ,  numlist.num ) < :END_TIME
+                    ) t0
+                    left join (
+                SELECT sum(counts) counts, HAPPENTIME FROM (
+					SELECT count(t.ID) as counts, DATE_FORMAT(tz_bus.CREATE_TIME,'%Y-%m-%d') as HAPPENTIME FROM (
+                SELECT
+                a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+                                     JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                FROM IOT_DEVICE a WHERE 1=1
+               ) t , IOT_DEVICE_BUSINESS tz_bus
+                     WHERE 1=1 and t.ID = tz_bus.DEVICE_ID
+                     AND (t.DEVICE_TYPE is not null and DEVICE_TYPE <> '')
+                     AND t.TENANT_ID =:TENANT_ID
+                    {1}
+                     GROUP BY DATE_FORMAT(tz_bus.CREATE_TIME,'%Y-%m-%d')
+               union
+                        SELECT count(*) as counts ,DATE_FORMAT(tz_bus.CREATE_TIME,'%Y-%m-%d') as HAPPENTIME FROM (
+                        SELECT
+               a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+               FROM IOT_DEVICE a WHERE 1= 1
+               AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                        ) t, IOT_ZXY_BUSINESS tz_bus
+                        WHERE t.ID = tz_bus.IOT_DEVICE_ID
+                        AND  t.TENANT_ID =:TENANT_ID
+                        {1}
+                        GROUP BY DATE_FORMAT(tz_bus.CREATE_TIME,'%Y-%m-%d')
+
+                ) tab GROUP BY HAPPENTIME )tt on t0.atime = tt.HAPPENTIME
+                ORDER BY t0.atime DESC
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND t.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE>
+                <index>2</index>
+                <con>AND t.DEVICE_TYPE =:?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <DEVICE_ID>
+                <index>3</index>
+                <con>AND t.ID = :?</con>
+                <type>char</type>
+            </DEVICE_ID>
+            <BEGIN_TIME>
+                <index>4</index>
+                <con>and tz_bus.CREATE_TIME >= :?</con>
+                <type>char</type>
+            </BEGIN_TIME>
+            <END_TIME>
+                <index>5</index>
+                <con>
+                    <![CDATA[
+                    and tz_bus.CREATE_TIME <= :?
+                    ]]>
+                </con>
+                <type>char</type>
+            </END_TIME>
+            <DEVICE_STATE>
+                <index>6</index>
+                <con>AND t.DEVICE_STATE</con>
+                <type>char</type>
+            </DEVICE_STATE>
+        </params>
+    </device_history_alarm_list>
+
+    <!--设备完好率查询-->
+    <equipmentperfect_device>
+        <sql>
+            <![CDATA[
+                SELECT
+                    (SELECT c.CODE_NAME FROM SYS_DICTIONARY c WHERE c.CODE_VALUE = t1.TYPE_VALUE) as CODE_NAME,
+                    t1.TYPE_VALUE ,sum(normal) as normal,sum(warn) as warn, sum(offline) as offline, sum(fault) as fault,
+                    sum(normal)+sum(fault)+sum(warn)+sum(offline) as total
+                    FROM (
+                SELECT t.CODE_VALUE as TYPE_VALUE,0 as normal, 0 as warn,0 as offline, 0 as fault  FROM SYS_DICTIONARY t
+                WHERE t.TYPE_VALUE = 'DEVICE_CATEGORY' AND t.`STATUS` = 1
+                UNION
+                SELECT tab.TYPE_VALUE,MAX(CASE tab.DEVICE_STATE WHEN 'normal' THEN tab.counts ELSE 0 END ) normal,
+                            MAX(CASE tab.DEVICE_STATE WHEN 'warn' THEN tab.counts ELSE 0 END ) warn,
+                            MAX(CASE tab.DEVICE_STATE WHEN 'offline' THEN tab.counts ELSE 0 END ) offline,
+                            MAX(CASE tab.DEVICE_STATE WHEN 'fault' THEN tab.counts ELSE 0 END ) fault
+                        FROM (
+                SELECT a.DEV_TYPE as DEVICE_TYPE, a.DEVICE_STATE,count(*) counts,if(d.TYPE_VALUE='DEVICE_CATEGORY',a.DEV_TYPE,d.TYPE_VALUE) as TYPE_VALUE
+                FROM IOT_DEVICE a ,SYS_DICTIONARY d
+                WHERE (a.DEV_TYPE is not null AND a.DEV_TYPE != '')
+                AND (a.DEVICE_STATE is not null AND a.DEVICE_STATE != '')
+                AND a.DEV_TYPE = d.CODE_VALUE
+                AND a.TENANT_ID =:TENANT_ID {1}
+                AND d.`STATUS` =1
+                GROUP BY a.DEV_TYPE,a.DEVICE_STATE,d.TYPE_VALUE
+                ) tab GROUP BY tab.TYPE_VALUE
+                ) t1 WHERE t1.TYPE_VALUE != 'fire_hose'
+                GROUP BY t1.TYPE_VALUE
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND a.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </equipmentperfect_device>
+</qrys>

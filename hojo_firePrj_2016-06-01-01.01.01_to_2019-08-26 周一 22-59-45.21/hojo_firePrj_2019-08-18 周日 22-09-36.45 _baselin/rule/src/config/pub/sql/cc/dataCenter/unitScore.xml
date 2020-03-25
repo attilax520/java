@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 单位评分的各项SQL -->
+    <!--获取联网单位-->
+    <score_net_unit>
+        <sql>
+        <![CDATA[
+		SELECT
+        I.ID
+        FROM
+        UNIT_INFO I
+        WHERE
+        1=1
+        AND I.UNIT_FLAG='1'
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND I.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+        </params>
+    </score_net_unit>
+    <!--消防设施完好率计算 消防、电气、气体-->
+    <score_fire_ele_gas>
+        <sql>
+            <![CDATA[
+		SELECT
+        SUM(D.is_fault='1' AND T.parent_id='76') AS WATER,
+        SUM(D.is_fault='1' AND T.parent_id='72') AS ELECTRIC,
+        SUM(D.is_fault='1' AND T.parent_id='78') AS GAS
+        FROM
+        DATA_DEVICE D,
+        DATA_DEVICE_TYPE T
+        WHERE
+        1=1
+        AND D.unit_id='d647276d-df1a-4f7a-9f5e-e02b9ccc0999'
+        AND D.type=T.type
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND D.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_fire_ele_gas>
+    <!--火灾报警控制器及下属设施-->
+    <score_fire_machine>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT
+        FROM
+        DATA_MACHINE_INFO I,
+        DATA_MACHINE_EVENT_INFO E,
+        DATA_DICTIONARY T
+        WHERE
+        1=1
+        AND I.id=E.machine_info_id
+        {1}
+        AND E.event_type=T.type
+        AND T.is_fault='1'
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND I.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_fire_machine>
+    <!--隐患处理-->
+    <score_hidden>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(R.danger_type='2'),0) AS FAULT,
+        IFNULL(SUM(R.danger_type='1'),0) AS GENERAL,
+        IFNULL(SUM(R.danger_type='4'),0) AS DANGER
+        FROM
+        HIDDEN_DANGER_RECORD R
+        WHERE
+        1=1
+        AND R.order_status='1'
+        {1}
+        AND R.deal_expect_time < R.confirm_time
+        OR  (R.confirm_time IS NULL AND R.deal_expect_time < NOW())
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND R.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_hidden>
+
+    <!--报警响应 火灾报警系统-->
+    <score_response_machine>
+        <sql>
+            <![CDATA[
+		SELECT
+        E.id,
+        E.create_time
+        FROM
+        DATA_MACHINE_INFO I,
+        DATA_MACHINE_EVENT_INFO E,
+        DATA_DICTIONARY T
+        WHERE
+        1=1
+        AND I.id=E.machine_info_id
+        {1}
+        AND E.event_type=T.type
+        AND E.event_type IN ('95','103','1203')
+        AND T.is_alarm='1'
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND I.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_response_machine>
+
+    <!--报警响应 消防、电气、气体-->
+    <score_response_other>
+        <sql>
+            <![CDATA[
+		SELECT
+        I.id,
+        I.create_time
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DEVICE_TYPE DT,
+        DATA_DICTIONARY T
+        WHERE
+        1=1
+        {1}
+        AND D.id=I.device_id
+        AND D.type=DT.type
+        AND I.event_type=T.type
+        AND I.event_type IN ('4','85')
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND D.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+            <parent_id>
+                <index>1</index>
+                <con>AND DT.parent_id = :?</con>
+                <type>char</type>
+            </parent_id>
+        </params>
+    </score_response_other>
+
+    <!--报警响应 火灾报警系统 查询是否有处理结果-->
+    <score_response_machine_result>
+        <sql>
+            <![CDATA[
+		SELECT
+        R.CREATE_TIME
+        FROM
+        IOT_ALARM_PROCESS_RECORD R
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <BUSINESS_ID>
+                <index>1</index>
+                <con>AND R.BUSINESS_ID = :?</con>
+                <type>char</type>
+            </BUSINESS_ID>
+        </params>
+    </score_response_machine_result>
+
+    <!--设施检测维保情况-->
+    <score_check_repair>
+        <sql>
+            <![CDATA[
+		SELECT
+        M.ID
+        FROM
+        UNIT_MAINTENANCE M
+        WHERE
+        1=1
+        {1}
+        AND M.END_TIME > NOW()
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND M.UNIT_ID = :?</con>
+                <type>char</type>
+            </unit_id>
+            <type>
+                <index>1</index>
+                <con>AND M.TYPE = :?</con>
+                <type>char</type>
+            </type>
+        </params>
+    </score_check_repair>
+    <!--设施检测维保-附件合同资质-->
+    <score_check_repair_file>
+        <sql>
+            <![CDATA[
+		SELECT
+        *
+        FROM
+        UNIT_MAINTENANCE_FILE F
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND F.UNIT_MAINTENANCE_ID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </score_check_repair_file>
+    <!--应急预案-->
+    <score_emergency>
+        <sql>
+            <![CDATA[
+		SELECT
+        I.ID
+        FROM
+        ATTACHMENT_INFO I
+        WHERE
+        1=1
+        {1}
+        AND I.FILE_TYPE='EMERGENCY'
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND I.UNIT_ID = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_emergency>
+
+    <!--巡查任务-->
+    <score_task_config>
+        <sql>
+            <![CDATA[
+		SELECT
+        *
+        FROM
+        DEVICE_ROUTING_CONFIG C
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND C.UNIT_ID=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_task_config>
+    <!--巡查超时任务-->
+    <score_task>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT
+        FROM DEVICE_ROUTING R
+        WHERE
+        1=1
+        AND R.ROUTING_STATUS='3'
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_task>
+
+    <!-- 培训情况 -->
+    <score_train>
+        <sql>
+            <![CDATA[
+		SELECT
+        *
+        FROM
+        TRAIN_DRILL_RECORD R
+        WHERE
+        1=1
+        {1}
+        AND R.train_drill_time > date_add(curdate()-day(curdate())+1,interval -12 month)
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND R.unit_id=:?</con>
+                <type>char</type>
+            </unit_id>
+            <type>
+                <index>1</index>
+                <con>AND R.type=:?</con>
+                <type>char</type>
+            </type>
+        </params>
+    </score_train>
+
+    <!-- 微型消防站情况 -->
+    <score_mini_station>
+        <sql>
+            <![CDATA[
+		SELECT
+        M.ID
+        FROM
+        FIRE_STATION M
+        WHERE
+        1=1
+        {1}
+        AND M.DELETED='0'
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND M.UNIT_ID=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_mini_station>
+    <!-- 微型消防站情况 人员 -->
+    <score_mini_station_men>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT
+        FROM
+        FIRE_STATION_FIREMEN M
+        WHERE
+        1=1
+        {1}
+        AND M.DELETED='0'
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND M.FIRE_STATION_ID=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </score_mini_station_men>
+
+    <!-- 微型消防站情况 设备-->
+    <score_mini_station_equipment>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT
+        FROM
+        FIRE_STATION_EQUIPMENT M
+        WHERE
+        1=1
+        {1}
+        AND M.DELETED='0'
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND M.FIRE_STATION_ID=:?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </score_mini_station_equipment>
+
+    <!-- 评分列表 -->
+    <score_unit_list>
+        <sql>
+            <![CDATA[
+		SELECT
+        S.id
+        FROM
+        UNIT_SCORE S
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND S.unit_id=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_unit_list>
+
+    <!-- 加分项 用传 -->
+    <score_bonus_machine>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(ROUND(SUM(I.is_online='1')/COUNT(1),2),-1) AS RATE
+        FROM
+        DATA_MACHINE_INFO I
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND I.unit_id=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_bonus_machine>
+    <!-- 加分项 其它 -->
+    <score_bonus_other>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(T.parent_id='76' AND D.is_online=1)/SUM(T.parent_id='76'),-1) AS WATER,
+        IFNULL(SUM(T.parent_id='72' AND D.is_online=1)/SUM(T.parent_id='72'),-1) AS ELECTRIC,
+        IFNULL(SUM(T.parent_id='78' AND D.is_online=1)/SUM(T.parent_id='78'),-1) AS GAS
+        FROM
+        DATA_DEVICE D,
+        DATA_DEVICE_TYPE T
+        WHERE
+        1=1
+        {1}
+        AND D.type=T.type
+        ]]>
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>AND D.unit_id=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </score_bonus_other>
+</qrys>

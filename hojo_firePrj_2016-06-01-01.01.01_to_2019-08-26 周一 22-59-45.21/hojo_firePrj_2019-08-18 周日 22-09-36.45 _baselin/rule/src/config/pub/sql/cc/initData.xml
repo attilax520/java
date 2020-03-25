@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 获得数据库表明 -->
+    <query_table_names>
+        <sql>
+            <![CDATA[
+		SELECT
+        table_name AS NAME,
+        TABLE_COMMENT AS COMMENT
+        FROM
+        information_schema.TABLES
+        WHERE
+        LENGTH( TABLE_COMMENT ) <> 0
+        {1}
+    ]]>
+        </sql>
+        <params>
+            <TABLE_SCHEMA>
+                <index>1</index>
+                <con>AND TABLE_SCHEMA = :?</con>
+                <type>char</type>
+            </TABLE_SCHEMA>
+        </params>
+    </query_table_names>
+</qrys>

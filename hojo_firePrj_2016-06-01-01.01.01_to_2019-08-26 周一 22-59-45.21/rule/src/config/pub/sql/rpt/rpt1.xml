@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+
+	<rpt1_dic_by_type>
+		<sql>
+			select CODE_NAME as n,CODE_VALUE as v from SYS_DICTIONARY
+			where TYPE_VALUE!=CODE_VALUE and TYPE_VALUE= :TYPE
+			{1}
+			ORDER BY ORDER_NUM;
+		</sql>
+		<params>
+			<STATUS>
+				<index>1</index>
+				<con>AND STATUS = 1</con>
+				<TYPE>char</TYPE>
+			</STATUS>
+			<TYPE_VALUE>
+				<index>2</index>
+				<con>AND TYPE_VALUE =:?</con>
+				<type>char</type>
+			</TYPE_VALUE>
+		</params>
+	</rpt1_dic_by_type>
+
+
+
+</qrys>

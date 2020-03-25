@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!--今日报警统计-->
+    <get_today_alarm_count>
+        <sql><![CDATA[
+        SELECT
+            dt.name as deviceType, count(el.id) as count
+          FROM
+            DATA_DEVICE_TYPE dt
+            left join DATA_DEVICE t on dt.type = t.type
+            and t.tenant_id =:TENANT_ID {1}
+            left join DATA_EVENT_INFO el on t.id = el.device_id and el.event_time > :START_TIME
+        where 1=1  group by dt.type
+		]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con> and t.unit_id =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </get_today_alarm_count>
+
+
+    <!-- 远程预警列表 -->
+    <query_early_warning_list>
+        <psql>
+            <![CDATA[
+                SELECT
+                    dd.name DEVICE_NAME,
+                    '' DEVICELOOPID,
+                    FROM_UNIXTIME(el.create_time/1000,'%Y-%m-%d %h:%i:%s')as CREATE_TIME ,
+                    iapr.CREATE_TIME as PROCESS_TIME,
+                    iapr.PROCESS_RESULT,
+                    (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                    iapr.ALARM_DESCRIBE
+                    VM.ID as VIDEO_ID,
+                    VM.DEVICE_NAME as VIDEO_NAME,
+                    VM.URL_DECODE as HLS_ADDRESS,
+                    el.uuid as BUSINESS_ID,
+                    dd.uuid as DEVICEID,
+                    dd.address as DEVICE_ADDRESS,
+                FROM
+                    device_type dt,
+                    device dd,
+                    event_log el left join
+                    IOT_ALARM_PROCESS_RECORD iapr on el.uuid = iapr.BUSINESS_ID,
+                    device_unit_rel dur left join VIDEO_MANAGE VM ON dur.unit_uuid = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE
+                    dt.type = dd.type
+                    AND dd.uuid  = el.device_uuid
+                    AND dd.uuid = dur.device_uuid
+                    and dt.type not in (:?)
+                    and dd.tenant_id =:TENANT_ID {1}
+                    ORDER BY iapr.PROCESS_RESULT ASC,el.CREATE_TIME DESC
+                    LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                 SELECT
+					count(1) tcount
+                FROM
+                    device_type dt ,
+                    device dd,
+                    device_event de,
+                    event_log el left join
+                    IOT_ALARM_PROCESS_RECORD iapr on el.uuid = iapr.BUSINESS_ID,
+                    UNIT_INFO ui left join VIDEO_MANAGE VM ON ui.ID = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE
+                    dt.type = dd.type
+                    AND dd.uuid  =de.device_uuid
+                    AND el.uuid = de.event_uuid
+                    AND dd.affiliated_unit_id = ui.id
+                    {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>AND el.create_time >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <DEV_TYPES>
+                <index>2</index>
+                <con> AND dt.type in (:?)</con>
+                <type>char</type>
+            </DEV_TYPES>
+            <UNIT_ID>
+                <index>3</index>
+                <con> AND dd.affiliated_unit_id =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE_NAME>
+                <index>4</index>
+                <con> AND dd.name like '%':? '%' </con>
+                <type>char</type>
+            </DEVICE_TYPE_NAME>
+        </params>
+    </query_early_warning_list>
+
+
+    <!-- 远程告警列表 -->
+    <query_remote_alarm_list>
+        <psql>
+            <![CDATA[
+                SELECT
+                    dd.name DEVICE_NAME,
+                    '' DEVICELOOPID,
+                    FROM_UNIXTIME(el.create_time/1000,'%Y-%m-%d %h:%i:%s')as CREATE_TIME ,
+                    iapr.CREATE_TIME as PROCESS_TIME,
+                    iapr.PROCESS_RESULT,
+                    (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                    VM.ID as VIDEO_ID,
+                    VM.DEVICE_NAME as VIDEO_NAME,
+                    VM.URL_DECODE as HLS_ADDRESS,
+                    el.uuid as BUSINESS_ID,
+                    dd.uuid as DEVICEID,
+                    dd.address as DEVICE_ADDRESS,
+                    iapr.ALARM_DESCRIBE
+                FROM
+                    device_type dt,
+                    device dd,
+                    event_log el left join
+                    IOT_ALARM_PROCESS_RECORD iapr on el.uuid = iapr.BUSINESS_ID,
+                    device_unit_rel dur left join VIDEO_MANAGE VM ON dur.unit_uuid = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE
+                    dt.type = dd.type
+                    AND dd.uuid  = el.device_uuid
+                    AND dd.uuid = dur.device_uuid
+                    and dd.tenant_id =:TENANT_ID {1}
+                    ORDER BY iapr.PROCESS_RESULT ASC,el.CREATE_TIME DESC
+                    LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                 SELECT
+					count(1) tcount
+                FROM
+                    device_type dt,
+                    device dd,
+                    event_log el left join
+                    IOT_ALARM_PROCESS_RECORD iapr on el.uuid = iapr.BUSINESS_ID,
+                    device_unit_rel dur left join VIDEO_MANAGE VM ON dur.unit_uuid = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE
+                    dt.type = dd.type
+                    AND dd.uuid  = el.device_uuid
+                    AND dd.uuid = dur.device_uuid
+                    and dd.tenant_id =:TENANT_ID {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>AND el.create_time >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <DEV_TYPES>
+                <index>2</index>
+                <con> AND dt.type in (:?)</con>
+                <type>char</type>
+            </DEV_TYPES>
+            <UNIT_ID>
+                <index>3</index>
+                <con> AND dd.unit_id =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE_NAME>
+                <index>4</index>
+                <con> AND dd.name like '%':? '%' </con>
+                <type>char</type>
+            </DEVICE_TYPE_NAME>
+        </params>
+    </query_remote_alarm_list>
+
+    <!--设备计入数统计-->
+    <query_device_join_count>
+        <sql><![CDATA[
+       SELECT
+            dt.NAME,
+            count( dd.id ) as count
+        FROM
+            DATA_DEVICE_TYPE dt
+            LEFT JOIN DATA_DEVICE dd ON dt.type = dd.type and dd.tenant_id =:TENANT_ID
+            {1}
+        WHERE 1=1
+        GROUP BY dt.type
+		]]></sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con> and dd.unit_id = :?</con>·
+                <type>char</type>·
+            </UNIT_ID>
+        </params>
+    </query_device_join_count>
+    <!--首页地图信息-->
+    <query_map_unit_info>
+        <sql><![CDATA[
+                 SELECT
+                b.CODE_NAME,
+                a.LONGITUDE,
+                a.LATITUDE,
+                a.UNIT_NAME,
+                a.UNIT_ADDRESS,
+                a.UNIT_FLAG,
+                a.LINKMAN,
+                a.TELPHONE,
+                a.ID,
+                IF (t.unit_id IS NULL, NULL, "warn_type") AS ALARM_TYPE
+                FROM
+                    UNIT_INFO a
+                    LEFT JOIN SYS_DICTIONARY b ON a.UNIT_TYPE = b.CODE_VALUE
+                    LEFT JOIN ( SELECT d.unit_id  FROM  DATA_DEVICE d   WHERE  d.is_alarm = 1  GROUP BY d.unit_id
+                    ) t ON a.ID = t.unit_id
+                WHERE
+                    1 = 1 {1}
+	            ]]>
+        </sql>
+        <params>
+            <UNIT_FLAG>
+                <index>1</index>
+                <con> and a.UNIT_FLAG in (:?)</con>
+                <type>char</type>
+            </UNIT_FLAG>
+        </params>
+    </query_map_unit_info>
+    <!--首页告警滚动信息-->
+    <query_scroll_alarm_info>
+        <sql><![CDATA[
+        SELECT
+            FROM_UNIXTIME(el1.event_time/1000, '%Y-%m-%d %h:%i:%s') AS HAPPEN_TIME,
+            dd.address AS ADDRESS,
+            el1.id,
+            dd.NAME AS ALARM_DEVICE,
+            UI.LONGITUDE,
+            UI.LATITUDE,
+            UI.ID as UNIT_ID,
+            d.type_desc as ALARM_TYPE
+        FROM
+            DATA_EVENT_INFO el1,
+            DATA_DICTIONARY d,
+            ( SELECT el.device_id, max( el.event_time ) max_event_time FROM DATA_EVENT_INFO el GROUP BY el.device_id ) t,
+            DATA_DEVICE dd,
+            UNIT_INFO UI
+        WHERE
+            el1.device_id = t.device_id
+            AND el1.event_time = t.max_event_time
+            AND el1.device_id = dd.id
+            AND dd.is_alarm = 1
+            AND dd.unit_id =  UI.id
+            AND dd.tenant_id =:TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con> and dd.unit_id =:? </con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </query_scroll_alarm_info>
+    <!-- 根据设备系统查询设备上发事件 -->
+    <get_eventinfo_sys>
+        <psql>
+            <![CDATA[
+                select
+				 tt.device_id DEVICE_ID,
+                tt.name DEVICE_NAME,
+                tt.address DEVICE_ADDRESS,
+              (select name from DATA_DEVICE_TYPE where type = :sysType)as SYS_NAME,
+                FROM_UNIXTIME(tt.event_time/1000,'%Y-%m-%d %H:%i:%s') as EVENT_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.CREATE_TIME,
+                tt.vmId as VIDEO_ID,
+                tt.DEVICE_NAME as VIDEO_NAME,
+                tt.URL_DECODE as HLS_ADDRESS,
+                tt.id as BUSINESS_ID,
+                :type as type,
+                iapr.PROCESS_IMG,
+                iapr.ALARM_DESCRIBE,
+                t.type_desc as FAULT_TYPE,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+								from (
+						select dei.id,dei.event_type,d1.device_id,name,address ,vmId ,DEVICE_NAME,URL_DECODE,dei.event_time,deviceType ,tenant_id,unit_id from   (select
+                dd.id as device_id,dd.name,dd.address,vm.id as vmId,vm.DEVICE_NAME,vm.URL_DECODE,dd.type as deviceType,dd.tenant_id,dd.unit_id
+            from (select t.type  from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = :sysType))t1  where t.id = t1.id )dt,
+                  DATA_DEVICE dd left join VIDEO_MANAGE vm on dd.unit_id = vm.UNIT_ID
+             where dt.type =dd.type)d1 left join DATA_EVENT_INFO  dei
+						 on d1.device_id =dei.device_id limit 20 )tt   left join IOT_ALARM_PROCESS_RECORD iapr on iapr.BUSINESS_ID =   tt.id
+						 , DATA_DICTIONARY t where tt.event_type = t.type
+						{1}
+					  order by if(PROCESS_RESULT is null ,-1,0), tt.event_time desc  LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+             select
+                count(1) tcount
+     from (
+						select dei.id,dei.event_type,d1.device_id,name,address ,vmId ,DEVICE_NAME,URL_DECODE,dei.event_time,deviceType ,tenant_id,unit_id from   (select
+                dd.id as device_id,dd.name,dd.address,vm.id as vmId,vm.DEVICE_NAME,vm.URL_DECODE,dd.type as deviceType,dd.tenant_id,dd.unit_id
+            from (select t.type  from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = :sysType))t1  where t.id = t1.id )dt,
+                  DATA_DEVICE dd left join VIDEO_MANAGE vm on dd.unit_id = vm.UNIT_ID
+             where dt.type =dd.type)d1 left join DATA_EVENT_INFO  dei
+						 on d1.device_id =dei.device_id limit 20 )tt   left join IOT_ALARM_PROCESS_RECORD iapr on iapr.BUSINESS_ID =   tt.id
+						 , DATA_DICTIONARY t where tt.event_type = t.type
+						{1}
+            ]]>
+        </tsql>
+
+        <params>
+            <deviceType>
+                <index>1</index>
+                <con> tt.deviceType = :? </con>
+                <type>char</type>
+            </deviceType>
+            <processResult>
+                <index>2</index>
+                <con> AND iapr.PROCESS_RESULT = :?  </con>
+                <type>char</type>
+            </processResult>
+            <address>
+                <index>3</index>
+                <con> AND tt.address like :? </con>
+                <type>char</type>
+            </address>
+            <START_TIME>
+                <index>4</index>
+                <con>AND tt.event_time >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con>
+                    <![CDATA[
+                        AND tt.event_time <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+            <alarm>
+                <index>5</index>
+                <con> AND t.is_alarm = :? </con>
+                <type>char</type>
+            </alarm>
+            <fault>
+                <index>6</index>
+                <con> AND t.is_fault = :? </con>
+                <type>char</type>
+            </fault>
+            <TENANT_ID>
+                <index>7</index>
+                <con>and tt.tenant_id = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <unit_id>
+                <index>7</index>
+                <con>and tt.unit_id in (:?)</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </get_eventinfo_sys>
+    <!-- 根据设备系统code查询系统类型列表 -->
+    <get_systype_by_code>
+        <sql>
+            <![CDATA[
+          	select t.type,t.name from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = :sysType ))t1  where t.id = t1.id
+                  and t.type_grade <>0
+            ]]>
+        </sql>
+    </get_systype_by_code>
+    <!-- 根据设备系统查询火灾自动报警系统上发事件 -->
+    <get_fire_eventinfo_sys>
+        <psql>
+            <![CDATA[
+            select * from (
+            select
+                dmu.id DEVICE_ID,
+                dmu.device_type_desc DEVICE_NAME ,
+                dmu.installed_address DEVICE_ADDRESS,
+                (select name from DATA_DEVICE_TYPE where type = :sysType)as SYS_NAME,
+                FROM_UNIXTIME(dmei.event_time/1000,'%Y-%m-%d %H:%i:%s') as EVENT_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.CREATE_TIME,
+                vm.ID as VIDEO_ID,
+                vm.DEVICE_NAME as VIDEO_NAME,
+                vm.URL_DECODE as HLS_ADDRESS,
+                dmei.id as BUSINESS_ID,
+                :type  as type,
+                iapr.PROCESS_IMG,
+                iapr.ALARM_DESCRIBE,
+                dd.type_desc as FAULT_TYPE,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+            from (
+                select t.type from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = "fire_alarm_system"))t1  where t.id = t1.id
+                  and type <> 'machine_user' and type <> 'fire_alarm_system' )dt,DATA_MACHINE_UNIT
+				  dmu left join VIDEO_MANAGE vm on dmu.unit_id = vm.UNIT_ID ,DATA_MACHINE_EVENT_INFO dmei left join  IOT_ALARM_PROCESS_RECORD iapr on dmei.id = iapr.BUSINESS_ID,
+				  DATA_DICTIONARY dd  where dt.type = dmu.device_type_code and dmu.id = dmei.machine_info_id and dmei.event_type = dd.type
+					 {1}
+		    union
+					select
+                dmu.id DEVICE_ID,
+                dmu.name DEVICE_NAME ,
+                dmu.address DEVICE_ADDRESS,
+                (select name from DATA_DEVICE_TYPE where type = :sysType)as SYS_NAME,
+                FROM_UNIXTIME(dmei.event_time/1000,'%Y-%m-%d %H:%i:%s') as EVENT_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.CREATE_TIME,
+                vm.ID as VIDEO_ID,
+                vm.DEVICE_NAME as VIDEO_NAME,
+                vm.URL_DECODE as HLS_ADDRESS,
+                dmei.id as BUSINESS_ID,
+                :type  as type,
+                iapr.PROCESS_IMG,
+                iapr.ALARM_DESCRIBE,
+                dd.type_desc as FAULT_TYPE,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+            from (
+                select t.type from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = "fire_alarm_system"))t1  where t.id = t1.id  and type = 'machine_user')dt,DATA_MACHINE_INFO
+				  dmu left join VIDEO_MANAGE vm on dmu.unit_id = vm.UNIT_ID ,DATA_MACHINE_EVENT_INFO dmei left join  IOT_ALARM_PROCESS_RECORD iapr on dmei.id = iapr.BUSINESS_ID,
+				  DATA_DICTIONARY dd  where dt.type = dmu.device_type and dmu.id = dmei.machine_info_id and dmei.event_type = dd.type
+            {1}
+					)t
+          order by sort, t.event_time desc  LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+             select
+                count(1) tcount
+              from (
+                select  dmu.id DEVICE_ID,
+                dmu.device_type_desc DEVICE_NAME ,
+                dmu.installed_address DEVICE_ADDRESS,
+                (select name from DATA_DEVICE_TYPE where type = :sysType)as SYS_NAME,
+                FROM_UNIXTIME(dmei.event_time/1000,'%Y-%m-%d %H:%i:%s') as EVENT_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.CREATE_TIME,
+                vm.ID as VIDEO_ID,
+                vm.DEVICE_NAME as VIDEO_NAME,
+                vm.URL_DECODE as HLS_ADDRESS,
+                dmei.id as BUSINESS_ID,
+                :type  as type,
+                iapr.PROCESS_IMG,
+                iapr.ALARM_DESCRIBE,
+                dd.type_desc as FAULT_TYPE,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+            from (
+                select t.type from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = :sysType))t1  where t.id = t1.id  and type <> 1)dt,DATA_MACHINE_UNIT
+				  dmu left join VIDEO_MANAGE vm on dmu.unit_id = vm.UNIT_ID ,DATA_MACHINE_EVENT_INFO dmei left join  IOT_ALARM_PROCESS_RECORD iapr on dmei.id = iapr.BUSINESS_ID,
+				  DATA_DICTIONARY dd  where dt.type = dmu.device_type_code and dmu.id = dmei.machine_info_id and dmei.event_type = dd.type
+					  {1}
+		    union
+					select
+                dmu.id DEVICE_ID,
+                dmu.name DEVICE_NAME ,
+                dmu.address DEVICE_ADDRESS,
+                (select name from DATA_DEVICE_TYPE where type = :sysType)as SYS_NAME,
+                FROM_UNIXTIME(dmei.event_time/1000,'%Y-%m-%d %H:%i:%s') as EVENT_TIME,
+                iapr.PROCESS_RESULT,
+                (SELECT `NAME` from SYS_USER SU WHERE SU.ID = iapr.CREATE_BY) AS CREATE_BY,
+                iapr.CREATE_TIME,
+                vm.ID as VIDEO_ID,
+                vm.DEVICE_NAME as VIDEO_NAME,
+                vm.URL_DECODE as HLS_ADDRESS,
+                dmei.id as BUSINESS_ID,
+                :type  as type,
+                iapr.PROCESS_IMG,
+                iapr.ALARM_DESCRIBE,
+                dd.type_desc as FAULT_TYPE,
+                if(PROCESS_RESULT is null ,-1,0) as sort
+            from (
+                select t.type from DATA_DEVICE_TYPE t,
+                  (select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+                  from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+                  and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = "fire_alarm_system"))t1  where t.id = t1.id  and type = 1)dt,DATA_MACHINE_INFO
+				  dmu left join VIDEO_MANAGE vm on dmu.unit_id = vm.UNIT_ID ,DATA_MACHINE_EVENT_INFO dmei left join  IOT_ALARM_PROCESS_RECORD iapr on dmei.id = iapr.BUSINESS_ID,
+				  DATA_DICTIONARY dd  where dt.type = dmu.device_type and dmu.id = dmei.machine_info_id and dmei.event_type = dd.type
+           {1}
+					)t
+            ]]>
+        </tsql>
+
+        <params>
+            <deviceType>
+                <index>1</index>
+                <con> AND dmu.device_type_code = :? </con>
+                <type>char</type>
+            </deviceType>
+            <processResult>
+                <index>2</index>
+                <con> AND iapr.PROCESS_RESULT = :?  </con>
+                <type>char</type>
+            </processResult>
+            <address>
+                <index>3</index>
+                <con> AND dmu.installed_address like :? </con>
+                <type>char</type>
+            </address>
+            <START_TIME>
+                <index>4</index>
+                <con>AND dmei.event_time >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con>
+                    <![CDATA[
+                        AND dmei.event_time <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+            <alarm>
+                <index>5</index>
+                <con> AND dd.is_alarm = :? </con>
+                <type>char</type>
+            </alarm>
+            <fault>
+                <index>6</index>
+                <con> AND dd.is_fault = :? </con>
+                <type>char</type>
+            </fault>
+            <TENANT_ID>
+                <index>7</index>
+                <con>and dmu.tenant_id = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </get_fire_eventinfo_sys>
+    <get_current_alarm_data>
+        <sql>
+            select tab1.* from (
+            select
+            dmi.device_code,
+            dmi.name,
+            dmi.address,
+            FROM_UNIXTIME(dmei.create_time/1000,'%Y-%m-%d %H:%i:%S') as event_time,
+            t1.type_desc,
+            dmei.type_flag,dmei.event_value,
+            dmei.host_code, dmei.loop_code, dmei.address_code
+            from
+            DATA_MACHINE_INFO dmi,
+            DATA_MACHINE_EVENT_INFO dmei,
+            DATA_DICTIONARY t1
+            where
+            dmi.id = dmei.machine_info_id
+            and dmei.event_type = t1.type
+            {1}
+            ) tab1 where 1=1
+            order by tab1.event_time DESC LIMIT 30
+        </sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>and dmi.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </get_current_alarm_data>
+
+</qrys>
+

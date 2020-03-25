@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 设备分页 -->
+    <device_list>
+        <sql>
+            <![CDATA[
+		SELECT *,
+        IF(LENGTH(A.unit_address)>0,'0','1') as is_unit_install ,
+        IF(LENGTH(A.unit_address)>0,'已安装','未安装') as is_unit_install_name
+        FROM (
+        SELECT
+        D.*,
+        (SELECT T.name FROM DATA_DEVICE_TYPE T WHERE T.type=D.type) as type_name,
+        (SELECT U.UNIT_NAME FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_name,
+        (SELECT U.UNIT_ADDRESS FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_address,
+        (SELECT A.ARCHITECTURE_NAME FROM ARCHITECTURE_INFO A WHERE A.ID=D.architecture_id) as architecture_name,
+        /*(SELECT U.DEPT_ID FROM UNIT_INFO U WHERE U.ID=D.unit_id ) as dept_id,
+        (SELECT SD.`NAME` FROM SYS_DEPT SD, UNIT_INFO U WHERE SD.ID = U.DEPT_ID AND U.ID=D.unit_id ) as dept_name,*/
+        (SELECT SD.`NAME` FROM SYS_DEPT SD WHERE SD.ID = D.DEPT_ID) as dept_name,
+        IF(LENGTH(D.address)>0,'0','1') as is_install,
+        IF(LENGTH(D.address)>0,'已安装','未安装') as is_install_name
+        FROM
+        DATA_DEVICE D
+        WHERE 1=1
+        AND D.logic_status='1'
+        ) A
+        WHERE 1=1
+        {1}
+        ORDER BY A.CREATE_TIME DESC
+    ]]>
+        </sql>
+        <psql><![CDATA[
+		SELECT *,
+        IF(LENGTH(A.unit_address)>0,'0','1') as is_unit_install ,
+        IF(LENGTH(A.unit_address)>0,'已安装','未安装') as is_unit_install_name
+        FROM (
+        SELECT
+        D.*,
+        (SELECT T.name FROM DATA_DEVICE_TYPE T WHERE T.type=D.type) as type_name,
+        (SELECT U.UNIT_NAME FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_name,
+        (SELECT U.UNIT_ADDRESS FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_address,
+        (SELECT A.ARCHITECTURE_NAME FROM ARCHITECTURE_INFO A WHERE A.ID=D.architecture_id) as architecture_name,
+        /*(SELECT U.DEPT_ID FROM UNIT_INFO U WHERE U.ID=D.unit_id ) as dept_id,
+        (SELECT SD.`NAME` FROM SYS_DEPT SD, UNIT_INFO U WHERE SD.ID = U.DEPT_ID AND U.ID=D.unit_id ) as dept_name,*/
+        (SELECT SD.`NAME` FROM SYS_DEPT SD WHERE SD.ID = D.DEPT_ID) as dept_name,
+        IF(LENGTH(D.address)>0,'0','1') as is_install,
+        IF(LENGTH(D.address)>0,'已安装','未安装') as is_install_name
+        FROM
+        DATA_DEVICE D
+        WHERE 1=1
+        AND D.logic_status='1'
+        ) A
+        WHERE 1=1
+        {1}
+        ORDER BY A.CREATE_TIME DESC
+        LIMIT :start,:end
+    ]]></psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+	        count(1) as tcount FROM (
+            SELECT
+            D.*,
+            (SELECT T.name FROM DATA_DEVICE_TYPE T WHERE T.type=D.type) as type_name,
+            (SELECT U.UNIT_NAME FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_name,
+            (SELECT U.UNIT_ADDRESS FROM UNIT_INFO U WHERE U.ID=D.unit_id) as unit_address,
+            (SELECT A.ARCHITECTURE_NAME FROM ARCHITECTURE_INFO A WHERE A.ID=D.architecture_id) as architecture_name,
+            /*(SELECT U.DEPT_ID FROM UNIT_INFO U WHERE U.ID=D.unit_id ) as dept_id,
+            (SELECT SD.`NAME` FROM SYS_DEPT SD, UNIT_INFO U WHERE SD.ID = U.DEPT_ID AND U.ID=D.unit_id ) as dept_name,*/
+            (SELECT SD.`NAME` FROM SYS_DEPT SD WHERE SD.ID = D.DEPT_ID) as dept_name,
+            IF(LENGTH(D.address)>0,'0','1') as is_install,
+            IF(LENGTH(D.address)>0,'已安装','未安装') as is_install_name
+            FROM
+            DATA_DEVICE D
+            WHERE 1=1
+            ) A
+            WHERE 1=1
+            AND A.logic_status='1'
+            {1}
+            ]]>
+        </tsql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND A.tenant_id=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>1</index>
+                <con>AND A.type=:?</con>
+                <type>char</type>
+            </type>
+            <address>
+                <index>1</index>
+                <con>AND A.address like '%':?'%'</con>
+                <type>char</type>
+            </address>
+            <name>
+                <index>1</index>
+                <con>and A.name like '%':?'%'</con>
+                <type>char</type>
+            </name>
+            <unit_name>
+                <index>1</index>
+                <con>AND A.unit_name LIKE '%':?'%'</con>
+                <type>char</type>
+            </unit_name>
+            <affiliated_name>
+                <index>1</index>
+                <con>AND A.affiliated_unit like '%':?'%'</con>
+                <type>char</type>
+            </affiliated_name>
+            <unit_id>
+                <index>1</index>
+                <con>AND A.unit_id = :?</con>
+                <type>char</type>
+            </unit_id>
+            <dept_id>
+                <index>1</index>
+                <con>AND A.dept_id = :?</con>
+                <type>char</type>
+            </dept_id>
+            <is_install>
+                <index>1</index>
+                <con>AND A.is_install = :?</con>
+                <type>char</type>
+            </is_install>
+            <is_unit_install>
+                <index>1</index>
+                <con>AND IF(LENGTH(A.unit_address)>0,'0','1') = :?</con>
+                <type>char</type>
+            </is_unit_install>
+            <unit_address>
+                <index>1</index>
+                <con>AND A.unit_address  LIKE '%':?'%'</con>
+                <type>char</type>
+            </unit_address>
+        </params>
+    </device_list>
+    <device_info>
+        <sql><![CDATA[
+		SELECT
+        *
+        FROM
+        DATA_DEVICE D
+        WHERE 1=1
+        {1}
+    ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and D.ID=:?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </device_info>
+    <device_type>
+        <sql><![CDATA[
+		SELECT
+        *
+        FROM
+        DATA_DEVICE_TYPE D
+    ]]></sql>
+    </device_type>
+    <unit_list>
+        <sql><![CDATA[
+		SELECT
+        U.ID,
+        U.UNIT_NAME,
+        U.UNIT_ADDRESS,
+        U.UNIT_TYPE
+        FROM
+        UNIT_INFO U
+    ]]></sql>
+    </unit_list>
+    <arc_list>
+        <sql><![CDATA[
+		SELECT
+        A.ID,
+        A.ARCHITECTURE_NAME
+        FROM
+        ARCHITECTURE_INFO A
+        WHERE
+        1=1
+        {1}
+    ]]></sql>
+        <params>
+            <unit_id>
+                <index>1</index>
+                <con>and A.UNIT_ID=:?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </arc_list>
+    //获得行政区划信息
+    <query_province>
+        <sql><![CDATA[
+		SELECT
+        D.ID,
+        CONCAT(D.NAME,D.SUFFIX ) AS NAME
+        FROM
+        SYS_DISTRICT D
+        WHERE
+        D.LEVEL='1'
+        ORDER BY ID ASC
+    ]]></sql>
+    </query_province>
+    <query_sub_region>
+        <sql><![CDATA[
+		SELECT
+        D.ID,
+        CONCAT(D.NAME,IFNULL(D.SUFFIX,'')) AS NAME
+        FROM
+        SYS_DISTRICT D
+        WHERE 1=1
+        {1}
+        ORDER BY ID ASC
+    ]]></sql>
+        <params>
+            <parent_id>
+                <index>1</index>
+                <con>and D.PARENT_ID=:?</con>
+                <type>char</type>
+            </parent_id>
+        </params>
+    </query_sub_region>
+    <region_tree>
+        <sql><![CDATA[
+		SELECT
+        D.ID,
+        D.`NAME` AS NAME,
+        D.PARENT_ID,
+        D.DISTRICT_CODE
+        FROM
+        SYS_DISTRICT D
+        WHERE
+        1=1 AND D.`NAME` IS NOT NULL
+        AND D.`LEVEL` >=1
+        AND D.`LEVEL`<=4
+    ]]></sql>
+    </region_tree>
+    <!--<region_tree>-->
+        <!--<sql><![CDATA[-->
+		<!--SELECT-->
+        <!--D.ID,-->
+        <!--CONCAT(D.`NAME`,D.SUFFIX) AS NAME,-->
+        <!--D.PARENT_ID-->
+        <!--FROM-->
+        <!--SYS_DISTRICT D-->
+        <!--WHERE-->
+        <!--1=1-->
+        <!--AND D.`LEVEL` >=1-->
+        <!--AND D.`LEVEL`<=5-->
+        <!--AND D.`NAME` IS NOT NULL-->
+        <!--AND D.SUFFIX IS NOT NULL-->
+        <!--ORDER BY D.`LEVEL` ASC-->
+    <!--]]></sql>-->
+    <!--</region_tree>-->
+</qrys>

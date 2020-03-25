@@ -1,0 +1,60 @@
+<ehcache
+	xsi:noNamespaceSchemaLocation="ehcache.xsd"
+	updateCheck="true"
+	monitoring="autodetect"
+	dynamicConfig="true"
+	maxBytesLocalHeap="150M"
+	>
+	<diskStore path="java.io.tmpdir"/>
+	<defaultCache
+			maxEntriesLocalHeap="10000"
+			eternal="false"
+			timeToIdleSeconds="120"
+			timeToLiveSeconds="120"
+			maxEntriesLocalDisk="10000000"
+			diskExpiryThreadIntervalSeconds="120"
+			memoryStoreEvictionPolicy="LRU">
+		<persistence strategy="localTempSwap"/>
+		<sizeOfPolicy maxDepth="10000" maxDepthExceededBehavior="abort" />
+	</defaultCache>
+
+	<cache name="local"
+		  maxBytesLocalHeap="100M"
+		  eternal="false"
+		  timeToIdleSeconds="300"
+		  overflowToDisk="true"
+		  maxElementsOnDisk="100000"
+		  memoryStoreEvictionPolicy="LRU"/>
+
+	<cache name="podcasts"
+		  maxBytesLocalHeap="40M"
+		  eternal="false"
+		  timeToIdleSeconds="300"
+		  overflowToDisk="true"
+		  maxEntriesLocalDisk="1000"
+		  diskPersistent="false"
+		  diskExpiryThreadIntervalSeconds="120"
+		  memoryStoreEvictionPolicy="LRU"/>
+
+	<cache name="referenceData"
+		  maxBytesLocalHeap="5M"
+		  eternal="true"
+		  memoryStoreEvictionPolicy="LRU">
+		  <pinning store="localMemory"/>
+	 </cache>
+
+	<cache name="newestAndRecommendedPodcasts"
+			  maxBytesLocalHeap="3M"
+		  eternal="true"
+		  memoryStoreEvictionPolicy="LRU">
+		  <pinning store="localMemory"/>
+	</cache>
+
+	<cache name="randomAndTopRatedPodcasts"
+			  maxBytesLocalHeap="1M"
+		  timeToLiveSeconds="300"
+		  memoryStoreEvictionPolicy="LRU">
+	 </cache>
+
+</ehcache>
+

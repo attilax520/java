@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!--停车次数统计-->
+    <rpt2_parking_count>
+        <sql>
+            <![CDATA[
+             SELECT SECTION_NAME, PARK_NAME, COUNT(1) PARKING_COUNT
+                , SUM(LT15) LT15, SUM(BT15_60) BT15_60
+                , SUM(BT1_2) BT1_2, SUM(BT2_4) BT2_4
+                , SUM(GT4) GT4
+            FROM (
+                SELECT BPS.`NAME` AS SECTION_NAME, P.`NAME` AS PARK_NAME
+                    , IF(PRA.DURATIONS < 900, 1, 0) AS LT15
+                    , IF(PRA.DURATIONS >= 900
+                        AND PRA.DURATIONS < 3600, 1, 0) AS BT15_60
+                    , IF(PRA.DURATIONS >= 3600
+                        AND PRA.DURATIONS < 7200, 1, 0) AS BT1_2
+                    , IF(PRA.DURATIONS >= 7200
+                        AND PRA.DURATIONS < 14400, 1, 0) AS BT2_4
+                    , IF(PRA.DURATIONS >= 14400, 1, 0) AS GT4
+                FROM OPER_PARKING_RECORD_HIS PRA
+                    LEFT JOIN BUSI_PARK P ON PRA.ARRIVE_PARK_ID = P.ID
+                    LEFT JOIN BUSI_PARK_SECTION BPS ON P.PARK_SECTION_ID = BPS.ID
+                WHERE BPS.`NAME` IS NOT NULL {1}
+            ) TT
+            GROUP BY SECTION_NAME, PARK_NAME
+            ]]>
+        </sql>
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>and PRA.LEAVE_TIME &gt;= :?</con>
+                <type>date</type>
+            </START_TIME>
+            <END_TIME>
+                <index>2</index>
+                <con>and PRA.LEAVE_TIME &lt; :?</con>
+                <type>date</type>
+            </END_TIME>
+            <SECTION_NAME>
+                <index>3</index>
+                <con>and BPS.`NAME` like :?</con>
+                <type>char</type>
+            </SECTION_NAME>
+        </params>
+    </rpt2_parking_count>
+    <!--收费员操作统计-->
+    <rpt2_collector_oper_count>
+        <sql>
+            <![CDATA[
+            SELECT tt.COLLECTOR_NAME,tt.JOB, COUNT(1) AS PARKING_COUNT
+            , SUM(IF(tt.VEHICLE_ID IS NULL, 1, 0)) AS NOT_ENTERED_COUNT
+            , SUM(IF(tt.OPERATE_TYPE = '05', 1, 0)) AS ENTERED_COUNT
+            , SUM(IF(tt.OPERATE_TYPE = '06', 1, 0)) AS UPDATE_COUNT
+            , SUM(IF(tt.OPERATE_TYPE = '07', 1, 0)) AS PHOTO_COUNT
+            FROM (
+            SELECT bps.`NAME` AS SECTION_NAME, p.`NAME` AS PARK_NAME, c.`NAME` AS COLLECTOR_NAME,c.JOB, pra.ID AS PARKING_RECORD_ID, pra.EXTERNAL_ID
+            , pra.VEHICLE_ID, pra.ARRIVE_TIME, pra.LEAVE_TIME, pra.PARK_FEE, pod.OPERATE_ID
+            , pod.OPERATE_TYPE
+            FROM OPER_PARKING_OPERATE_DETAIL pod
+            LEFT JOIN BUSI_COLLECTOR c ON c.ID = pod.OPERATE_ID
+            LEFT JOIN VIEW_PARKING_RECORD_ALL pra ON pra.ID = pod.PARKING_RECORD_ID
+            LEFT JOIN BUSI_PARK p ON pra.ARRIVE_PARK_ID = p.ID
+            LEFT JOIN BUSI_PARK_SECTION bps ON p.PARK_SECTION_ID = bps.ID
+            WHERE bps.`NAME` IS NOT NULL
+            AND pod.OPERATE_TYPE IN ('05', '06', '07')
+            {1}
+            ) tt
+            GROUP BY tt.COLLECTOR_NAME,tt.JOB;
+             ]]>
+        </sql>
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>and pra.LEAVE_TIME &gt;= :?</con>
+                <type>date</type>
+            </START_TIME>
+            <END_TIME>
+                <index>2</index>
+                <con>and pra.LEAVE_TIME &lt; :?</con>
+                <type>date</type>
+            </END_TIME>
+            <NAME>
+                <index>3</index>
+                <con>and c.`NAME` =:?</con>
+                <type>char</type>
+            </NAME>
+			<PARK_ID>
+                <index>4</index>
+                <con>and p.ID =:?</con>
+                <type>char</type>
+            </PARK_ID>
+        </params>
+    </rpt2_collector_oper_count>
+</qrys>

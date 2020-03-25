@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!--智慧插座平台SQL-->
+
+    <!-- 客户列表 -->
+    <custom_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        R.ID,
+        R.`NAME`,
+        (SELECT NAME FROM SYS_DEPT D WHERE D.ID=R.DEPT_ID) AS DEPT_NAME,
+        R.ADDRESS,
+        R.DEPT_ID,
+        R.PHONE
+        FROM
+        SP_RESIDENT R
+        WHERE
+        1=1
+        AND R.DELETED='0'
+        {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+        SELECT
+        R.ID,
+        R.`NAME`,
+        (SELECT NAME FROM SYS_DEPT D WHERE D.ID=R.DEPT_ID) AS DEPT_NAME,
+        R.ADDRESS,
+        R.DEPT_ID,
+        R.PHONE
+        FROM
+        SP_RESIDENT R
+        WHERE
+        1=1
+        AND R.DELETED='0'
+        {1}
+        limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS tcount
+        FROM
+        SP_RESIDENT R
+        WHERE
+        1=1
+        AND R.DELETED='0'
+        {1}
+        ]]>
+        </tsql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND R.UNIT_ID=:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND R.DEPT_ID=:?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND R.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND R.NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+        </params>
+    </custom_list>
+
+    <!-- 设备列表 -->
+    <socket_device_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        D.id,
+        D.name,
+        IF(D.address is null,0,1) AS install,
+        IF(D.address is null,'未安装','已安装') AS install_name,
+        D.address,
+        D.zone_code,
+        D.app_id,
+        D.device_code,
+        D.heartbeat_interval,
+        D.remark,
+        (SELECT NAME FROM DATA_DEVICE_TYPE T WHERE T.type=D.type) AS type,
+        D.dept_id,
+        (SELECT NAME FROM SYS_DEPT S WHERE S.ID=D.dept_id) AS dept_name
+        FROM
+        DATA_DEVICE D
+        WHERE
+        1=1
+        AND D.type='smart_power_plug'
+        {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+        SELECT
+        D.id,
+        D.name,
+        IF(D.address is null,0,1) AS install,
+        IF(D.address is null,'未安装','已安装') AS install_name,
+        D.address,
+        D.zone_code,
+        D.app_id,
+        D.device_code,
+        D.heartbeat_interval,
+        D.remark,
+        D.longitude,
+        D.latitude,
+        (SELECT NAME FROM DATA_DEVICE_TYPE T WHERE T.type=D.type) AS type,
+        D.dept_id,
+        (SELECT NAME FROM SYS_DEPT S WHERE S.ID=D.dept_id) AS dept_name
+        FROM
+        DATA_DEVICE D
+        WHERE
+        1=1
+        AND D.type='smart_power_plug'
+        {1}
+        limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS tcount
+        FROM
+        DATA_DEVICE D
+        WHERE
+        1=1
+        AND D.type='smart_power_plug'
+        {1}
+        ]]>
+        </tsql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND D.unit_id=:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEPT_ID>
+                <index>1</index>
+                <con>AND D.DEPT_ID=:?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <NAME>
+                <index>1</index>
+                <con>AND D.NAME LIKE :?</con>
+                <type>char</type>
+            </NAME>
+            <ADDRESS>
+                <index>1</index>
+                <con>AND D.ADDRESS LIKE :?</con>
+                <type>char</type>
+            </ADDRESS>
+        </params>
+    </socket_device_list>
+
+    <!-- 插座告警信息列表 -->
+    <get_socket_alarm_list>
+        <psql>
+            <![CDATA[
+            SELECT
+            D.address AS ADDRESS,
+            (SELECT NAME FROM SYS_DEPT WHERE ID=D.dept_id) DEPT_NAME,
+            FROM_UNIXTIME(I.create_time/1000,'%Y-%m-%d %H:%i:%s') as CREATE_TIME,
+            Y.type_desc AS TYPE_DESC,
+            (SELECT NAME FROM SYS_USER WHERE dept_id=D.dept_id limit 0,1) MG_NAME,
+            (SELECT PHONE FROM SYS_USER WHERE dept_id=D.dept_id limit 0,1) MG_PHONE,
+            (SELECT NAME FROM SP_RESIDENT WHERE dept_id=D.dept_id limit 0,1) CS_NAME,
+            (SELECT PHONE FROM SP_RESIDENT WHERE dept_id=D.dept_id limit 0,1) CS_PHONE
+            FROM
+            DATA_DEVICE D,
+            DATA_EVENT_INFO I,
+            DATA_DICTIONARY Y
+            WHERE
+            1=1
+            AND D.TYPE='smart_power_plug'
+            AND D.ID=I.DEVICE_ID
+            AND I.event_type=Y.type
+            AND (Y.is_alarm='1' OR Y.is_fault='1')
+            {1}
+            limit :start,:end
+            ]]>
+        </psql>
+        <tsql>
+        <![CDATA[
+            select
+            count(1) tcount
+            FROM
+            DATA_DEVICE D,
+            DATA_EVENT_INFO I,
+            DATA_DICTIONARY Y
+            WHERE
+            1=1
+            AND D.TYPE='smart_power_plug'
+            AND D.ID=I.DEVICE_ID
+            AND I.event_type=Y.type
+            AND (Y.is_alarm='1' OR Y.is_fault='1')
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <deptId>
+                <index>1</index>
+                <con> AND D.DEPT_ID = :? </con>
+                <type>char</type>
+            </deptId>
+        </params>
+    </get_socket_alarm_list>
+
+    <!-- 插座设备状态信息列表 -->
+    <get_socket_status_list>
+        <psql>
+            <![CDATA[
+            select
+            d.id,
+            d.device_code,
+            d.name,
+            d.address,
+            d.dept_id,
+            (SELECT NAME FROM SYS_DEPT WHERE ID=d.dept_id) dept_name,
+            d.is_online,
+            (SELECT NAME FROM SYS_USER WHERE dept_id=d.dept_id limit 0,1) mg_name,
+            (SELECT PHONE FROM SYS_USER WHERE dept_id=d.dept_id limit 0,1) mg_phone,
+            ifnull((
+            select
+            i.event_value
+            from
+            DATA_DEVICE_EVENT_CURRENT c,
+            DATA_EVENT_INFO i
+            where
+            1=1
+            and c.device_id=d.id
+            and c.event_id=i.id
+            and c.event_type='90'
+            ),0) as voltage,
+            ifnull((
+            select
+            i.event_value
+            from
+            DATA_DEVICE_EVENT_CURRENT c,
+            DATA_EVENT_INFO i
+            where
+            1=1
+            and c.device_id=d.id
+            and c.event_id=i.id
+            and c.event_type='91'
+            ),0)  as electric,
+            ifnull((
+            select
+            i.event_value
+            from
+            DATA_DEVICE_EVENT_CURRENT c,
+            DATA_EVENT_INFO i
+            where
+            1=1
+            and c.device_id=d.id
+            and c.event_id=i.id
+            and c.event_type='94'
+            ),0) as cost
+            from
+            DATA_DEVICE d
+            where
+            1=1
+            and d.type='smart_power_plug'
+            {1}
+            limit :start,:end
+            ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            select
+            count(1) AS tcount
+            from
+            DATA_DEVICE d
+            where
+            1=1
+            and d.type='smart_power_plug'
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <deptId>
+                <index>1</index>
+                <con> AND d.DEPT_ID = :? </con>
+                <type>char</type>
+            </deptId>
+            <name>
+                <index>1</index>
+                <con> AND d.ADDRESS LIKE :? </con>
+                <type>char</type>
+            </name>
+        </params>
+    </get_socket_status_list>
+
+    <!-- 所属机构列表 -->
+    <socket_dept_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        D.ID,
+        D.`NAME`
+        FROM
+        SYS_DEPT D
+        WHERE
+        1=1
+        AND D.DELETED='0'
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </socket_dept_list>
+
+    <!-- 插座超阈值报警、断电报警统计 -->
+    <socket_alarm_count>
+        <sql>
+            <![CDATA[
+        select
+        ifnull(sum(event_type='90' or event_type='91'),0) as threshold,
+        ifnull(sum(event_type='1123' or event_type='1124' or event_type='1125' or event_type='28'),0) as outage
+        from
+        DATA_EVENT_INFO i,
+        DATA_DEVICE d
+        where
+        1=1
+        and i.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        and i.device_id=d.id
+        and d.type='smart_power_plug'
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </socket_alarm_count>
+
+    <!-- 插座实时报警信息前5条 -->
+    <socket_top_five>
+        <sql>
+            <![CDATA[
+        select
+        i.id,
+        (SELECT S.`NAME` FROM SYS_DEPT S WHERE S.ID=d.dept_id) AS dept_name,
+        (SELECT U.UNIT_NAME FROM UNIT_INFO U WHERE U.ID=d.unit_id) AS unit_name,
+        (SELECT NAME FROM SYS_USER WHERE dept_id=d.dept_id limit 0,1) MG_NAME,
+        (SELECT PHONE FROM SYS_USER WHERE dept_id=d.dept_id limit 0,1) MG_PHONE,
+        FROM_UNIXTIME(i.create_time/1000,'%Y-%m-%d %H:%i:%s') as CREATE_TIME
+        from
+        DATA_EVENT_INFO i,
+        DATA_DEVICE d
+        where
+        1=1
+        and i.create_time> UNIX_TIMESTAMP(CAST(SYSDATE()AS DATE))*1000
+        and i.device_id=d.id
+        and d.type='smart_power_plug'
+        order by i.create_time desc
+        limit 0,5
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </socket_top_five>
+
+    <!-- 插座 监测台历史报警统计 -->
+    <socket_alarm_history>
+        <sql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS COUNT,
+        C.CREATE_TIME AS TIME
+        FROM(
+        SELECT
+        SUBSTR(from_unixtime(I.create_time/1000),1,10) AS CREATE_TIME
+        FROM
+        DATA_DEVICE D,
+        DATA_EVENT_INFO I,
+        DATA_DICTIONARY Y
+        WHERE 1=1
+        AND D.ID=I.device_id
+        AND I.event_type=Y.TYPE
+        AND D.type='smart_power_plug'
+        AND Y.is_alarm='1'
+        ) C
+        WHERE
+        DATE_SUB(CURDATE(), INTERVAL 7 DAY) <= date(C.CREATE_TIME)
+        GROUP BY C.CREATE_TIME ORDER BY C.CREATE_TIME asc
+        ]]>
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND D.TENANT_ID=:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </socket_alarm_history>
+</qrys>

@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <facility_fire_system>
+        <sql><![CDATA[
+		SELECT
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME,d.HOST_NUMBER
+		FROM FIRE_FACILITY_SYSTEM_MANAGER a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		LEFT JOIN HOST_MANAGER d ON a.HOST_ID = d.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		ORDER BY UNIT_ID ASC
+	]]></sql>
+        <psql><![CDATA[
+		SELECT
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME,d.HOST_NUMBER
+		FROM FIRE_FACILITY_SYSTEM_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		LEFT JOIN HOST_MANAGER d ON a.HOST_ID = d.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		ORDER BY UNIT_ID ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		SELECT
+			count(*) as tcount
+		FROM FIRE_FACILITY_SYSTEM_MANAGER a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		LEFT JOIN HOST_MANAGER d ON a.HOST_ID = d.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FIRE_ROOM_ID>
+                <index>1</index>
+                <con>and a.FIRE_ROOM_ID = :?</con>
+                <type>char</type>
+            </FIRE_ROOM_ID>
+            <HOST_ID>
+                <index>1</index>
+                <con>and a.HOST_ID = :?</con>
+                <type>char</type>
+            </HOST_ID>
+            <SYSTEM_TYPE>
+                <index>1</index>
+                <con>and a.SYSTEM_TYPE like :?</con>
+                <type>char</type>
+            </SYSTEM_TYPE>
+            <PRODUCTION_ENTERPRISE>
+                <index>1</index>
+                <con>and a.PRODUCTION_ENTERPRISE like :?</con>
+                <type>char</type>
+            </PRODUCTION_ENTERPRISE>
+            <DESIGN_UNIT>
+                <index>1</index>
+                <con>and a.DESIGN_UNIT like :?</con>
+                <type>char</type>
+            </DESIGN_UNIT>
+            <CONSTRUCTION_UNIT>
+                <index>1</index>
+                <con>and a.CONSTRUCTION_UNIT like :?</con>
+                <type>char</type>
+            </CONSTRUCTION_UNIT>
+            <SYSTEM_STATE>
+                <index>1</index>
+                <con>and a.SYSTEM_STATE like :?</con>
+                <type>char</type>
+            </SYSTEM_STATE>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <FIRE_ROOM_NAME>
+                <index>1</index>
+                <con>and c.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+            <HOST_NUMBER>
+                <index>1</index>
+                <con>and d.HOST_NUMBER like :?</con>
+                <type>char</type>
+            </HOST_NUMBER>
+        </params>
+    </facility_fire_system>
+
+    <!--消防部件管理-->
+    <facility_fire_compo>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,f.ARCHITECTURE_NAME,c.FIRE_ROOM_NAME,d.HOST_NUMBER,e.SYSTEM_TYPE
+		from FIRE_PRO_COMPO_MANAGE a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID left join
+		FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		left join HOST_MANAGER d ON a.HOST_ID = d.ID
+		left join FIRE_FACILITY_SYSTEM_MANAGER e ON a.SYSTEM_ID = e.ID
+		left join ARCHITECTURE_INFO f ON a.BUILDING_ID = f.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT
+		 a.*,b.UNIT_NAME,f.ARCHITECTURE_NAME,c.FIRE_ROOM_NAME,d.HOST_NUMBER,e.SYSTEM_TYPE
+		FROM FIRE_PRO_COMPO_MANAGE a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		LEFT JOIN HOST_MANAGER d ON a.HOST_ID = d.ID
+		LEFT JOIN FIRE_FACILITY_SYSTEM_MANAGER e ON a.SYSTEM_ID = e.ID
+		LEFT JOIN ARCHITECTURE_INFO f ON a.BUILDING_ID = f.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		ORDER BY UNIT_ID ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from FIRE_PRO_COMPO_MANAGE a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		LEFT JOIN HOST_MANAGER d ON a.HOST_ID = d.ID
+		LEFT JOIN FIRE_FACILITY_SYSTEM_MANAGER e ON a.SYSTEM_ID = e.ID
+		LEFT JOIN ARCHITECTURE_INFO f ON a.BUILDING_ID = f.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID  {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <BUILDING_ID>
+                <index>1</index>
+                <con>and a.BUILDING_ID = :?</con>
+                <type>char</type>
+            </BUILDING_ID>
+            <FIRE_ROOM_ID>
+                <index>1</index>
+                <con>and a.FIRE_ROOM_ID = :?</con>
+                <type>char</type>
+            </FIRE_ROOM_ID>
+            <HOST_ID>
+                <index>2</index>
+                <con>and a.HOST_ID = :?</con>
+                <type>char</type>
+            </HOST_ID>
+            <SYSTEM_ID>
+                <index>1</index>
+                <con>and a.SYSTEM_ID = :?</con>
+                <type>char</type>
+            </SYSTEM_ID>
+            <COMPONENT_ADDR_CODE>
+                <index>1</index>
+                <con>and a.COMPONENT_ADDR_CODE like :?</con>
+                <type>char</type>
+            </COMPONENT_ADDR_CODE>
+            <LOOP_NUMBER>
+                <index>1</index>
+                <con>and a.LOOP_NUMBER like :?</con>
+                <type>char</type>
+            </LOOP_NUMBER>
+            <COMPONENT_TYPE>
+                <index>1</index>
+                <con>and a.COMPONENT_TYPE like :?</con>
+                <type>char</type>
+            </COMPONENT_TYPE>
+            <COMPONENT_MODEL>
+                <index>1</index>
+                <con>and a.COMPONENT_MODEL like :?</con>
+                <type>char</type>
+            </COMPONENT_MODEL>
+            <INSTALLATION_FLOOR>
+                <index>1</index>
+                <con>and a.INSTALLATION_FLOOR like :?</con>
+                <type>char</type>
+            </INSTALLATION_FLOOR>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <ARCHITECTURE_NAME>
+                <index>1</index>
+                <con>and f.ARCHITECTURE_NAME like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_NAME>
+            <FIRE_ROOM_NAME>
+                <index>1</index>
+                <con>and c.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+            <HOST_NUMBER>
+                <index>1</index>
+                <con>and d.HOST_NUMBER like :?</con>
+                <type>char</type>
+            </HOST_NUMBER>
+            <SYSTEM_TYPE>
+                <index>1</index>
+                <con>and e.SYSTEM_TYPE like :?</con>
+                <type>char</type>
+            </SYSTEM_TYPE>
+        </params>
+    </facility_fire_compo>
+
+    <facility_unit_name>
+        <sql>
+            <![CDATA[
+		       SELECT UNIT_NAME as n ,UNIT_CODE AS v, UNIT_TYPE FROM UNIT_INFO
+		       WHERE TENANT_ID = :TENANT_ID
+	        ]]>
+        </sql>
+    </facility_unit_name>
+
+    <!--视频设备管理 WHERE UNIT_TYPE = :TYPE-->
+    <facility_video_manage>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME,a.LONGITUDE,a.LATITUDE
+		from VIDEO_MANAGE a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		ORDER BY a.IS_ONLINE DESC
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME,b.LONGITUDE,b.LATITUDE
+		from VIDEO_MANAGE a left join UNIT_INFO b ON a.UNIT_ID = b.ID left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		order by UNIT_ID ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from VIDEO_MANAGE a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FIRE_ROOM_ID>
+                <index>3</index>
+                <con>and a.FIRE_ROOM_ID = :?</con>
+                <type>char</type>
+            </FIRE_ROOM_ID>
+            <DEVICE_NAME>
+                <index>4</index>
+                <con>and a.DEVICE_NAME like :?</con>
+                <type>char</type>
+            </DEVICE_NAME>
+            <DEVICE_VENDORS>
+                <index>5</index>
+                <con>and a.DEVICE_VENDORS like :?</con>
+                <type>char</type>
+            </DEVICE_VENDORS>
+            <COMMUNICATION_PROTOCOL>
+                <index>6</index>
+                <con>and a.COMMUNICATION_PROTOCOL like :?</con>
+                <type>char</type>
+            </COMMUNICATION_PROTOCOL>
+            <LENS_INTERFACE>
+                <index>7</index>
+                <con>and a.LENS_INTERFACE like :?</con>
+                <type>char</type>
+            </LENS_INTERFACE>
+            <TRANSMISSION_MODE>
+                <index>8</index>
+                <con>and a.TRANSMISSION_MODE like :?</con>
+                <type>char</type>
+            </TRANSMISSION_MODE>
+            <UNIT_NAME>
+                <index>9</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <FIRE_ROOM_NAME>
+                <index>10</index>
+                <con>and c.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+            <DEVICE_ID>
+                <index>11</index>
+                <con>AND a.DEVICE_ID = :?</con>
+                <type>char</type>
+            </DEVICE_ID>
+            <DEVICE_FACTORY>
+                <inde>12</inde>
+                <con>and a.DEVICE_FACTORY like :?</con>
+                <type>char</type>
+            </DEVICE_FACTORY>
+        </params>
+    </facility_video_manage>
+    <!--消防安全重点部位-->
+    <facility_fire_safety_parts>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.ARCHITECTURE_NAME
+		from FIRE_SAFETY_KEY_PARTS a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  ARCHITECTURE_INFO c ON a.BUILDING_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.ARCHITECTURE_NAME
+		from FIRE_SAFETY_KEY_PARTS a left join UNIT_INFO b ON a.UNIT_ID = b.ID left join  ARCHITECTURE_INFO c ON a.BUILDING_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		order by UNIT_ID ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from FIRE_SAFETY_KEY_PARTS a
+		left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		left join  ARCHITECTURE_INFO c ON a.BUILDING_ID = c.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <BUILDING_ID>
+                <index>1</index>
+                <con>and a.BUILDING_ID= :?</con>
+                <type>char</type>
+            </BUILDING_ID>
+            <SITE_NAME>
+                <index>1</index>
+                <con>and a.SITE_NAME like :?</con>
+                <type>char</type>
+            </SITE_NAME>
+            <PERSON_LIABLE>
+                <index>1</index>
+                <con>and a.PERSON_LIABLE like :?</con>
+                <type>char</type>
+            </PERSON_LIABLE>
+            <FIRE_HAZARD>
+                <index>1</index>
+                <con>and a.FIRE_HAZARD like :?</con>
+                <type>char</type>
+            </FIRE_HAZARD>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <ARCHITECTURE_NAME>
+                <index>1</index>
+                <con>and c.ARCHITECTURE_NAME like :?</con>
+                <type>char</type>
+            </ARCHITECTURE_NAME>
+        </params>
+    </facility_fire_safety_parts>
+
+    <!--消防安全管理人员-->
+    <facility_fire_safety_person>
+        <sql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME
+		from FIRE_SAFETY_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME
+		from FIRE_SAFETY_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		order by UNIT_ID ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from FIRE_SAFETY_MANAGER a left join UNIT_INFO b ON a.UNIT_ID = b.ID
+		where 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <PERSON_TYPE>
+                <index>1</index>
+                <con>and a.PERSON_TYPE like :?</con>
+                <type>char</type>
+            </PERSON_TYPE>
+            <NAME>
+                <index>1</index>
+                <con>and a.NAME like :?</con>
+                <type>char</type>
+            </NAME>
+            <CREDENTIAL_NO>
+                <index>1</index>
+                <con>and a.CREDENTIAL_NO like :?</con>
+                <type>char</type>
+            </CREDENTIAL_NO>
+            <CONTACT_NUM>
+                <index>1</index>
+                <con>and a.CONTACT_NUM like :?</con>
+                <type>char</type>
+            </CONTACT_NUM>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+        </params>
+    </facility_fire_safety_person>
+
+    <!--查询在线和离线摄像头个数-->
+    <query_isOnline_video>
+        <sql>
+            <![CDATA[
+                SELECT  MAX(CASE t1.IS_ONLINE WHEN '0' THEN t1.count ELSE 0 END ) 'offline',
+				MAX(CASE t1.IS_ONLINE WHEN '1' THEN t1.count ELSE 0 END ) 'online' FROM (
+                SELECT a.IS_ONLINE,count(*) count FROM VIDEO_MANAGE a
+                WHERE 1= 1 {1} AND a.TENANT_ID = :TENANT_ID
+                GROUP BY a.IS_ONLINE )  t1
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </query_isOnline_video>
+
+</qrys>

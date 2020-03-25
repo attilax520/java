@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+<!-- 独立式感烟探测器平台 -->
+    <!-- 单位管理 列表 -->
+    <qry_unit_list>
+        <sql><![CDATA[
+        SELECT
+            U.*,
+			DD.`NAME` AS DEPT_NAME,
+            D.CODE_NAME AS UNIT_TYPE_NAME,
+            R.ID AS REL_ID,
+            R.USER_ID,
+            SU.`NAME` AS USER_NAME,
+            SU.PHONE AS USER_PHONE
+        FROM
+            UNIT_INFO U
+            LEFT JOIN SYS_USER_UNIT_REL R ON U.ID = R.UNIT_ID
+            LEFT JOIN SYS_USER SU ON SU.ID = R.USER_ID
+            LEFT JOIN SYS_DICTIONARY D ON U.UNIT_TYPE = D.CODE_VALUE AND D.TYPE_VALUE = 'UNIT_TYPE' AND D.`STATUS` = '1'
+			LEFT JOIN SYS_DEPT DD ON U.DEPT_ID = DD.ID
+         WHERE
+            1 = 1 AND U.DELETED <> '1'
+            {1}
+        ORDER BY U.CREATE_TIME desc
+        ]]></sql>
+        <psql><![CDATA[
+        SELECT
+            U.*,
+			DD.`NAME` AS DEPT_NAME,
+            D.CODE_NAME AS UNIT_TYPE_NAME,
+            R.ID AS REL_ID,
+            R.USER_ID,
+            SU.`NAME` AS USER_NAME,
+            SU.PHONE AS USER_PHONE
+        FROM
+            UNIT_INFO U
+            LEFT JOIN SYS_USER_UNIT_REL R ON U.ID = R.UNIT_ID
+            LEFT JOIN SYS_USER SU ON SU.ID = R.USER_ID
+            LEFT JOIN SYS_DICTIONARY D ON U.UNIT_TYPE = D.CODE_VALUE AND D.TYPE_VALUE = 'UNIT_TYPE' AND D.`STATUS` = '1'
+			LEFT JOIN SYS_DEPT DD ON U.DEPT_ID = DD.ID
+         WHERE
+            1 = 1 AND U.DELETED <> '1'
+            {1}
+        ORDER BY U.CREATE_TIME desc
+        limit :start,:end
+        ]]></psql>
+        <tsql><![CDATA[
+        SELECT
+            count(*) as tcount
+        FROM
+            UNIT_INFO U
+        WHERE
+            1 = 1 AND U.DELETED <> '1'
+
+            {1}
+        ]]></tsql>
+        <params>
+            <UNIT_CODE>
+                <index>1</index>
+                <con>and  U.UNIT_CODE LIKE '%':?'%' </con>
+                <type>char</type>
+            </UNIT_CODE>
+            <UNIT_NAME>
+                <index>2</index>
+                <con>and U.UNIT_NAME LIKE '%':?'%'</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <DEPT_ID>
+                <index>3</index>
+                <con>and U.DEPT_ID = :?</con>
+                <type>char</type>
+            </DEPT_ID>
+            <ID>
+                <index>4</index>
+                <con>and U.ID = :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_FLAG>
+                <index>5</index>
+                <con>and U.UNIT_FLAG = :?</con>
+                <type>varchar</type>
+            </UNIT_FLAG>
+            <UNIT_ADDRESS>
+                <index>6</index>
+                <con>and U.UNIT_ADDRESS  LIKE '%':?'%'</con>
+                <type>varchar</type>
+            </UNIT_ADDRESS>
+            <TENANT_ID>
+                <index>7</index>
+                <con>AND U.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </qry_unit_list>
+
+    <qry_max_unit_code>
+        <sql><![CDATA[
+        SELECT MAX(UNIT_CODE) UNIT_CODE FROM UNIT_INFO WHERE TENANT_ID = :TENANT_ID
+        ]]></sql>
+    </qry_max_unit_code>
+
+    <qry_unit_user_count>
+        <sql><![CDATA[
+        SELECT COUNT(*) count FROM SYS_USER_UNIT_REL WHERE UNIT_ID = :UNIT_ID
+        ]]></sql>
+    </qry_unit_user_count>
+
+    <qry_unit_device_count>
+        <sql><![CDATA[
+        SELECT COUNT(*) count FROM DATA_DEVICE WHERE unit_id = :UNIT_ID AND logic_status = '1'
+        ]]></sql>
+    </qry_unit_device_count>
+</qrys>

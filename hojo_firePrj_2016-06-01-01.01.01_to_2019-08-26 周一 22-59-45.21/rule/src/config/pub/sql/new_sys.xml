@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+	<new_dept_query>
+		<sql>
+			SELECT
+			R.DEPT_ID AS ID
+			FROM
+			SYS_USER_DEPT_REL R
+			WHERE
+			1=1 {1}
+		</sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>and R.USER_ID =:?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</new_dept_query>
+	<new_role_query>
+		<sql>
+			SELECT
+			DISTINCT L.ID
+			FROM
+			SYS_ROLE L LEFT JOIN
+			SYS_USER_ROLE_REL R ON L.ID=R.ROLE_ID
+			WHERE
+			1=1
+			{1}
+		</sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>AND R.USER_ID=:?
+					OR L.CREATE_BY=:?
+				</con>
+				<type>char</type>
+			</USER_ID>
+			<TENANT_ID>
+				<index>1</index>
+				<con>AND L.TENANT_ID =:?</con>
+				<type>char</type>
+			</TENANT_ID>
+		</params>
+	</new_role_query>
+	<new_permission_query>
+		<sql>
+			SELECT
+			M.ID
+			FROM
+			SYS_USER_ROLE_REL R,
+			SYS_ROLE_PERMISSION_REL P,
+			SYS_PERMISSION M
+			WHERE
+			1=1 {1}
+			AND R.ROLE_ID=P.ROLE_ID
+			AND P.PERMISSION_ID=M.ID
+			AND M.DELETED = 0
+			ORDER BY M.ORDER_NUM ASC
+		</sql>
+		<params>
+			<USER_ID>
+				<index>1</index>
+				<con>AND R.USER_ID =:?</con>
+				<type>char</type>
+			</USER_ID>
+		</params>
+	</new_permission_query>
+	<query_dept_all>
+		<sql>
+			SELECT
+			D.ID
+			FROM
+			SYS_DEPT D
+		</sql>
+	</query_dept_all>
+	<query_sub_dept>
+		<sql>
+			SELECT
+			ID
+			FROM
+			SYS_DEPT D
+			WHERE 1=1
+			{1}
+		</sql>
+		<params>
+			<PARENT_ID>
+				<index>1</index>
+				<con>and D.PARENT_ID=:?</con>
+				<type>char</type>
+			</PARENT_ID>
+		</params>
+	</query_sub_dept>
+</qrys>

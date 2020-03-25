@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!-- 单位信息 -->
+    <get_unit_info>
+    <sql>
+        select count(ui.id) count,CODE_NAME name, CODE_VALUE type from (
+            select CODE_NAME,CODE_VALUE FROM
+            SYS_DICTIONARY sd  where  sd.TYPE_VALUE = 'ARCHITE_TYPE'
+            and sd.CODE_VALUE  IN ( 'INDUSTRIAL', 'COMMON', 'LIVE' )
+            )t left join UNIT_INFO ui on  t.CODE_VALUE =  ui.ARCHI_UNIT_TYPE {1}
+            GROUP BY CODE_VALUE, CODE_NAME
+        union
+             select count(1) count ,'危险源' as name, 'DANGEROUS' type from  UNIT_INFO ui where ui.IS_RISK_UNIT = 1  {1}
+        union
+            select if(sum(count) is null,0 ,sum(count)) count,'单位总数' name,'SUM' as  type from (
+            select count(ui.id) count,CODE_NAME name, CODE_VALUE type from (
+            select CODE_NAME,CODE_VALUE FROM
+            SYS_DICTIONARY sd  where  sd.TYPE_VALUE = 'ARCHITE_TYPE'
+            and sd.CODE_VALUE  IN ( 'INDUSTRIAL', 'COMMON', 'LIVE' )
+            )t left join UNIT_INFO ui on  t.CODE_VALUE =  ui.ARCHI_UNIT_TYPE  {1}
+            GROUP BY
+            CODE_VALUE,
+            CODE_NAME)t
+        union
+        select count(id) count ,'救援力量' as name ,'STATION' type  from (
+        select  id from FIRE_STATION ui where 1=1 {1}
+        union
+        select id from FIRE_HOUSE ui where 1=1 {1})t1
+    </sql>
+    <params>
+        <TENANT_ID>
+            <index>1</index>
+            <con> and ui.TENANT_ID = :?</con>
+            <type>char</type>
+        </TENANT_ID>
+    </params>
+    </get_unit_info>
+    <!-- 最近1小时所有告警数据 -->
+    <get_alarm_info>
+        <sql>
+            select (@i:=@i+1) num, ui.UNIT_NAME unit_name,dd.name,'' device_loop, FROM_UNIXTIME(dei.event_time/1000) event_time ,ui.UNIT_ADDRESS,dd.address ,
+            'alone' as type
+            from DATA_EVENT_INFO dei , DATA_DICTIONARY ddi,  DATA_DEVICE dd  , UNIT_INFO ui  ,
+            (select   @i:=0)t2
+            where dei.device_id = dd.id
+            and dei.event_type = ddi.type
+            and dd.unit_id = ui.id
+            and ddi.is_alarm = 1
+            {1}
+            and dei.event_time >  (unix_timestamp(now())- 60*60  ) *1000
+            union
+            select (@i:=@i+1) num, ui.UNIT_NAME unit_name,dmi.name,concat_ws('-',dmei.host_code,dmei.loop_code,dmei.address_code) device_loop,FROM_UNIXTIME(dmei.event_time/1000) event_tim,
+            ui.UNIT_ADDRESS,dmi.address,	 'machine_user' as type from DATA_MACHINE_INFO dmi , UNIT_INFO ui, DATA_MACHINE_EVENT_INFO dmei , DATA_DICTIONARY ddi,(select   @i:=0)t2  where
+            dmi.unit_id = ui.id and  dmi.id = dmei.machine_info_id   and dmei.event_type = ddi.type and ddi.is_alarm =1  {1}
+            and dmei.event_time >  (unix_timestamp(now())- 60*60  ) *1000
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and ui.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </get_alarm_info>
+
+    <!-- 最近5告警信息 -->
+    <get_current_alarm_info>
+        <sql>
+            select UNIT_ADDRESS,event_time,UNIT_NAME from (
+            select ui.UNIT_ADDRESS ,FROM_UNIXTIME(dei.event_time/1000) event_time ,ui.UNIT_NAME from DATA_EVENT_INFO dei  ,DATA_DEVICE dd  , UNIT_INFO ui
+            where dei.device_id = dd.id
+            and dd.unit_id = ui.id
+            {1}
+            union
+            select  ui.UNIT_ADDRESS ,FROM_UNIXTIME(dmei.event_time/1000) event_tim ,ui.UNIT_NAME from DATA_MACHINE_INFO dmi, UNIT_INFO ui, DATA_MACHINE_EVENT_INFO dmei    where
+            dmi.unit_id = ui.id and  dmi.id = dmei.machine_info_id
+            {1}
+            )t  ORDER BY t.event_time desc
+            limit 0,5
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and ui.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </get_current_alarm_info>
+
+    <!-- 地图信息 -->
+    <get_map_info>
+        <sql>
+            select t.* from
+            (
+            select ui.id as unit_id, fs.id,fs.longitude,fs.LATITUDE,ui.UNIT_ADDRESS ,'fire_station' as type ,'' as  MEDIA_HLS_URL ,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'消防站' as ARCHI_UNIT_TYPE,ui.UNIT_NAME ,ui.TENANT_ID from FIRE_STATION fs,UNIT_INFO ui where fs.unit_id = ui.id
+            union
+            select  ui.id as unit_id, fh.id,fh.longitude,fh.LATITUDE,ui.UNIT_ADDRESS ,'fire_house' as type ,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'微信消防站' as ARCHI_UNIT_TYPE ,ui.UNIT_NAME,ui.TENANT_ID  from FIRE_HOUSE fh ,UNIT_INFO ui where fh.unit_id = ui.id
+            union
+            select  ui.id as unit_id, ri.id,ri.longitude,ri.LATITUDE,ui.UNIT_ADDRESS ,'resource_info' as type ,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'消防栓' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID  from RESOURCE_INFO ri ,UNIT_INFO ui where ri.unit_id = ui.id
+            union
+            select  ui.id as unit_id, vm.id,vm.longitude,vm.LATITUDE,ui.UNIT_ADDRESS ,'video_manage' as type ,vm.MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'监控' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID   from VIDEO_MANAGE vm ,UNIT_INFO ui where vm.unit_id = ui.id
+            union
+            select ui.id as unit_id, ui.id,ui.longitude,ui.LATITUDE,ui.UNIT_ADDRESS,'risk_unit'as type,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'危险源' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID  from UNIT_INFO ui where ui.IS_RISK_UNIT = 1
+            union
+            select ui.id as unit_id, ui.id,ui.longitude,ui.LATITUDE,ui.UNIT_ADDRESS,'unit_industrial'as type,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'工业建筑' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID  from UNIT_INFO ui where ui.ARCHI_UNIT_TYPE = 'INDUSTRIAL'
+            union
+            select ui.id as unit_id, ui.id,ui.longitude,ui.LATITUDE,ui.UNIT_ADDRESS,'unit_live'as type,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'居住' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID  from UNIT_INFO ui where ui.ARCHI_UNIT_TYPE = 'LIVE'
+            union
+            select ui.id as unit_id, ui.id,ui.longitude,ui.LATITUDE,ui.UNIT_ADDRESS,'unit_common'as type,'' as  MEDIA_HLS_URL,if(ui.LINKMAN is null,'',ui.LINKMAN) LINKMAN,if(ui.TELPHONE is null,'',ui.TELPHONE) TELPHONE,'公共建筑' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID  from UNIT_INFO ui where ui.ARCHI_UNIT_TYPE = 'COMMON')t where  1=1  {1}
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and t.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <type>
+                <index>2</index>
+                <con> and t.type in(:?)</con>
+                <type>char</type>
+            </type>
+            <unit_name>
+                <index>3</index>
+                <con> and t.UNIT_NAME like '%':? '%' </con>
+                <type>char</type>
+            </unit_name>
+        </params>
+    </get_map_info>
+
+    <!-- 应急救援单位信息-->
+    <get_emergency_unit_info>
+        <sql>
+            select  ui.id as unit_id ,ui.UNIT_NAME,sd.CODE_NAME,ui.LINKMAN,ui.TELPHONE,ui.UNIT_ADDRESS, ui.LONGITUDE,ui.LATITUDE
+            from UNIT_INFO ui left join  SYS_DICTIONARY sd on ui.ARCHI_UNIT_TYPE =  sd.CODE_VALUE  where 1=1 {1}
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and ui.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <unit_name>
+                <index>3</index>
+                <con> and ui.UNIT_NAME like '%':? '%' </con>
+                <type>char</type>
+            </unit_name>
+        </params>
+    </get_emergency_unit_info>
+    <!-- 救援力量信息-消防栓-->
+    <get_emergency_rescue_info>
+        <sql>
+            select * from (
+            select fs.id,fs.longitude,fs.LATITUDE,ui.UNIT_ADDRESS ,'fire_station' as type  ,ui.LINKMAN,ui.TELPHONE,'消防站' as ARCHI_UNIT_TYPE,ui.UNIT_NAME ,ui.TENANT_ID ,fs.name deviceName from FIRE_STATION fs,UNIT_INFO ui where fs.unit_id = ui.id
+            union
+            select fh.id,fh.longitude,fh.LATITUDE,ui.UNIT_ADDRESS ,'fire_house' as type ,ui.LINKMAN,ui.TELPHONE,'微型消防站' as ARCHI_UNIT_TYPE ,ui.UNIT_NAME,ui.TENANT_ID  ,fh.name deviceName from FIRE_HOUSE fh ,UNIT_INFO ui where fh.unit_id = ui.id
+            union
+            select ri.id,ri.longitude,ri.LATITUDE,ui.UNIT_ADDRESS ,'resource_info' as type,ui.LINKMAN,ui.TELPHONE,'消防栓' as ARCHI_UNIT_TYPE,ui.UNIT_NAME,ui.TENANT_ID ,
+            ri.RESOURCE_NAME as deviceName
+            from RESOURCE_INFO ri ,UNIT_INFO ui where ri.unit_id = ui.id )t where 1=1 {1}
+        </sql>
+        <params>
+            <maxLatitude>
+                <index>1</index>
+                 <con>
+                     <![CDATA[ and t.LATITUDE <= :?]]>
+                 </con>
+                <type>char</type>
+             </maxLatitude>
+            <maxLongitude>
+                <index>2</index>
+                <con>  <![CDATA[ and t.longitude <= :?]]>
+                </con>
+                <type>char</type>
+            </maxLongitude>
+            <minLatitude>
+                <index>3</index>
+                <con>   <![CDATA[ and t.LATITUDE >= :?]]></con>
+                <type>char</type>
+            </minLatitude>
+            <minLongitude>
+                <index>4</index>
+                <con> <![CDATA[ and t.longitude >= :?]]></con>
+                <type>char</type>
+            </minLongitude>
+            <type>
+                <index>5</index>
+                <con> and t.type = :? </con>
+                <type>char</type>
+            </type>
+        </params>
+    </get_emergency_rescue_info>
+
+    <!-- 救援力量信息-消防站-->
+    <get_emergency_fire_info>
+        <sql>
+            select * from ( select ui.id as unit_id ,fs.id,fs.longitude,fs.LATITUDE,ui.UNIT_ADDRESS ,'fire_station' as type  ,ui.LINKMAN,ui.TELPHONE,'消防站' as ARCHI_UNIT_TYPE,ui.UNIT_NAME ,ui.TENANT_ID ,fs.name deviceName from FIRE_STATION fs,UNIT_INFO ui where fs.unit_id = ui.id
+            union
+            select ui.id as unit_id , fh.id,fh.longitude,fh.LATITUDE,ui.UNIT_ADDRESS ,'fire_house' as type ,ui.LINKMAN,ui.TELPHONE,'微信消防站' as ARCHI_UNIT_TYPE ,ui.UNIT_NAME,ui.TENANT_ID  ,fh.name deviceName from FIRE_HOUSE fh ,UNIT_INFO ui where fh.unit_id = ui.id
+            )t  where 1=1 {1}
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and t.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <UNIT_ID>
+                <index>1</index>
+                <con> and t.unit_id = :? </con>
+                <type>char</type>
+            </UNIT_ID>
+            <type>
+                <index>1</index>
+                <con> and t.type = :? </con>
+                <type>char</type>
+            </type>
+        </params>
+    </get_emergency_fire_info>
+
+    <!-- 物联监测 设备增长-->
+    <get_device_increase>
+        <sql>
+            <![CDATA[  select month, if(count is null ,0,count) as count from past_12_month_view a left join (
+            select count(*) count,DATE_FORMAT(FROM_UNIXTIME(t.CREATE_TIME/1000) ,'%Y-%m') CREATE_TIME from
+            (select dd.* from DATA_DEVICE dd ,(
+            select ddt.type from DATA_DEVICE_TYPE ddt,(
+            select distinct substring_index(substring_index(a.ids,',',b.num+1),',',-1) as id
+            from DATA_DEVICE_TYPE a , CM_BASE_NUM b  where  b.num < (length(a.ids) - length(replace(a.ids,',',''))+1)
+            and substring_index(a.ids,',',1)  = (select id from DATA_DEVICE_TYPE a where a.type = :deviceType))t where
+            ddt.id = t.id  )t1 where  dd.type = t1.type  {1} )t group by
+            DATE_FORMAT(FROM_UNIXTIME(t.CREATE_TIME/1000),'%Y-%m')) b on a.month = b.CREATE_TIME ]]>
+        </sql>
+        <params>
+            <zone_code>
+                <index>1</index>
+                <con> and dd.zone_code = :?</con>
+                <type>char</type>
+            </zone_code>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and dd.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </get_device_increase>
+
+    <!-- 单位评分-->
+    <get_unit_ranking>
+        <sql>
+            select us.average,ui.unit_name from  UNIT_SCORE us ,UNIT_INFO ui where us.unit_id = ui.id {1} ORDER BY  average desc limit 3
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con> and ui.TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </get_unit_ranking>
+</qrys>

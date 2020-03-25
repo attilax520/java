@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_internet_equipment>
+        <sql><![CDATA[
+		SELECT
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME
+		from INTERNET_EQUIPMENT a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 a.*,b.UNIT_NAME,c.FIRE_ROOM_NAME
+		from INTERNET_EQUIPMENT a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+		ORDER BY CREATE_TIME DESC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		SELECT
+			count(*) as tcount
+		FROM INTERNET_EQUIPMENT a
+		LEFT JOIN UNIT_INFO b ON a.UNIT_ID = b.ID
+		LEFT JOIN  FIRE_ROOM c ON a.FIRE_ROOM_ID = c.ID
+		WHERE 1=1 AND a.TENANT_ID = :TENANT_ID {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID= :?</con>
+                <type>char</type>
+            </ID>
+            <EQUIPMENT_NO>
+                <index>1</index>
+                <con>and a.EQUIPMENT_NO like :?</con>
+                <type>char</type>
+            </EQUIPMENT_NO>
+            <SRC_ADDRESS>
+                <index>1</index>
+                <con>and a.SRC_ADDRESS like :?</con>
+                <type>char</type>
+            </SRC_ADDRESS>
+            <EQUIPMENT_MODEL>
+                <index>1</index>
+                <con>and a.EQUIPMENT_MODEL like :?</con>
+                <type>char</type>
+            </EQUIPMENT_MODEL>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID= :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FIRE_ROOM_ID>
+                <index>1</index>
+                <con>and a.FIRE_ROOM_ID= :?</con>
+                <type>char</type>
+            </FIRE_ROOM_ID>
+            <TRANSCEIVER>
+                <index>1</index>
+                <con>and a.TRANSCEIVER like :?</con>
+                <type>char</type>
+            </TRANSCEIVER>
+            <EQUIPMENT_IP>
+                <index>1</index>
+                <con>and a.EQUIPMENT_IP like :?</con>
+                <type>char</type>
+            </EQUIPMENT_IP>
+            <EQUIPMENT_STATUS>
+                <index>1</index>
+                <con>and a.EQUIPMENT_STATUS= :?</con>
+                <type>char</type>
+            </EQUIPMENT_STATUS>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>and b.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+            <FIRE_ROOM_NAME>
+                <index>1</index>
+                <con>and c.FIRE_ROOM_NAME like :?</con>
+                <type>char</type>
+            </FIRE_ROOM_NAME>
+        </params>
+    </dtset_internet_equipment>
+
+</qrys>

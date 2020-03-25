@@ -1,0 +1,1426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <!--查询IOT-APP类型数据-->
+    <iot_select_apptype>
+        <sql><![CDATA[
+		select
+		 *
+		from IOT_DEVICE_TYPE
+		where 1=1 {1}
+		]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </iot_select_apptype>
+
+    <!--查询设备信息-->
+    <iot_select_device_info>
+        <sql>
+            SELECT * FROM IOT_DEVICE
+            WHERE 1 =1 {1}
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+            <IMEI>
+                <index>1</index>
+                <con>and IMEI= :?</con>
+                <type>char</type>
+            </IMEI>
+        </params>
+    </iot_select_device_info>
+
+    <!-- 查询设备业务数据 -->
+    <iot_select_device_bussiness>
+        <sql>
+            SELECT * FROM IOT_DEVICE_BUSINESS
+            WHERE 1 =1 {1}
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+            <IMEI>
+                <index>1</index>
+                <con>and IMEI= :?</con>
+                <type>char</type>
+            </IMEI>
+        </params>
+    </iot_select_device_bussiness>
+    <!--查询原始数据-->
+    <iot_select_original_data>
+        <sql><![CDATA[
+		SELECT
+		    b.DEVICE_TYPE,
+		    c.UNIT_NAME,
+		    a.CREATE_TIME,
+		    a.DEVICE_DATA
+		 FROM
+		    IOT_DEVICE a
+		   LEFT JOIN
+		    IOT_DEVICE_TYPE b ON a.APP_ID = b.APP_ID
+		   LEFT JOIN
+		    IOT_FACTORY c ON a.FC_ID = c.ID
+		where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		SELECT
+		    b.DEVICE_TYPE,
+		    c.UNIT_NAME,
+		    a.CREATE_TIME,
+		    a.DEVICE_DATA
+		 FROM
+		    IOT_DEVICE a
+		   LEFT JOIN
+		    IOT_DEVICE_TYPE b ON a.APP_ID = b.APP_ID
+		   LEFT JOIN
+		    IOT_FACTORY c ON a.FC_ID = c.ID
+		where 1=1 {1}
+		order by TYPE_VALUE ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		 FROM
+		    IOT_DEVICE a
+		   LEFT JOIN
+		    IOT_DEVICE_TYPE b ON a.APP_ID = b.APP_ID
+		   LEFT JOIN
+		    IOT_FACTORY c ON a.FC_ID = c.ID
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <DEVICE_TYPE>
+                <index>1</index>
+                <con>and b.DEVICE_TYPE like :?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <UNIT_NAME>
+                <index>2</index>
+                <con>and c.UNIT_NAME like :?</con>
+                <type>char</type>
+            </UNIT_NAME>
+        </params>
+    </iot_select_original_data>
+
+    <!--获取中消云数据 -->
+    <iot_select_zxy_device>
+        <sql>
+            <![CDATA[
+            SELECT b.ID as dev_id,e.DEVICE_DATA AS JSON, a.*, b.CODE_NAME AS mark_flag, c.CODE_NAME AS DEV_DETAIL_STATUS, d.CODE_NAME AS DEVICE_GROUP_STATUS
+            FROM IOT_ZXY_BUSINESS a
+            RIGHT JOIN IOT_DEVICE e ON e.ID = a.IOT_DEVICE_ID
+            LEFT JOIN SYS_DICTIONARY b ON b.TYPE_VALUE = 'ZXY_FLAG' AND a.FLAG = b.CODE_VALUE
+            LEFT JOIN SYS_DICTIONARY c ON c.TYPE_VALUE = 'DEVICE_STATE' AND a.DEVICESTATE = c.CODE_VALUE
+            LEFT JOIN SYS_DICTIONARY d ON d.TYPE_VALUE = 'DEVIDE_GROUP_STATE' AND a.DEVICEGROUPSTATE = d.CODE_VALUE
+            WHERE 1= 1 AND PROJECT_ID = 1 {1}
+        ]]></sql>
+        <params>
+            <PROJECTID>
+                <index>1</index>
+                <con>and a.PROJECTID like :?</con>
+                <type>char</type>
+            </PROJECTID>
+            <GATEWAYNAME>
+                <index>2</index>
+                <con>and a.GATEWAYNAME like :?</con>
+                <type>char</type>
+            </GATEWAYNAME>
+        </params>
+    </iot_select_zxy_device>
+
+
+    <!-- 查询设备业务详细信息-->
+    <iot_query_device_bussines>
+        <sql><![CDATA[
+            SELECT a.ID AS PID, a.APP_ID, a.DEVICE_DATA AS JSON, a.DEVICE_STATE,
+                     b.ID AS BUSS_ID, b.BUSINESS_TYPE, b.BUSINESS_DATA AS BUSS_JSON
+                     FROM IOT_DEVICE a
+	                 LEFT JOIN IOT_DEVICE_BUSINESS b ON a.ID = b.DEVICE_ID
+	                 WHERE 1 = 1
+	                 ORDER BY b.CREATE_TIME DESC
+             {1}
+        ]]></sql>
+        <psql><![CDATA[
+            SELECT a.ID AS PID, a.APP_ID, a.DEVICE_DATA AS JSON, a.DEVICE_STATE,
+                     b.ID AS BUSS_ID, b.BUSINESS_TYPE, b.BUSINESS_DATA AS BUSS_JSON
+                     FROM IOT_DEVICE a
+	                 LEFT JOIN IOT_DEVICE_BUSINESS b ON a.ID = b.DEVICE_ID
+	                 WHERE 1 = 1 {1}
+	                 ORDER BY b.CREATE_TIME DESC
+            limit :start , :end
+        ]]></psql>
+        <tsql><![CDATA[
+            SELECT count(*) as tcount
+                     FROM IOT_DEVICE a
+	                 LEFT JOIN IOT_DEVICE_BUSINESS b ON a.ID = b.DEVICE_ID
+	                 WHERE 1 = 1 {1}
+        ]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID = :?</con>
+                <type>char</type>
+            </ID>
+
+        </params>
+    </iot_query_device_bussines>
+
+
+    <!-- 嘉善的丰泽四洲地图点位查询-->
+    <iot_js_map_device_mark>
+        <sql>
+            <![CDATA[
+                  SELECT
+                    a.FC_ID, b.UNIT_NAME,
+                        a.ID PID, a.DEVICE_DATA AS JSON,
+                        a.REQ_IP as DEVICE_TYPE,tab1.CODE_NAME,
+                        JSON_EXTRACT(a.DEVICE_DATA,'$.longitude') as LONGITUDE,
+                        JSON_EXTRACT(a.DEVICE_DATA,'$.latitude') as LATITUDE,
+                        a.DEVICE_STATE as status
+                        FROM IOT_DEVICE a
+                        LEFT JOIN IOT_FACTORY b on a.FC_ID = b.ID
+                        LEFT JOIN SYS_DICTIONARY tab1 ON a.REQ_IP = tab1.CODE_VALUE
+                        WHERE a.UNIT_ID = '412bf393-6aa6-46f3-ae62-0a8889284272'
+                        AND a.TENANT_ID = :TENANT_ID
+                        AND a.FC_ID = '5nncd5e6-103e-4071-84a0-e8439abf52nj'
+            ]]>
+        </sql>
+    </iot_js_map_device_mark>
+
+    <!--查询设备信息 -->
+
+
+    <!--
+    解析字段为JSON串的数据
+    方法一：
+    SELECT
+    DEVICE_DATA,
+    JSON_EXTRACT(DEVICE_DATA,'$.id') id,
+    JSON_EXTRACT(DEVICE_DATA,'$.type') type,
+    JSON_EXTRACT(DEVICE_DATA,'$.name') name,
+    JSON_EXTRACT(DEVICE_DATA,'$.longitude') longitude,
+    JSON_EXTRACT(DEVICE_DATA,'$.latitude') latitude,
+    JSON_EXTRACT(DEVICE_DATA,'$.address') address,
+    JSON_EXTRACT(DEVICE_DATA,'$.zone') zone,
+    JSON_EXTRACT(DEVICE_DATA,'$.device_version') device_version
+    FROM IOT_DEVICE;
+
+    -->
+    <iot_js_select_device>
+        <!--方法二：直接查询json字段,在js解析这个json串，通过规则编码查询  AND a.PROJECT_ID = 1-->
+        <sql><![CDATA[
+            	SELECT a.ID, a.DEV_TYPE DEVICE_TYPE, a.LONGITUDE, a.LATITUDE,a.DEVIVCE_ADDRESS, b.CODE_NAME as DEVICE_NAME
+				FROM IOT_DEVICE a
+				LEFT JOIN SYS_DICTIONARY b ON a.DEV_TYPE = b.CODE_VALUE
+				WHERE 1= 1 AND tab.TENANT_ID = :TENANT_ID
+             {1}
+        ]]></sql>
+        <psql><![CDATA[
+            	SELECT a.DEV_TYPE DEVICE_TYPE, a.LONGITUDE, a.LATITUDE,a.DEVIVCE_ADDRESS, b.CODE_NAME as DEVICE_NAME
+				FROM IOT_DEVICE a
+				LEFT JOIN SYS_DICTIONARY b ON a.DEV_TYPE = b.CODE_VALUE
+				WHERE 1= 1 AND tab.TENANT_ID = :TENANT_ID {1}
+            order by tab.CREATE_TIME DESC
+            limit :start , :end
+        ]]></psql>
+            <tsql><![CDATA[
+            SELECT count(*) as tcount
+				FROM IOT_DEVICE a
+				LEFT JOIN SYS_DICTIONARY b ON a.DEV_TYPE = b.CODE_VALUE
+				WHERE 1= 1 AND tab.TENANT_ID = :TENANT_ID {1}
+        ]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and a.ID = :?</con>
+                <type>char</type>
+            </ID>
+            <DEVICE_NAME>
+                <index>2</index>
+                    <con>and b.CODE_NAME LIKE :?</con>
+                <type>char</type>
+            </DEVICE_NAME>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>and a.DEV_TYPE = :?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+        </params>
+    </iot_js_select_device>
+
+
+
+    <!-- 查询租户有关的数据 -->
+    <iot_device_tenant_set>
+        <sql><![CDATA[
+            SELECT * FROM (
+                SELECT JSON_EXTRACT(DEVICE_DATA,'$.type') type,
+                JSON_EXTRACT(DEVICE_DATA,'$.name') name,
+                JSON_EXTRACT(DEVICE_DATA,'$.factory') factory,
+                a.ID PID, a.*, a.DEVICE_DATA AS JSON
+                FROM IOT_DEVICE a
+             ) AS tab WHERE 1= 1
+             {1}
+        ]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and tab.PID = :?</con>
+                <type>char</type>
+            </ID>
+            <NAME>
+                <index>2</index>
+                <con>and tab.name LIKE :?</con>
+                <type>char</type>
+            </NAME>
+            <TYPE>
+                <index>3</index>
+                <con>and tab.type = :?</con>
+                <type>char</type>
+            </TYPE>
+            <FACTORY>
+                <index>4</index>
+                <con>and tab.factory LIKE :?</con>
+                <type>char</type>
+            </FACTORY>
+        </params>
+    </iot_device_tenant_set>
+
+    <!--设备状态查询-->
+    <iot_js_device_status_query>
+        <sql>
+            <![CDATA[
+                SELECT * FROM IOT_ZXY_BUSINESS a WHERE a.OPTCODE != 0 AND PROJECT_ID = 1
+            ]]>
+        </sql>
+    </iot_js_device_status_query>
+
+    <iot_js_query_bussiness>
+        <sql>
+            <![CDATA[
+                SELECT b.CODE_NAME AS mark_flag, c.CODE_NAME AS DEV_DETAIL_STATUS, d.CODE_NAME AS DEVICE_GROUP_STATUS,a.*,a.DATA_EXTEND AS JSON FROM IOT_ZXY_BUSINESS a
+                LEFT JOIN SYS_DICTIONARY b ON b.TYPE_VALUE = 'ZXY_FLAG' AND a.FLAG = b.CODE_VALUE
+                LEFT JOIN SYS_DICTIONARY c ON c.TYPE_VALUE = 'DEVICE_STATE' AND a.DEVICESTATE = c.CODE_VALUE
+                LEFT JOIN SYS_DICTIONARY d ON d.TYPE_VALUE = 'DEVIDE_GROUP_STATE' AND a.DEVICEGROUPSTATE = d.CODE_VALUE WHERE 1 =1
+                ORDER BY CREATE_TIME desc limit 1
+            ]]>
+        </sql>
+        <params>
+            <IOT_DEVICE_ID>
+                <index>1</index>
+                <con>and  a.IOT_DEVICE_ID = :?</con>
+                <type>char</type>
+            </IOT_DEVICE_ID>
+        </params>
+    </iot_js_query_bussiness>
+
+    <!--查询设备监控AND JSON_EXTRACT(a.DEVICE_DATA,'$.type') != 'machine'-->
+    <iot_js_device_monitor>
+        <sql><![CDATA[
+            select tab.type,tab1.CODE_NAME as name, count(*) AS total  from (
+            SELECT JSON_EXTRACT(a.DEVICE_DATA,'$.type') type,a.* FROM IOT_DEVICE a
+            WHERE 1= 1 AND a.PROJECT_ID = 1
+
+						) as tab
+						LEFT JOIN SYS_DICTIONARY tab1 ON tab.type = tab1.CODE_VALUE
+						GROUP BY tab.type,tab1.CODE_NAME
+             ]]>
+        </sql>
+    </iot_js_device_monitor>
+
+    <!--设备报警统计-->
+    <!--	SELECT tab1.CODE_NAME as name, count(*) AS total,tab.type  from (
+            SELECT JSON_EXTRACT(a.DEVICE_DATA,'$.type') type,a.* FROM IOT_DEVICE a
+            WHERE 1= 1 AND a.PROJECT_ID = 1
+            AND a.DEVICE_STATE = 'warn'
+            ) as tab
+        LEFT JOIN SYS_DICTIONARY tab1 ON tab.type = tab1.CODE_VALUE
+        GROUP BY tab.type,tab1.CODE_NAME  -->
+    <iot_js_device_warn>
+        <sql><![CDATA[
+
+
+         ]]>
+        </sql>
+    </iot_js_device_warn>
+
+    <!--设备参数监控-->
+    <iot_json_device_param>
+        <sql>
+            <![CDATA[
+             SELECT tab2.DEVICE_NAME as name,
+            (MAX(CASE tab2.DEVICE_STATE WHEN 'normal' THEN tab2.counts ELSE 0 END )+MAX(CASE tab2.DEVICE_STATE WHEN 'warn' THEN tab2.counts ELSE 0 END )
+            +MAX(CASE tab2.DEVICE_STATE WHEN 'wait' THEN tab2.counts ELSE 0 END ) ) total,
+            MAX(CASE tab2.DEVICE_STATE WHEN 'normal' THEN tab2.counts ELSE 0 END ) 'normal',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'warn' THEN tab2.counts ELSE 0 END ) 'alert',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'wait' THEN tab2.counts ELSE 0 END ) 'wait',
+            tab2.CODE_VALUE as type
+            FROM (
+            select tab.DEVICE_STATE,tab1.CODE_NAME as DEVICE_NAME,tab1.CODE_VALUE, count(*) AS counts  from (
+            SELECT a.REQ_IP as DEVICE_TYPE,a.ID,a.FC_ID, JSON_EXTRACT(a.DEVICE_DATA,'$.longitude') LONGITUDE,
+						JSON_EXTRACT(a.DEVICE_DATA,'$.latitude') LATITUDE,a.REMARK,a.DEVICE_STATE
+						FROM IOT_DEVICE a
+            WHERE 1= 1 AND a.PROJECT_ID = 1
+            AND a.UNIT_ID = '412bf393-6aa6-46f3-ae62-0a8889284272'
+            AND a.TENANT_ID = :TENANT_ID
+            ) as tab
+            LEFT JOIN SYS_DICTIONARY tab1 ON tab.DEVICE_TYPE = tab1.CODE_VALUE
+            GROUP BY tab.DEVICE_STATE,tab1.CODE_NAME,tab1.CODE_VALUE
+						) tab2
+            GROUP BY  tab2.CODE_VALUE,tab2.DEVICE_NAME
+            ]]>
+        </sql>
+        <params>
+            <MONITOR_DEVICE>
+                <index>1</index>
+                <con>and tab2.CODE_VALUE =:?</con>
+                <type>char</type>
+            </MONITOR_DEVICE>
+        </params>
+    </iot_json_device_param>
+
+
+    <!--查询厂商信息管理-->
+    <vendor_manage>
+        <sql>
+            SELECT *
+            FROM app
+            WHERE 1=1 {1}
+        </sql>
+        <params>
+                <COMPANY_NAME>
+                    <index>1</index>
+                    <con>and company_name LIKE:?</con>
+                    <type>char</type>
+                </COMPANY_NAME>
+
+        </params>
+    </vendor_manage>
+
+    <!--查询设备类型管理-->
+    <iot_device_type>
+        <sql>
+            SELECT *
+            FROM IOT_DEVICE_TYPE
+            WHERE 1=1 {1}
+        </sql>
+        <params>
+            <APP_NAME>
+                <index>1</index>
+                <con>and APP_NAME LIKE :? </con>
+                <type>char</type>
+            </APP_NAME>
+            <APP_ID>
+                <index>2</index>
+                <con>and APP_ID LIKE :? </con>
+                <type>char</type>
+            </APP_ID>
+            <APP_TYPE>
+                <index>3</index>
+                <con>and APP_TYPE LIKE :?</con>
+                <type>char</type>
+            </APP_TYPE>
+            <DEVICE_TYPE>
+                <index>4</index>
+                <con>and DEVICE_TYPE LIKE :?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+        </params>
+    </iot_device_type>
+
+    <iot_query_device_info>
+        <sql>
+        select DEVICE_DATA from IOT_DEVICE
+        </sql>
+    </iot_query_device_info>
+
+    <iot_device_ceshi>
+        select name from device limit 1;
+    </iot_device_ceshi>
+
+    <!-- 所有场所总的设备接入-->
+    <iot_today_total_device_monitor>
+            <sql><![CDATA[
+
+            SELECT tab2.devicename as proname,
+            (MAX(CASE tab2.DEVICE_STATE WHEN 'normal' THEN tab2.counts ELSE 0 END )+MAX(CASE tab2.DEVICE_STATE WHEN 'warn' THEN tab2.counts ELSE 0 END )
+            +MAX(CASE tab2.DEVICE_STATE WHEN 'wait' THEN tab2.counts ELSE 0 END ) ) count,
+            MAX(CASE tab2.DEVICE_STATE WHEN 'normal' THEN tab2.counts ELSE 0 END ) 'normal',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'warn' THEN tab2.counts ELSE 0 END ) 'alert',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'wait' THEN tab2.counts ELSE 0 END ) 'wait',
+            tab2.CODE_VALUE as type
+            FROM (
+            select tab.DEVICE_STATE,tab1.CODE_NAME as devicename,tab1.CODE_VALUE, count(*) AS counts  from (
+            SELECT JSON_EXTRACT(a.DEVICE_DATA,'$.type') type,a.* FROM IOT_DEVICE a
+            WHERE 1= 1 AND a.TENANT_ID = :TENANT_ID
+            ) as tab
+            LEFT JOIN SYS_DICTIONARY tab1 ON tab.type = tab1.CODE_VALUE
+            GROUP BY tab.DEVICE_STATE,tab1.CODE_NAME,tab1.CODE_VALUE ) tab2
+            GROUP BY  tab2.CODE_VALUE,tab2.devicename
+         ]]>
+            </sql>
+        <params>
+            <UNIT_ID>
+                <index>4</index>
+                <con>and DEVICE_TYPE LIKE :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </iot_today_total_device_monitor>
+
+
+    <!--   MAX(CASE tab2.DEVICE_STATE WHEN 'normal' THEN tab2.counts ELSE 0 END ) 'normal',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'warn' THEN tab2.counts ELSE 0 END ) 'alert',
+            MAX(CASE tab2.DEVICE_STATE WHEN 'wait' THEN tab2.counts ELSE 0 END ) 'wait',
+             select tab1.CODE_NAME as proname,tab1.CODE_VALUE, count(*) AS count  from (
+            SELECT JSON_EXTRACT(a.DEVICE_DATA,'$.type') type,a.* FROM IOT_DEVICE a
+            WHERE 1= 1 AND a.TENANT_ID = :TENANT_ID
+            ) as tab
+            LEFT JOIN SYS_DICTIONARY tab1 ON tab.type = tab1.CODE_VALUE
+
+            GROUP BY tab.DEVICE_STATE,tab1.CODE_NAME,tab1.CODE_VALUE
+            	ORDER BY count desc
+            -->
+    <!--暂时无用SQL-->
+    <iot_total_device_connent>
+        <sql><![CDATA[
+            		SELECT tab1.CODE_NAME as proname,tab1.CODE_VALUE,
+						count(*) AS count  from (
+            SELECT a.REQ_IP as DEVICE_TYPE,a.ID,a.FC_ID,
+						JSON_EXTRACT(a.DEVICE_DATA,'$.longitude') LONGITUDE,
+						JSON_EXTRACT(a.DEVICE_DATA,'$.latitude') LATITUDE,
+						a.REMARK,a.DEVICE_STATE
+						FROM IOT_DEVICE a
+            WHERE 1= 1 {1}
+						AND a.REQ_IP <> ''
+						AND a.TENANT_ID = :TENANT_ID
+            ) as tab
+            LEFT JOIN SYS_DICTIONARY tab1 ON tab.DEVICE_TYPE = tab1.CODE_VALUE
+            GROUP BY tab.DEVICE_STATE,tab1.CODE_NAME,tab1.CODE_VALUE
+         ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </iot_total_device_connent>
+
+
+    <!-- 根据数据字典查询所有的设备类型种类  a.TYPE_VALUE = 'DEVICE_CATEGORY' AND a.`STATUS` = 1-->
+    <iot_sys_dictionary>
+        <sql>
+            <![CDATA[
+                SELECT a.CODE_NAME as proname, a.CODE_VALUE as DEVICE_TYPE,a.TYPE_NAME, 0 as count
+					 FROM SYS_DICTIONARY  a
+					 WHERE 1 = 1 {1}
+            ]]>
+        </sql>
+        <params>
+            <TYPE_VALUE>
+                <index>1</index>
+                <con>and a.TYPE_VALUE = :?</con>
+                <type>char</type>
+            </TYPE_VALUE>
+            <CODE_VALUE>
+                <index>2</index>
+                <con>and a.CODE_VALUE = :?</con>
+                <type>char</type>
+            </CODE_VALUE>
+            <STATUS>
+                <index>3</index>
+                <con>and a.STATUS = :?</con>
+                <type>char</type>
+            </STATUS>
+            <NOT_CODE_VALUE>
+                <index>4</index>
+                <con>AND a.CODE_VALUE != :?</con>
+                <type>char</type>
+            </NOT_CODE_VALUE>
+        </params>
+    </iot_sys_dictionary>
+
+    <!--查询监测的设备种类，首页中设备接入 -->
+    <iot_monitor_device_count>
+        <sql>
+            <![CDATA[
+                SELECT tab.DEVICE_TYPE,count(*) count FROM (
+                SELECT * FROM (
+                SELECT
+                a.*,a.REQ_IP as DEVICE_TYPE
+                FROM IOT_DEVICE a WHERE 1= 1
+                AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                UNION all
+                SELECT * FROM (
+                SELECT
+                a.*, JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE
+                    FROM IOT_DEVICE a WHERE 1=1
+                ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                     ) t1 WHERE 1 =1 {1} AND t1.TENANT_ID = :TENANT_ID
+                     ) tab,SYS_DICTIONARY d
+                     WHERE d.CODE_VALUE = tab.DEVICE_TYPE
+                     GROUP BY tab.DEVICE_TYPE
+                	    ORDER BY count desc
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and t1.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_STATE>
+                <index>2</index>
+                <con>and t1.DEVICE_STATE in( :?)</con>
+                <type>char</type>
+            </DEVICE_STATE>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>AND t1.DEVICE_TYPE =:?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <START_TIME>
+                <index>4</index>
+                <con><![CDATA[ AND t1.UPDATE_TIME >=:?]]></con>
+                <type>char</type>
+            </START_TIME>
+            <END_TIME>
+                <index>5</index>
+                <con><![CDATA[AND t1.UPDATE_TIME <=:? ]]></con>
+                <type>char</type>
+            </END_TIME>
+        </params> 
+    </iot_monitor_device_count>
+
+
+
+    <!--今日告警数 -->
+    <get_monitor_device_count>
+        <sql>
+            <![CDATA[
+                    SELECT COALESCE(sum(t2.counts),0) count ,t1.DEV_TYPE  as DEVICE_TYPE FROM IOT_DEVICE t1
+                    LEFT JOIN (SELECT count(ID) counts,a.DEVICE_ID DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d') as CREATE_TIME FROM IOT_DEVICE_BUSINESS a
+                    WHERE date_format(a.CREATE_TIME,'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')
+                    GROUP BY a.DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d')
+                    UNION ALL
+                    SELECT count(ID) tcount,a.IOT_DEVICE_ID as DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d') as CREATE_TIME FROM IOT_ZXY_BUSINESS a
+                    WHERE date_format(a.CREATE_TIME,'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')
+                    GROUP BY a.IOT_DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d')
+                    UNION ALL
+                    SELECT count(ID) tcount,a.DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d') as CREATE_TIME FROM IOT_GB_YHXXCS a
+                    WHERE date_format(a.CREATE_TIME,'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')
+                    GROUP BY a.DEVICE_ID,date_format(a.CREATE_TIME,'%Y-%m-%d'))
+					t2 ON t1.ID = t2.DEVICE_ID   WHERE t1.TENANT_ID =:TENANT_ID  {1} group by t1.DEV_TYPE having (t1.DEV_TYPE is not null AND t1.DEV_TYPE != '')
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and t1.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+
+    </get_monitor_device_count>
+
+    <!-- 获得设备信息-->
+    <iot_get_device_info>
+        <sql>
+            <![CDATA[
+              SELECT a.REQ_IP as device_type,count(*) as  count ,tab1.CODE_NAME as proname
+                FROM IOT_DEVICE a
+                LEFT JOIN SYS_DICTIONARY tab1
+                ON a.REQ_IP = tab1.CODE_VALUE AND tab1.TYPE_VALUE = 'DEVICE_CATEGORY'
+                WHERE a.TENANT_ID = :TENANT_ID
+                GROUP BY a.REQ_IP,tab1.CODE_NAME
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <FC_ID>
+                <index>2</index>
+                <con>and a.FC_ID = :?</con>
+                <type>char</type>
+            </FC_ID>
+        </params>
+    </iot_get_device_info>
+
+    <!-- 查询所在场所的周边资源信息-->
+    <iot_outdoor_resource>
+        <sql>
+            <![CDATA[
+                SELECT a.ID,a.LONGITUDE,a.LATITUDE,a.DICTRICT_ID,a.ZONE,
+			    a.OUTDOOR_RESOURCES,DEVICE_STATE,
+			    a.DEVIVCE_ADDRESS as ADDRESS ,
+			    DEVICE_STATE,
+			    JSON_EXTRACT(a.DEVICE_DATA,'$.type') type
+                FROM IOT_DEVICE a
+                WHERE 1 = 1 {1}
+                AND a.TENANT_ID =:TENANT_ID
+                AND a.OUTDOOR_RESOURCES = '1'
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEV_TYPE>
+                <index>1</index>
+                <con>and a.DEV_TYPE = :?</con>
+                <type>char</type>
+            </DEV_TYPE>
+        </params>
+    </iot_outdoor_resource>
+
+    <iot_today_alerm_count>  <!--查询今日告警统计 TODO 临时SQL-->
+        <sql>
+            <![CDATA[
+                      SELECT a.CODE_NAME as proname, a.CODE_VALUE as DEVICE_TYPE, 0 as count
+					 FROM SYS_DICTIONARY  a
+					 WHERE a.TYPE_VALUE = 'DEVICE_CATEGORY' AND a.`STATUS` = 1
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </iot_today_alerm_count>
+
+    <!--查询是否有报警的设备,返回在首页地图上-->
+    <iot_device_isalarm>
+        <sql>
+            <![CDATA[
+                	SELECT * FROM IOT_DEVICE a WHERE 1 =1
+		            AND a.TENANT_ID =  :TENANT_ID
+		            {1}
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and a.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_STATE>
+                <index>2</index>
+                <con>and a.DEVICE_STATE = :?</con>
+                <type>char</type>
+            </DEVICE_STATE>
+        </params>
+    </iot_device_isalarm>
+
+
+    <!-- 监测场所的报警信息 -->
+    <iot_unit_alarm_info>
+        <sql>
+            <![CDATA[
+                SELECT tab.ID,tab.BUSS_DIFF,tab.DEVICE_TYPE, b.LONGITUDE, b.LATITUDE,
+                    tab.ADDRESS,tab.BUSINESS_TYPE,tab.ARCHITECTURE_ID,tab.UNIT_ID,
+                    tab.DEPT_ID,tab.DICTRICT_ID, b.UNIT_NAME,b.LINKMAN,tab.DEVICE_STATE,
+                    tab.UPDATE_TIME,tab.CREATE_TIME,tab.MAINFRAME_STATUS
+                    from(
+                   SELECT
+                       a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+                      FROM IOT_DEVICE a WHERE 1= 1
+                      AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                      UNION all
+                      SELECT * FROM (
+                      SELECT
+                       a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+											 JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                        FROM IOT_DEVICE a WHERE 1=1
+                       ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null or DEVICE_TYPE <> '')
+                ) tab,UNIT_INFO b
+                WHERE 1=1  AND tab.UNIT_ID = b.ID
+                AND (tab.ADDRESS is not null AND tab.ADDRESS != '')
+                AND tab.TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+                SELECT tab.ID,tab.BUSS_DIFF,tab.DEVICE_TYPE, b.LONGITUDE, b.LATITUDE,
+                    tab.ADDRESS,tab.BUSINESS_TYPE,tab.ARCHITECTURE_ID,tab.UNIT_ID,
+                    tab.DEPT_ID,tab.DICTRICT_ID, b.UNIT_NAME,b.LINKMAN,tab.DEVICE_STATE,
+                    tab.UPDATE_TIME,tab.CREATE_TIME,tab.MAINFRAME_STATUS
+                    from(
+                   SELECT
+                       a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+                      FROM IOT_DEVICE a WHERE 1= 1
+                      AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                      UNION all
+                      SELECT * FROM (
+                      SELECT
+                       a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+											 JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                        FROM IOT_DEVICE a WHERE 1=1
+                       ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                ) tab,UNIT_INFO b
+                WHERE 1=1  AND tab.UNIT_ID = b.ID
+                AND (tab.ADDRESS is not null AND tab.ADDRESS != '')
+                AND tab.TENANT_ID = :TENANT_ID {1}
+                LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                SELECT count(*) as tcount
+                    from(
+                   SELECT
+                       a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+                      FROM IOT_DEVICE a WHERE 1= 1
+                      AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                      UNION all
+                      SELECT * FROM (
+                      SELECT
+                       a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+											 JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                        FROM IOT_DEVICE a WHERE 1=1
+                       ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                ) tab,UNIT_INFO b
+                WHERE  tab.UNIT_ID = b.ID
+                AND (tab.ADDRESS is not null AND tab.ADDRESS != '')
+                AND tab.TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <DEVICE_STATE>
+                <index>1</index>
+                <con>AND tab.DEVICE_STATE in (:?)</con>
+                <type>char</type>
+            </DEVICE_STATE>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND tab.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>AND tab.DEVICE_TYPE in( :? )</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <START_TIME>
+                <index>4</index>
+                <con>AND tab.UPDATE_TIME >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con>
+                    <![CDATA[
+                        AND tab.UPDATE_TIME <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+        </params>
+    </iot_unit_alarm_info>
+
+    <!--取中消云的设备的报警业务数据-->
+    <iot_get_zxy_bussdata>
+        <sql>
+            <![CDATA[
+                SELECT * FROM IOT_ZXY_BUSINESS a
+                WHERE 1=1 {1}
+                ORDER BY CREATE_TIME DESC
+                LIMIT 1
+            ]]>
+        </sql>
+        <params>
+            <IOT_DEVICE_ID>
+                <index>1</index>
+                <con>AND a.IOT_DEVICE_ID = :?</con>
+                <type>char</type>
+            </IOT_DEVICE_ID>
+        </params>
+    </iot_get_zxy_bussdata>
+
+    <!-- 取非中消云的设备报警的数据-->
+    <iot_get_device_alarm_bussdata>
+        <sql>
+            <![CDATA[
+                SELECT * FROM IOT_DEVICE_BUSINESS a
+                WHERE 1=1 {1}
+                ORDER BY CREATE_TIME DESC
+                LIMIT 1
+            ]]>
+        </sql>
+        <params>
+            <DEVICE_ID>
+                <index>1</index>
+                <con>AND a.DEVICE_ID = :?</con>
+                <type>char</type>
+            </DEVICE_ID>
+        </params>
+    </iot_get_device_alarm_bussdata>
+
+    <!--根据设备状态分组统计-->
+    <iot_device_status_group>
+        <sql>
+            <![CDATA[
+                SELECT tab.DEVICE_STATE, count(*) count,d.CODE_NAME from(
+                   SELECT
+                       a.*,a.REQ_IP as DEVICE_TYPE
+                      FROM IOT_DEVICE a WHERE 1= 1
+                      AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                      UNION all
+                      SELECT * FROM (
+                      SELECT
+                       a.*, JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE
+                        FROM IOT_DEVICE a WHERE 1=1
+                       ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null AND DEVICE_TYPE <> '')
+                ) tab, SYS_DICTIONARY d
+                WHERE 1=1 {1} AND d.CODE_VALUE = tab.DEVICE_STATE AND d.TYPE_VALUE = 'DEVICE_WARN_STATUS'
+                AND tab.TENANT_ID = :TENANT_ID
+                GROUP BY tab.DEVICE_STATE,d.CODE_NAME
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>AND tab.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_STATE>
+                <index>2</index>
+                <con>AND tab.DEVICE_STATE =:?</con>
+                <type>char</type>
+            </DEVICE_STATE>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>AND tab.DEVICE_TYPE =:?</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <START_TIME>
+                <index>4</index>
+                <con>AND tab.UPDATE_TIME >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con><![CDATA[ AND tab.UPDATE_TIME <= :? ]]></con>
+                <type>datetime</type>
+            </END_TIME>
+        </params>
+    </iot_device_status_group>
+
+    <iot_query_all_device_info>
+        <sql>
+            <![CDATA[
+                SELECT s.CODE_NAME as DEVICE_NAME,tab.* FROM (
+                            SELECT
+                a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+                FROM IOT_DEVICE a WHERE 1= 1
+                AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                UNION all
+                SELECT * FROM (
+                SELECT
+                a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+                                     JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                FROM IOT_DEVICE a WHERE 1=1
+               ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null or DEVICE_TYPE <> '')
+                        ) tab ,SYS_DICTIONARY s
+                        WHERE tab.DEVICE_TYPE = s.CODE_VALUE
+						AND TENANT_ID =:TENANT_ID {1}
+
+            ]]>
+        </sql>
+        <params>
+            <DEVICE_ID>
+                <index>1</index>
+                <con>AND tab.ID = :? </con>
+                <type>char</type>
+            </DEVICE_ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND tab.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </iot_query_all_device_info>
+
+
+    <!-- 数据分析报警信息列表 -->
+    <iot_unit_device_alarm_list>
+        <psql>
+            <![CDATA[
+            select
+                tt.UNIT_NAME,
+               if(tt.ALARM_TYPE is null ,'火警报警',tt.ALARM_TYPE ) ALARM_TYPE,
+                tt.ADDRESS,
+                tt.ID,
+                tt.VIDEO_ID,
+                tt.VIDEO_NAME,
+                tt.HLS_ADDRESS,
+                tt.CREATE_TIME,
+                (select  SD.CODE_NAME from SYS_DICTIONARY SD where SD.CODE_VALUE = tt.DEV_TYPE) ALARM_DEVICE
+                from (
+                    SELECT
+                        t.UNIT_NAME,
+                        t.ALARM_TYPE,
+                        t.ADDRESS,
+                        t.ID,
+                        t.VIDEO_ID,
+                        t.VIDEO_NAME,
+                        t.HLS_ADDRESS,
+                        tz_bus.CREATE_TIME,
+                        t.TENANT_ID,
+                        t.UNIT_ID,
+                        t.DEV_TYPE,
+						t.ARCHI_UNIT_TYPE
+                    FROM (
+                        SELECT
+                            UI.UNIT_NAME,
+                            if(a.DEV_TYPE ='machine_user',(SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.MAINFRAME_STATUS),((SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.BUSINESS_TYPE)))as ALARM_TYPE,
+                            JSON_UNQUOTE ( JSON_EXTRACT ( a.DEVICE_DATA, '$.type' ) ) AS DEVICE_TYPE,
+                            a.DEVIVCE_ADDRESS  AS ADDRESS ,
+                            a.ID,
+                            VM.ID as VIDEO_ID,
+                            VM.DEVICE_NAME as VIDEO_NAME,
+                            VM.URL_DECODE as HLS_ADDRESS,
+                            a.TENANT_ID,
+                            a.UNIT_ID,
+                            a.DEV_TYPE,
+						    UI.ARCHI_UNIT_TYPE
+                        FROM
+                            IOT_DEVICE a
+                            LEFT JOIN UNIT_INFO UI ON a.UNIT_ID = UI.ID
+                            LEFT JOIN VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID
+                            AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                            ) t, IOT_DEVICE_BUSINESS tz_bus
+                 WHERE  1 = 1
+                       AND t.ID = tz_bus.DEVICE_ID
+                       AND ( t.DEVICE_TYPE IS NOT NULL AND DEVICE_TYPE <> '' )
+             union all
+                 SELECT
+                    t.UNIT_NAME,
+                    t.ALARM_TYPE,
+                    t.ADDRESS,
+                    t.ID,
+                    t.VIDEO_ID,
+                    t.VIDEO_NAME,
+                    t.HLS_ADDRESS,
+                    tz_bus.CREATE_TIME,
+                    t.TENANT_ID,
+                    t.UNIT_ID,
+                    t.DEV_TYPE,
+					t.ARCHI_UNIT_TYPE
+                 FROM
+                    (
+                        SELECT
+                            UI.UNIT_NAME,
+                            if(a.DEV_TYPE ='machine_user',(SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.MAINFRAME_STATUS),((SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.BUSINESS_TYPE)))as ALARM_TYPE,
+                            a.DEVIVCE_ADDRESS  AS ADDRESS ,
+                            a.ID,
+                            VM.ID as VIDEO_ID,
+                            VM.DEVICE_NAME as VIDEO_NAME,
+                            VM.URL_DECODE as HLS_ADDRESS,
+                            a.TENANT_ID,
+                            a.UNIT_ID,
+                            a.DEV_TYPE,
+						    UI.ARCHI_UNIT_TYPE
+                        FROM
+                            IOT_DEVICE a
+                            LEFT JOIN UNIT_INFO UI ON a.UNIT_ID = UI.ID
+                            LEFT JOIN VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID
+                            AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                        WHERE
+                            1 = 1
+                            AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                            ) t,
+                        IOT_ZXY_BUSINESS tz_bus
+                    WHERE
+                    1 = 1
+                    AND t.ID = tz_bus.IOT_DEVICE_ID
+                    )tt where tt.TENANT_ID = :TENANT_ID {1}
+                    AND tt.UNIT_NAME is not null
+                    ORDER BY tt.CREATE_TIME DESC
+                LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                select
+                 count(1) tcount
+                from (
+                    SELECT
+                        t.UNIT_NAME,
+                        t.ALARM_TYPE,
+                        t.ADDRESS,
+                        t.ID,
+                        t.VIDEO_ID,
+                        t.VIDEO_NAME,
+                        t.HLS_ADDRESS,
+                        tz_bus.CREATE_TIME,
+                        t.TENANT_ID,
+                        t.UNIT_ID,
+                        t.DEV_TYPE,
+						t.ARCHI_UNIT_TYPE
+                    FROM (
+                        SELECT
+                            UI.UNIT_NAME,
+                            if(a.DEV_TYPE ='machine_user',(SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.MAINFRAME_STATUS),((SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.BUSINESS_TYPE)))as ALARM_TYPE,
+                            JSON_UNQUOTE ( JSON_EXTRACT ( a.DEVICE_DATA, '$.type' ) ) AS DEVICE_TYPE,
+                            JSON_UNQUOTE ( JSON_EXTRACT ( a.DEVICE_DATA, '$.address' ) ) AS ADDRESS ,
+                            a.ID,
+                            VM.ID as VIDEO_ID,
+                            VM.DEVICE_NAME as VIDEO_NAME,
+                            VM.URL_DECODE as HLS_ADDRESS,
+                            a.TENANT_ID,
+                            a.UNIT_ID,
+                            a.DEV_TYPE,
+						    UI.ARCHI_UNIT_TYPE
+                        FROM
+                            IOT_DEVICE a
+                            LEFT JOIN UNIT_INFO UI ON a.UNIT_ID = UI.ID
+                            LEFT JOIN VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID
+                            AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                            ) t, IOT_DEVICE_BUSINESS tz_bus
+                 WHERE  1 = 1
+                       AND t.ID = tz_bus.DEVICE_ID
+                       AND ( t.DEVICE_TYPE IS NOT NULL AND DEVICE_TYPE <> '' )
+             union all
+                 SELECT
+                    t.UNIT_NAME,
+                    t.ALARM_TYPE,
+                    t.ADDRESS,
+                    t.ID,
+                    t.VIDEO_ID,
+                    t.VIDEO_NAME,
+                    t.HLS_ADDRESS,
+                    tz_bus.CREATE_TIME,
+                    t.TENANT_ID,
+                    t.UNIT_ID,
+                    t.DEV_TYPE,
+					t.ARCHI_UNIT_TYPE
+                 FROM
+                    (
+                        SELECT
+                            UI.UNIT_NAME,
+                            if(a.DEV_TYPE ='machine_user',(SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.MAINFRAME_STATUS),((SELECT b.CODE_NAME from SYS_DICTIONARY b where b.CODE_VALUE = a.BUSINESS_TYPE)))as ALARM_TYPE,
+                            JSON_UNQUOTE ( JSON_EXTRACT ( a.DEVICE_DATA, '$.address' ) ) AS ADDRESS ,
+                            a.ID,
+                            VM.ID as VIDEO_ID,
+                            VM.DEVICE_NAME as VIDEO_NAME,
+                            VM.URL_DECODE as HLS_ADDRESS,
+                            a.TENANT_ID,
+                            a.UNIT_ID,
+                            a.DEV_TYPE,
+						    UI.ARCHI_UNIT_TYPE
+                        FROM
+                            IOT_DEVICE a
+                            LEFT JOIN UNIT_INFO UI ON a.UNIT_ID = UI.ID
+                            LEFT JOIN VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID
+                            AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                        WHERE
+                            1 = 1
+                            AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                            ) t,
+                        IOT_ZXY_BUSINESS tz_bus
+                    WHERE
+                    1 = 1
+                    AND t.ID = tz_bus.IOT_DEVICE_ID
+                    )tt where tt.TENANT_ID = :TENANT_ID {1} AND UNIT_NAME is not null
+            ]]>
+        </tsql>
+
+        <params>
+            <UNIT_NAME>
+                <index>1</index>
+                <con>AND tt.UNIT_NAME like '%':? '%' </con>
+                <type>char</type>
+            </UNIT_NAME>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND tt.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE>
+                <index>3</index>
+                <con>AND tt.DEV_TYPE in( :? )</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <START_TIME>
+                <index>4</index>
+                <con>AND tt.CREATE_TIME >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>4</index>
+                <con>
+                    <![CDATA[
+                        AND tt.CREATE_TIME <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+            <ARCHITECTURE_TYPE>
+                <index>5</index>
+                <con> AND tt.ARCHI_UNIT_TYPE = :? </con>
+                <type>datetime</type>
+            </ARCHITECTURE_TYPE>
+        </params>
+    </iot_unit_device_alarm_list>
+
+
+    <!-- 远程告警列表 -->
+    <iot_remote_alarm_list>
+        <psql>
+            <![CDATA[
+                 SELECT
+                        (SELECT CODE_NAME from SYS_DICTIONARY SD where SD.CODE_VALUE = IDTAB.DEV_TYPE) as DEVICE_NAME,
+                        C.DEVICELOOPID,
+                        C.CREATE_TIME,
+                        IAPR.CREATE_TIME as PROCESS_TIME,
+                        IAPR.PROCESS_RESULT,
+                        (SELECT `NAME` from SYS_USER SU WHERE SU.ID = IAPR.CREATE_BY) AS CREATE_BY,
+                        VM.ID as VIDEO_ID,
+                        VM.DEVICE_NAME as VIDEO_NAME,
+                        VM.URL_DECODE as HLS_ADDRESS,
+                        C.ID as BUSINESS_ID,
+                        IDTAB.ID as DEVICEID,
+                        JSON_UNQUOTE(JSON_EXTRACT(IDTAB.DEVICE_DATA,'$.address')) as DEVICE_ADDRESS,
+                        IAPR.ALARM_DESCRIBE
+                FROM (
+                        SELECT A.CREATE_TIME, A.ID,A.DEVICE_ID ,A.DEVICE_LOOP_ID as DEVICELOOPID FROM IOT_DEVICE_BUSINESS A  WHERE date_sub(curdate(), interval 7 day) <= A.CREATE_TIME
+                        union
+                        select B.CREATE_TIME,B.ID,B.DEVICE_ID DEVICE_ID,B.SOURCE_ADDRESS as DEVICELOOPID FROM IOT_GB_YHXXCS B WHERE date_sub(curdate(), interval 7 day
+                        ) <= B.CREATE_TIME   and B.TYPE_FLAG = '2') C
+                        LEFT JOIN IOT_ALARM_PROCESS_RECORD IAPR ON C.ID = IAPR.BUSINESS_ID,
+                        IOT_DEVICE IDTAB,
+						UNIT_INFO UI LEFT JOIN
+                        VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE C.DEVICE_ID = IDTAB.ID
+						AND IDTAB.UNIT_ID = UI.ID
+
+                         and IDTAB.TENANT_ID = :TENANT_ID {1}
+                        ORDER BY IAPR.PROCESS_RESULT ASC,C.CREATE_TIME DESC
+                        LIMIT :start , :end
+                        +
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                 SELECT
+					count(1) tcount
+                FROM (
+                        SELECT A.CREATE_TIME, A.ID,A.DEVICE_ID ,A.DEVICE_LOOP_ID as DEVICELOOPID FROM IOT_DEVICE_BUSINESS A  WHERE date_sub(curdate(), interval 7 day) <= A.CREATE_TIME
+                        union
+                        select B.CREATE_TIME,B.ID,B.DEVICE_ID DEVICE_ID,B.DEVICE_LOOP_ID as DEVICELOOPID FROM IOT_GB_YHXXCS B WHERE date_sub(curdate(), interval 7 day
+                        ) <= B.CREATE_TIME   and B.TYPE_FLAG = '2') C
+                        LEFT JOIN IOT_ALARM_PROCESS_RECORD IAPR ON C.ID = IAPR.BUSINESS_ID,
+                        IOT_DEVICE IDTAB,
+						UNIT_INFO UI LEFT JOIN
+                        VIDEO_MANAGE VM ON UI.ID = VM.UNIT_ID  AND VM.FIRE_ROOM_ID = '2b406d2f-9fb4-4557-8a93-af90d069d73e'
+                WHERE C.DEVICE_ID = IDTAB.ID
+						AND IDTAB.UNIT_ID = UI.ID
+                        and IDTAB.TENANT_ID = :TENANT_ID {1}
+                        ORDER BY IAPR.PROCESS_RESULT ASC,C.CREATE_TIME DESC
+                        LIMIT :start , :end
+            ]]>
+        </tsql>
+
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>AND C.CREATE_TIME >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>1</index>
+                <con>
+                    <![CDATA[
+                        AND C.CREATE_TIME <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+            <DEV_TYPES>
+                <index>2</index>
+                <con> AND IDTAB.DEV_TYPE in (:?)</con>
+                <type>char</type>
+            </DEV_TYPES>
+            <UNIT_ID>
+                <index>3</index>
+                <con> AND IDTAB.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <DEVICE_TYPE_NAME>
+                <index>4</index>
+                <con> AND (SELECT CODE_NAME from SYS_DICTIONARY SD where SD.CODE_VALUE = IDTAB.DEV_TYPE) like '%':?'%' </con>
+                <type>char</type>
+            </DEVICE_TYPE_NAME>
+        </params>
+    </iot_remote_alarm_list>
+    <!-- 远程预警列表 -->
+    <iot_early_warning_list>
+        <psql>
+            <![CDATA[
+	              SELECT
+						(SELECT CODE_NAME from SYS_DICTIONARY SD where SD.CODE_VALUE = IDTAB.DEV_TYPE) as DEVICE_NAME,
+                        C.CREATE_TIME,
+                        IAPR.PROCESS_RESULT,
+                        IAPR.CREATE_TIME as PROCESS_TIME,
+					    (SELECT u.`NAME` FROM SYS_USER u WHERE u.ID = IAPR.CREATE_BY) as CREATE_BY,
+                        C.ID as BUSINESS_ID,
+                        IDTAB.ID as DEVICEID,
+                        IDTAB.DEVIVCE_ADDRESS AS ADDRESS,
+                        IAPR.ALARM_DESCRIBE
+                  FROM (
+						SELECT A1.CREATE_TIME, A1.ID, A1.DEVICE_ID  FROM
+							( SELECT A.CREATE_TIME, A.ID, A.DEVICE_ID  FROM IOT_DEVICE_BUSINESS A, IOT_DEVICE B
+							WHERE
+							A.DEVICE_ID = B.ID  AND B.DEV_TYPE NOT IN ( 'machine_user', 'manual_fire_point', 'smoke_detector_line', 'audible_visual_alarm','charging_pile' )
+							AND B.TENANT_ID = :TENANT_ID
+							AND B.UNIT_ID = :UNIT_ID
+							ORDER BY A.CREATE_TIME DESC
+							LIMIT :start , :end) A1
+                        union
+                        select B.CREATE_TIME,B.ID,B.IOT_DEVICE_ID DEVICE_ID FROM IOT_ZXY_BUSINESS B WHERE date_sub(curdate(), interval 30 day) <= B.CREATE_TIME) C
+                        LEFT JOIN IOT_ALARM_PROCESS_RECORD IAPR ON C.ID = IAPR.BUSINESS_ID,IOT_DEVICE IDTAB
+                  WHERE C.DEVICE_ID = IDTAB.ID
+                        AND IDTAB.DEV_TYPE not in ('machine_user','manual_fire_point','smoke_detector_line','audible_visual_alarm','charging_pile')
+                        and IDTAB.TENANT_ID = :TENANT_ID
+                        {1}
+                        ORDER BY IAPR.PROCESS_RESULT ASC,C.CREATE_TIME DESC
+                        LIMIT :start , :end
+            ]]>
+        </psql>
+
+        <tsql>
+            <![CDATA[
+                SELECT
+					 count(1) as tcount
+                   FROM (
+						SELECT A1.CREATE_TIME, A1.ID, A1.DEVICE_ID  FROM
+							( SELECT A.CREATE_TIME, A.ID, A.DEVICE_ID  FROM IOT_DEVICE_BUSINESS A, IOT_DEVICE B
+							WHERE
+							A.DEVICE_ID = B.ID  AND B.DEV_TYPE NOT IN ( 'machine_user', 'manual_fire_point', 'smoke_detector_line', 'audible_visual_alarm' )
+							AND B.TENANT_ID = :TENANT_ID
+							 AND date_sub(curdate(), interval 30 day) <= A.CREATE_TIME
+							) A1
+                        union
+                        select B.CREATE_TIME,B.ID,B.IOT_DEVICE_ID DEVICE_ID FROM IOT_ZXY_BUSINESS B WHERE date_sub(curdate(), interval 30 day) <= B.CREATE_TIME) C
+                        LEFT JOIN IOT_ALARM_PROCESS_RECORD IAPR ON C.ID = IAPR.BUSINESS_ID,IOT_DEVICE IDTAB
+                   WHERE C.DEVICE_ID = IDTAB.ID
+                        AND IDTAB.DEV_TYPE not in ('machine_user','manual_fire_point','smoke_detector_line','audible_visual_alarm')
+                        and IDTAB.TENANT_ID = :TENANT_ID
+                        {1}
+            ]]>
+        </tsql>
+
+        <params>
+            <DEVICE_TYPE>
+                <index>1</index>
+                <con>AND IDTAB.DEV_TYPE in (:?)</con>
+                <type>char</type>
+            </DEVICE_TYPE>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND IDTAB.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </iot_early_warning_list>
+    <get_false_alarm_rate>
+        <sql>
+            <![CDATA[
+            	SELECT
+                    t.name,
+	                if(t1.VALUE is null,0,t1.`VALUE`)as value
+                 FROM
+	                ( SELECT "误报" AS NAME FROM DUAL UNION SELECT "火警" AS NAME FROM DUAL UNION SELECT "故障" AS NAME FROM DUAL ) t
+	             LEFT JOIN(
+                SELECT
+                    count( 1 ) AS  VALUE ,
+                     CASE
+                        IAPR.PROCESS_RESULT
+                        WHEN 1 THEN
+                        "误报"
+                        WHEN 2 THEN
+                        "火警"
+                        WHEN 3 THEN
+                        "故障"
+                END NAME
+                FROM
+                    IOT_ALARM_PROCESS_RECORD IAPR,
+                    IOT_DEVICE IDTAB
+                WHERE
+                    IAPR.DEVICE_ID = IDTAB.ID
+                    AND IDTAB.TENANT_ID = :TENANT_ID
+                    {1}
+                GROUP BY
+                    IAPR.PROCESS_RESULT)t1  ON t.NAME = t1.NAME
+        ]]>
+        </sql>
+        <params>
+            <START_TIME>
+                <index>1</index>
+                <con>AND IAPR.CREATE_TIME >= :?</con>
+                <type>datetime</type>
+            </START_TIME>
+            <END_TIME>
+                <index>1</index>
+                <con>
+                    <![CDATA[
+                        AND IAPR.CREATE_TIME <= :?
+                    ]]>
+                </con>
+                <type>datetime</type>
+            </END_TIME>
+            <UNIT_ID>
+                <index>2</index>
+                <con> AND IDTAB.UNIT_ID =:?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </get_false_alarm_rate>
+
+    <get_elecfire_current_temp>
+        <sql><![CDATA[
+            SELECT
+                CURRENT,
+                TEMP
+            FROM
+                IOT_RAW_DATA_DETAIL_DQHZ
+            WHERE
+                1 = 1 {1}
+            ORDER BY
+            EVENT_TIME DESC
+        ]]></sql>
+        <params>
+            <DEVICE_ID>
+                <index>1</index>
+                <con>AND DEVICE_ID = :?</con>
+                <type>char</type>
+            </DEVICE_ID>
+        </params>
+    </get_elecfire_current_temp>
+</qrys>
+

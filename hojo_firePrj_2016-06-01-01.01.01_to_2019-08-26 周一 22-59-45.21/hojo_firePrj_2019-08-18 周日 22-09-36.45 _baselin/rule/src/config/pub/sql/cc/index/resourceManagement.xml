@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 资源管理模块 -->
+    <!-- 消防站基本信息 -->
+    <fire_station_list>
+        <sql>
+            <![CDATA[
+        SELECT
+        *
+        FROM
+        FIRE_STATION F
+        WHERE
+        F.DELETED = '0'
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <name>
+                <index>1</index>
+                <con>AND F.NAME LIKE :?</con>
+                <type>char</type>
+            </name>
+            <unit_id>
+                <index>1</index>
+                <con>AND F.UNIT_ID = :?</con>
+                <type>char</type>
+            </unit_id>
+        </params>
+    </fire_station_list>
+
+    <!-- 消防站 装备信息 -->
+    <fire_station_equipment>
+        <sql>
+            <![CDATA[
+        SELECT
+        F.*,
+        (F.CAR_MOTOR_COUNT + F.CAR_TRICYCLE_COUNT + F.CAR_FOURWHEEL_COUNT + F.CAR_OTHER_COUNT) AS CAR_TOTAL,
+        (F.EXT_GUN_COUNT + F.EXT_HOSE_COUNT + F.EXT_ABC_COUNT + F.EXT_LIGHT_COUNT + F.EXT_WRENCH_COUNT + F.EXT_OTHER_COUNT) AS EXT_TOTAL,
+        (F.FORCIBLE_AXE_COUNT + F.FORCIBLE_PLIERS_COUNT + F.FORCIBLE_KEY_COUNT + F.FORCIBLE_ICOR_COUNT + F.FORCIBLE_OTHER_COUNT) AS FORCIBLE_TOTAL,
+        (F.PERSON_HEAD_COUNT + F.PERSON_SUIT_COUNT + F.PERSON_SHOSE_COUNT + F.PERSON_BELT_COUNT + F.PERSON_HAND_COUNT + F.PERSON_MASK_COUNT + F.PERSON_OTHER_COUNT) AS PERSON_TOTAL,
+        (F.COMMUNICATE_PHONE_COUNT + F.COMMUNICATE_INTPHONE_COUNT + F.COMMUNICATE_POCPHONE_COUNT + F.COMMUNICATE_NORPHONE_COUNT + F.COMMUNICATE_OTHER_COUNT) AS COMMUNICATE_TOTAL,
+        (F.TERMINAL_4G_COUNT + F.TERMINAL_MONITOR_COUNT + F.TERMINAL_OTHER_COUNT) AS TERMINAL_TOTAL
+        FROM
+        FIRE_STATION_EQUIPMENT F
+        WHERE
+        F.DELETED = '0'
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND F.FIRE_STATION_ID = :?</con>
+                <type>char</type>
+            </id>
+        </params>
+    </fire_station_equipment>
+
+    <!-- 消防站-消防人员-列表 -->
+    <fire_station_men_list>
+        <sql>
+        <![CDATA[
+        SELECT
+        *
+        FROM
+        FIRE_STATION_FIREMEN M
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+            SELECT
+            *
+            FROM
+            FIRE_STATION_FIREMEN M
+            WHERE
+            1=1
+            {1}
+            limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            COUNT(1) AS tcount
+            FROM
+            FIRE_STATION_FIREMEN M
+            WHERE
+            1=1
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <fire_station_id>
+                <index>1</index>
+                <con>AND M.FIRE_STATION_ID=:?</con>
+                <type>char</type>
+            </fire_station_id>
+            <start>
+                <index>1</index>
+                <con>limit :?,</con>
+                <type>int</type>
+            </start>
+            <end>
+                <index>1</index>
+                <con>:?</con>
+                <type>int</type>
+            </end>
+            <job_state>
+                <index>1</index>
+                <con>AND M.JOB_STATE=:?</con>
+                <type>char</type>
+            </job_state>
+            <job_date>
+                <index>1</index>
+                <con>AND M.JOB_DATE=:?</con>
+                <type>char</type>
+            </job_date>
+            <name>
+                <index>1</index>
+                <con>AND M.NAME LIKE :?</con>
+                <type>char</type>
+            </name>
+            <PERSON_TYPE_FLAG>
+                <index>2</index>
+                <con>AND M.PERSON_TYPE_FLAG = :?</con>
+                <type>char</type>
+            </PERSON_TYPE_FLAG>
+        </params>
+    </fire_station_men_list>
+
+    <!-- 资源管理-技术服务-维保单位查询 -->
+    <repair_compay>
+        <sql>
+        <![CDATA[
+        SELECT
+        *
+        FROM
+        UNIT_MAINTENANCE M
+        WHERE
+        1=1
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND M.UNIT_ID=:?</con>
+                <type>char</type>
+            </id>
+            <type>
+                <index>1</index>
+                <con>AND M.TYPE=:?</con>
+                <type>char</type>
+            </type>
+        </params>
+    </repair_compay>
+
+    <!-- 资源管理-技术服务-消防单位文件列表查询 -->
+    <fire_company_file>
+        <sql>
+            <![CDATA[
+            SELECT
+            *
+            FROM
+            UNIT_MAINTENANCE_FILE M
+            WHERE
+            1=1
+            {1}
+            ]]>
+        </sql>
+        <psql>
+            <![CDATA[
+            SELECT
+            *
+            FROM
+            UNIT_MAINTENANCE_FILE M
+            WHERE
+            1=1
+            {1}
+            limit :start,:end
+        ]]>
+        </psql>
+        <tsql>
+            <![CDATA[
+            SELECT
+            COUNT(1) AS tcount
+            FROM
+            UNIT_MAINTENANCE_FILE M
+            WHERE
+            1=1
+            {1}
+        ]]>
+        </tsql>
+        <params>
+            <id>
+                <index>1</index>
+                <con>AND M.UNIT_MAINTENANCE_ID=:?</con>
+                <type>char</type>
+            </id>
+            <type>
+                <index>1</index>
+                <con>AND M.UPLOAD_TYPE=:?</con>
+                <type>char</type>
+            </type>
+            <name>
+                <index>1</index>
+                <con>AND M.NAME LIKE :?</con>
+                <type>char</type>
+            </name>
+        </params>
+    </fire_company_file>
+</qrys>

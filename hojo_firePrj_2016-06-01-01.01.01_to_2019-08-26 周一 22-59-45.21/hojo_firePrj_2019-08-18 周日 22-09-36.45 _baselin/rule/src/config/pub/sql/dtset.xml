@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+
+    <dtset_sys_dict>
+        <!--<sql><![CDATA[-->
+		<!--select-->
+		 <!--*-->
+		<!--from SYS_DICTIONARY-->
+		<!--where 1=1 {1}-->
+        <!--order by TYPE_VALUE-->
+		<!--]]></sql>-->
+        <sql><![CDATA[
+		select
+		 *
+		from SYS_DICTIONARY
+		where 1=1 {1}
+	]]></sql>
+        <psql><![CDATA[
+		select
+		 *
+		from SYS_DICTIONARY
+		where 1=1 {1}
+		order by TYPE_VALUE ASC
+		limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(*) as tcount
+		from SYS_DICTIONARY
+		where 1=1 {1}
+	]]></tsql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+			<CODE_NAME>
+                <index>2</index>
+                <con>and CODE_NAME like :?</con>
+                <type>char</type>
+            </CODE_NAME>
+			<CODE_VALUE>
+                <index>2</index>
+                <con>and CODE_VALUE like :?</con>
+                <type>char</type>
+            </CODE_VALUE>
+            <TYPE_VALUE>
+                <index>2</index>
+                <con>and TYPE_VALUE like :?</con>
+                <type>char</type>
+            </TYPE_VALUE>
+        </params>
+    </dtset_sys_dict>
+
+	<dtset_BUSI_SCENERY>
+        <sql><![CDATA[
+		select
+		 *
+		from BUSI_SCENERY
+		where 1=1 {1}
+		
+		]]></sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID= :?</con>
+                <type>char</type>
+            </ID>
+			<NAME>
+                <index>1</index>
+                <con>and NAME like :?</con>
+                <type>char</type>
+            </NAME>
+        </params>
+    </dtset_BUSI_SCENERY>
+
+    <dtset_query_unitinfo>
+        <sql>
+            <![CDATA[
+		select
+		 *
+		from SYS_DICTIONARY where TYPE_VALUE = 'UNIT_TYPE'
+		]]>
+        </sql>
+    </dtset_query_unitinfo>
+</qrys>

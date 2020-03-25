@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+    <!--查询巡检事件-->
+    <rount_event_manger>
+        <sql>
+            <![CDATA[
+                SELECT * FROM DEVICE_ROUNTING_EVENT
+                WHERE 1=1 AND TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>and ID = :?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>and UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </rount_event_manger>
+
+    <!--查询巡检任务-->
+    <rount_query>
+        <sql>
+        <![CDATA[
+                SELECT * FROM DEVICE_ROUTING
+                WHERE 1=1  {1}
+                ORDER BY ROUTING_STATUS
+            ]]>
+        </sql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <ID>
+                <index>2</index>
+                <con>AND ID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </rount_query>
+
+    <!-- 查询任务与人员的信息, 返回人员名称 -->
+    <get_user_info_byTrount>
+        <sql>
+            <![CDATA[
+                SELECT b.ID,b.NAME FROM TROUNT_USER_REL a
+                LEFT JOIN SYS_USER b ON a.USER_ID = b.ID
+                WHERE 1= 1 AND a.TENANT_ID =:TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <TROUNT_ID>
+                <index>1</index>
+                <con>AND a.TROUNT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_ID>
+        </params>
+    </get_user_info_byTrount>
+
+
+    <!-- 查询任务与事件的关联，返回事件名称-->
+    <get_event_info_byTrount>
+        <sql>
+            <![CDATA[
+                SELECT b.ID, b.EVENT_NAME,b.EVENT_DESC,a.EVENT_STATUS FROM TROUNT_EVENT_REL a
+                LEFT JOIN DEVICE_ROUNTING_EVENT b ON a.TROUNT_EVENT_ID = b.ID
+                WHERE 1 = 1 AND a.TENANT_ID = :TENANT_ID {1}
+            ]]>
+        </sql>
+        <params>
+            <TROUNT_ID>
+                <index>1</index>
+                <con>and a.TROUNT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND b.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </get_event_info_byTrount>
+
+    <!--查询根据巡检事件查询设备名称  SELECT JSON_EXTRACT(b.DEVICE_DATA,'$.name') DEVICE_NAME,
+                JSON_EXTRACT(DEVICE_DATA,'$.address') INSTALL_SITE,
+                b.ID
+                FROM EVENT_DEVICE_REL a
+                LEFT JOIN IOT_DEVICE b ON a.DEVICE_ID = b.ID
+                WHERE 1 = 1 AND a.TENANT_ID = :TENANT_ID {1}-->
+    <get_device_by_event>
+        <sql>
+            <![CDATA[
+                SELECT * FROM EVENT_DEVICE_REL a
+                WHERE 1 = 1 {1} AND a.TENANT_ID = :TENANT_ID
+            ]]>
+        </sql>
+        <params>
+            <TROUNT_EVENT_ID>
+                <index>1</index>
+                <con>and a.TROUNT_EVENT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_EVENT_ID>
+            <DEVICE_ID>
+                <index>2</index>
+                <con>and a.DEVICE_ID =:?</con>
+                <type>char</type>
+            </DEVICE_ID>
+        </params>
+    </get_device_by_event>
+
+    <!--根据设备ID查询设备名称-->
+    <get_device_name_by_event>
+        <sql>
+            <![CDATA[
+                SELECT s.CODE_NAME as DEVICE_NAME,tab.ID AS DEVICE_ID,tab.ADDRESS FROM (
+                            SELECT
+                a.*,'1' as BUSS_DIFF,a.REQ_IP as DEVICE_TYPE,a.REMARK AS ADDRESS
+                FROM IOT_DEVICE a WHERE 1= 1
+                AND (a.REQ_IP is not null AND a.REQ_IP != '')
+                UNION all
+                SELECT * FROM (
+                SELECT
+                a.*, '2' as BUSS_DIFF,JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.type')) as DEVICE_TYPE,
+                                     JSON_UNQUOTE(JSON_EXTRACT(a.DEVICE_DATA,'$.address')) as ADDRESS
+                FROM IOT_DEVICE a WHERE 1=1
+               ) t WHERE 1=1 AND (t.DEVICE_TYPE is not null or DEVICE_TYPE <> '')
+                        ) tab ,SYS_DICTIONARY s
+                        WHERE tab.DEVICE_TYPE = s.CODE_VALUE
+                        AND tab.TENANT_ID = :TENANT_ID
+                        {1}
+            ]]>
+        </sql>
+        <params>
+            <DEVICE_IDS>
+                <index>1</index>
+                <con>AND  tab.ID in (:?)</con>
+                <type>char</type>
+            </DEVICE_IDS>
+        </params>
+    </get_device_name_by_event>
+
+    <!--根据巡检事件查询巡检的设备情况-->
+    <query_device_trount_byevent>
+        <sql>
+            <![CDATA[
+                SELECT * FROM EVENT_DEVICE_REL a
+                WHERE 1 =1 {1}
+                AND a.TENANT_ID = :TENANT_ID
+            ]]>
+        </sql>
+        <params>
+            <TROUNT_EVENT_ID>
+                <index>1</index>
+                <con>AND a.TROUNT_EVENT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_EVENT_ID>
+        </params>
+    </query_device_trount_byevent>
+
+    <!--删除巡检任务-->
+    <delete_rount_info>
+        <sql>
+            <![CDATA[
+                DELETE FROM DEVICE_ROUTING WHERE 1=1 {1}
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND ID =:?</con>
+                <type>char</type>
+            </ID>
+            <!--<UNIT_ID>-->
+                <!--<index>2</index>-->
+                <!--<con>AND UNIT_ID =:? </con>-->
+                <!--<type>char</type>-->
+            <!--</UNIT_ID>-->
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </delete_rount_info>
+
+    <!--删除巡检事件关联信息-->
+    <delete_trount_event_rel>
+        <sql>
+            <![CDATA[
+                DELETE FROM TROUNT_EVENT_REL WHERE 1=1 {1}
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND ID =:? </con>
+                <type>char</type>
+            </ID>
+            <TROUNT_EVENT_ID>
+                <index>2</index>
+                <con>AND TROUNT_EVENT_ID =:?</con>
+                <type>char</type>
+            </TROUNT_EVENT_ID>
+            <TROUNT_ID>
+                <index>3</index>
+                <con> AND TROUNT_ID =:?</con>
+                <type>char</type>
+            </TROUNT_ID>
+            <TENANT_ID>
+                <index>4</index>
+                <con>AND TENANT_ID = :?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </delete_trount_event_rel>
+
+    <!-- 删除巡检人员关联信息-->
+    <delete_rount_user_rel>
+        <sql>
+            <![CDATA[
+                DELETE FROM TROUNT_USER_REL  WHERE 1=1 {1}
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND ID =:? </con>
+                <type>char</type>
+            </ID>
+            <TROUNT_ID>
+                <index>2</index>
+                <con> AND TROUNT_ID =:?</con>
+                <type>char</type>
+            </TROUNT_ID>
+            <USER_ID>
+                <index>3</index>
+                <con> AND USER_ID =:?</con>
+                <type>char</type>
+            </USER_ID>
+        </params>
+    </delete_rount_user_rel>
+
+    <!--删除事件信息-->
+    <delete_event_info>
+        <sql>
+            DELETE FROM DEVICE_ROUNTING_EVENT WHERE 1=1 {1}
+        </sql>
+        <params>
+            <TENANT_ID>
+                <index>1</index>
+                <con>AND TENANT_ID =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+            <ID>
+                <index>1</index>
+                <con> AND ID =:?</con>
+                <type>char</type>
+            </ID>
+            <UNIT_ID>
+                <index>2</index>
+                <con>AND UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+        </params>
+    </delete_event_info>
+
+    <!---删除事件关联的设备信息-->
+    <delete_event_device_res>
+        <sql>
+            DELETE FROM EVENT_DEVICE_REL WHERE 1=1 {1}
+        </sql>
+        <params>
+            <TROUNT_EVENT_ID>
+                <index>1</index>
+                <con>AND TROUNT_EVENT_ID = :?</con>
+                <type>char</type>
+            </TROUNT_EVENT_ID>
+            <TENANT_ID>
+                <index>2</index>
+                <con>AND TENANT_ID =:?</con>
+                <type>char</type>
+            </TENANT_ID>
+        </params>
+    </delete_event_device_res>
+
+    <!--根据设备查询最后一次被巡检的事件-->
+    <query_trount_time_by_device>
+        <sql>
+            <![CDATA[
+                SELECT * FROM DEVICE_ROUTING c
+                    WHERE c.ID in (
+                        SELECT b.TROUNT_ID FROM TROUNT_EVENT_REL b WHERE
+                        b.TROUNT_EVENT_ID IN (
+                                SELECT a.TROUNT_EVENT_ID FROM EVENT_DEVICE_REL a
+                                WHERE 1=1 {1} AND TENANT_ID =:TENANT_ID )
+                        )
+                        ORDER BY c.ROUNT_END_TIME desc
+                        LIMIT 1
+
+            ]]>
+        </sql>
+        <params>
+            <DEVICE_ID>
+                <index>1</index>
+                <con>AND a.DEVICE_ID = :?</con>
+                <type>char</type>
+            </DEVICE_ID>
+        </params>
+    </query_trount_time_by_device>
+
+    <!--根据巡检任务查询巡检人-->
+    <query_trount_user_by_device>
+        <sql>
+            <![CDATA[
+                SELECT c.NAME as USER_NAME FROM SYS_USER c WHERE
+                    c.ID in (
+                        SELECT b.USER_ID FROM DEVICE_ROUTING a,TROUNT_USER_REL b
+                        WHERE a.ID = b.TROUNT_ID AND a.TENANT_ID =:TENANT_ID
+                        {1} )
+            ]]>
+        </sql>
+        <params>
+            <ID>
+                <index>1</index>
+                <con>AND a.ID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </query_trount_user_by_device>
+
+    <get_trount_list>
+        <sql><![CDATA[
+		 SELECT t.*,
+            group_concat(DRE.EVENT_NAME) as EVENT_NAME
+         FROM
+            (
+                SELECT
+                DR.ID as DRID,
+                group_concat( SU.NAME ) AS USER_ACCOUNT,
+                DR.*
+                FROM
+                DEVICE_ROUTING DR
+                LEFT JOIN TROUNT_USER_REL TUR ON DR.id = TUR.TROUNT_ID
+                LEFT JOIN SYS_USER SU ON TUR.USER_ID = SU.ID
+                GROUP BY
+                DR.ID
+            ) t
+            LEFT JOIN TROUNT_EVENT_REL TER ON t.DRID = TER.TROUNT_ID
+            LEFT JOIN DEVICE_ROUNTING_EVENT DRE ON TER.TROUNT_EVENT_ID = DRE.ID
+            GROUP BY t.DRID having 1=1 and t.TENANT_ID =:TENANT_ID {1}
+            ORDER BY t.ROUNT_END_TIME DESC
+	]]></sql>
+        <psql><![CDATA[
+		SELECT t.*,
+            group_concat(DRE.EVENT_NAME) as EVENT_NAME
+         FROM
+            (
+                SELECT
+                DR.ID as DRID,
+                group_concat( SU.NAME ) AS USER_ACCOUNT,
+                DR.*
+                FROM
+                DEVICE_ROUTING DR
+                LEFT JOIN TROUNT_USER_REL TUR ON DR.id = TUR.TROUNT_ID
+                LEFT JOIN SYS_USER SU ON TUR.USER_ID = SU.ID
+                GROUP BY
+                DR.ID
+            ) t
+            LEFT JOIN TROUNT_EVENT_REL TER ON t.DRID = TER.TROUNT_ID
+            LEFT JOIN DEVICE_ROUNTING_EVENT DRE ON TER.TROUNT_EVENT_ID = DRE.ID
+            GROUP BY t.DRID having 1=1 and t.TENANT_ID =:TENANT_ID {1}
+            ORDER BY t.ROUNT_END_TIME DESC
+		    limit :start , :end
+	]]></psql>
+        <tsql><![CDATA[
+		select
+			count(1) as tcount
+		 FROM
+            (
+                SELECT t.*,
+            group_concat(DRE.EVENT_NAME) as EVENT_NAME
+         FROM
+            (
+                SELECT
+                DR.ID as DRID,
+                group_concat( SU.NAME ) AS USER_ACCOUNT,
+                DR.*
+                FROM
+                DEVICE_ROUTING DR
+                LEFT JOIN TROUNT_USER_REL TUR ON DR.id = TUR.TROUNT_ID
+                LEFT JOIN SYS_USER SU ON TUR.USER_ID = SU.ID
+                GROUP BY
+                DR.ID
+            ) t
+            LEFT JOIN TROUNT_EVENT_REL TER ON t.DRID = TER.TROUNT_ID
+            LEFT JOIN DEVICE_ROUNTING_EVENT DRE ON TER.TROUNT_EVENT_ID = DRE.ID
+            GROUP BY t.DRID having 1=1 and t.TENANT_ID =:TENANT_ID {1}
+            ) t1
+
+	]]></tsql>
+        <params>
+            <UNIT_ID>
+                <index>1</index>
+                <con>and t.UNIT_ID = :?</con>
+                <type>char</type>
+            </UNIT_ID>
+            <ID>
+                <index>2</index>
+                <con>AND t.DRID = :?</con>
+                <type>char</type>
+            </ID>
+        </params>
+    </get_trount_list>
+</qrys>

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<qrys>
+    <!-- 单位巡查数据 -->
+    <monthly_statistics>
+        <sql>
+        <![CDATA[
+		SELECT
+        IFNULL(SUM(R.ROUTING_STATUS='1'),0) AS UNFINISH,
+        IFNULL(SUM(R.ROUTING_STATUS='2'),0) AS FINISH
+        FROM
+        DEVICE_ROUTING R,
+        UNIT_INFO I,
+        SYS_DISTRICT D
+        WHERE
+        1=1
+        AND R.UNIT_ID=I.ID
+        AND I.AREA_ID=D.ID
+        AND R.ROUNT_START_TIME >= (select DATE_ADD(curdate(),interval -day(curdate())+1 day))
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND I.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND I.AREA_ID in (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </monthly_statistics>
+    <!-- 超时未处理数据 未处理隐患数量-->
+    <delay_unhandle_data>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT
+        FROM
+        HIDDEN_DANGER_RECORD R,
+        UNIT_INFO I,
+        SYS_DISTRICT D
+        WHERE
+        1=1
+        AND R.order_status = 1
+        AND R.deal_expect_time < now( )
+        AND R.confirm_result <> 1
+        AND R.UNIT_ID=I.ID
+        AND I.AREA_ID=D.ID
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND I.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND I.AREA_ID in (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </delay_unhandle_data>
+    <!-- 超时未处理数据 超时未进行任务数量 -->
+    <delay_unhandle_task>
+        <sql>
+            <![CDATA[
+		SELECT
+        IFNULL(SUM(R.ROUTING_STATUS='3'),0) AS COUNT
+        FROM
+        DEVICE_ROUTING R,
+        UNIT_INFO I,
+        SYS_DISTRICT D
+        WHERE
+        1=1
+        AND R.UNIT_ID=I.ID
+        AND I.AREA_ID=D.ID
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND I.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND I.AREA_ID in (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </delay_unhandle_task>
+    <!-- 隐患处理数据 -->
+    <hidden_data>
+        <sql>
+            <![CDATA[
+		SELECT
+        COUNT(1) AS COUNT,
+        IFNULL(SUM(IFNULL(R.confirm_result,'0')='1'),0) AS HANDLE,
+        IFNULL(SUM(IFNULL(R.confirm_result,'0')<>'1'),0) AS UNHANDLE,
+        IFNULL(SUM(R.confirm_time-R.create_time),0) AS COST
+        FROM
+        HIDDEN_DANGER_RECORD R,
+        UNIT_INFO I,
+        SYS_DISTRICT D
+        WHERE
+        1=1
+        AND R.create_time >= (select DATE_ADD(curdate(),interval -day(curdate())+1 day))
+        AND R.UNIT_ID=I.ID
+        AND I.AREA_ID=D.ID
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND I.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND I.AREA_ID in (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </hidden_data>
+    <!-- 合同过期未续约 -->
+    <serve_data_contract>
+        <sql>
+            <![CDATA[
+        SELECT
+        COUNT(1) AS EXCEED
+        FROM
+        UNIT_MAINTENANCE M
+        WHERE
+        1=1
+        AND (M.TYPE='R' OR M.TYPE='C')
+        AND M.END_TIME < NOW()
+        {1}
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND M.AREA = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND M.AREA IN (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </serve_data_contract>
+    <!-- 消防设施 维保、监测 不及时数量 -->
+    <repair_check_untime_count>
+        <sql>
+            <![CDATA[
+        SELECT
+            IFNULL(SUM(M.TYPE='C'),0) AS CHECK_COUNT,
+	        IFNULL(SUM(M.TYPE='R'),0) AS REPAIR_COUNT
+        FROM
+            UNIT_MAINTENANCE M
+        WHERE
+            1 = 1
+            {1}
+            AND NOT EXISTS (
+        SELECT
+            *
+        FROM
+            UNIT_MAINTENANCE_FILE F
+        WHERE
+            F.UNIT_MAINTENANCE_ID = M.ID
+            AND date_sub( curdate( ), INTERVAL 180 DAY ) <= F.CREATE_TIME
+            AND F.TYPE IN ('1','2','3')
+            )
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND M.AREA = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND M.AREA IN (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </repair_check_untime_count>
+
+    <!-- 培训与演练 人数、次数统计 -->
+    <train_drill_count>
+        <sql>
+            <![CDATA[
+        SELECT
+        SUM(train_people_number) AS PEOPLE,
+        COUNT(1) AS COUNT,
+        A.DATE
+        FROM(
+        SELECT
+        CASE
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -1 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 0 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -1 month)),6,2)
+
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -2 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 1 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -2 month)),6,2)
+
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -3 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 2 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -3 month)),6,2)
+
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -4 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 3 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -4 month)),6,2)
+
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -5 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 4 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -5 month)),6,2)
+
+        WHEN (R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -6 month)) AND R.train_drill_time <= (select date_sub(date_sub(date_format(now(),'%y-%m-%d'),interval extract(day from now()) day),interval 5 month)))
+        THEN SUBSTR((select date_add(curdate()-day(curdate())+1,interval -6 month)),6,2)
+
+        ELSE '其它' END AS DATE,
+        R.train_people_number
+        FROM
+        TRAIN_DRILL_RECORD R,
+        UNIT_INFO U
+        WHERE
+        1=1
+        AND R.UNIT_ID=U.ID
+        {1}
+        AND R.train_drill_time >= (select date_add(curdate()-day(curdate())+1,interval -6 month))
+        ) A
+        GROUP BY DATE
+        ORDER BY A.DATE DESC
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND U.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND U.AREA_ID IN (:?)</con>
+                <type>chars</type>
+            </regions>
+            <type>
+                <index>1</index>
+                <con>AND R.type = :?</con>
+                <type>char</type>
+            </type>
+        </params>
+    </train_drill_count>
+
+    <!-- 消防单位得分排名 -->
+    <fire_unit_rank>
+        <sql>
+            <![CDATA[
+        SELECT
+        U.UNIT_NAME,
+        S.*
+        FROM
+        UNIT_INFO U,
+        UNIT_SCORE S
+        WHERE
+        1=1
+        {1}
+        AND U.ID=S.unit_id
+        ORDER BY S.average DESC
+        LIMIT 0,10
+        ]]>
+        </sql>
+        <params>
+            <region>
+                <index>1</index>
+                <con>AND U.AREA_ID = :?</con>
+                <type>char</type>
+            </region>
+            <regions>
+                <index>1</index>
+                <con>AND U.AREA_ID IN (:?)</con>
+                <type>chars</type>
+            </regions>
+        </params>
+    </fire_unit_rank>
+</qrys>

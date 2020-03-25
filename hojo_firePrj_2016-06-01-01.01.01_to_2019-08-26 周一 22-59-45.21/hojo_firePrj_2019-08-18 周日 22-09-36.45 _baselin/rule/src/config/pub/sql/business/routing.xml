@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<qrys>
+	<!-- 首页->数据分析->报警数量统计 -->
+	<get_routing_total>
+		<sql><![CDATA[
+
+			SELECT  proname, sum(count) as count from (
+			SELECT CODE_NAME as proname,0 as count FROM SYS_DICTIONARY
+			WHERE TYPE_VALUE = 'ROUTING_STATUS'  AND CODE_VALUE <> 'ROUTING_STATUS'
+			GROUP BY CODE_NAME
+			UNION ALL
+		  SELECT b.CODE_NAME as proname, count(a.ROUTING_STATUS) as count FROM DEVICE_ROUTING a
+			LEFT JOIN SYS_DICTIONARY b ON a.ROUTING_STATUS = b.CODE_VALUE
+			AND b.TYPE_VALUE = 'ROUTING_STATUS'
+			WHERE 1= 1 AND a.TENANT_ID = :TENANT_ID {1}
+			GROUP BY b.CODE_NAME ) tab1
+			GROUP BY proname
+		]]></sql>
+		<params>
+			<UNIT_ID>
+				<index>1</index>
+				<con>AND a.UNIT_ID = :?</con>
+				<type>char</type>
+			</UNIT_ID>
+		</params>
+	</get_routing_total>
+</qrys>
