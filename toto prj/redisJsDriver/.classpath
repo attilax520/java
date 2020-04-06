@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-beanutils-1.8.3.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-codec-1.7.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-lang3-3.3.2.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/ez-vcard-0.10.4.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/fastjson-1.2.8.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/guava-17.0.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/vinnie-2.0.2.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/annotations-api.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/ecj-4.4.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/jasper-el.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/jasper.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/tomcat-embed-core-8.5.29-sources.jar"/>
+	<classpathentry kind="lib" path="tomcatlib/tomcat-embed-core-8.5.29.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/junit-4.8.1.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/javax.ws.rs-api-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/javax.ws.rs-api-2.1.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/jedis-2.1.0-sources.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/jedis-2.1.0.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/ganymed-ssh2-build210.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/ognl-3.0.6.jar"/>
+	<classpathentry kind="lib" path="miniPrjjars/javassist-3.20.0-GA.jar"/>
+	<classpathentry kind="lib" path="libs/mysql-connector-java-8.0.11-sources.jar"/>
+	<classpathentry kind="lib" path="libs/mysql-connector-java-8.0.11.jar"/>
+	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="target/generated-sources/annotations">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="ignore_optional_problems" value="true"/>
+			<attribute name="m2e-apt" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
