@@ -1,0 +1,7 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:ez-vcard 0.10.4
+FN:aaa名字
+TEL;TYPE=cell:1888888
+ORG:comx-jobeex
+END:VCARD
