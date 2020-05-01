@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballDistributionDao">
+
+  <resultMap id="footballDistributionMap" type="com.kok.sport.entity.FootballDistribution">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="teamId" column="team_id"/>
+                        <result property="teamType" column="team_type"/>
+                        <result property="siteType" column="site_type"/>
+                        <result property="matches" column="matches"/>
+                        <result property="type" column="type"/>
+                        <result property="ballNumber" column="ball_number"/>
+                        <result property="percentage" column="percentage"/>
+                        <result property="startTime" column="start_time"/>
+                        <result property="endTime" column="end_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+                        <result property="createTime" column="create_time"/>
+            </resultMap>
+
+  <!--footballDistribution简单分页查询-->
+  <select id="getFootballDistributionPage" resultMap="footballDistributionMap">
+    SELECT
+                  id,
+                        match_id,
+                        team_id,
+                        team_type,
+                        site_type,
+                        matches,
+                        type,
+                        ball_number,
+                        percentage,
+                        start_time,
+                        end_time,
+                        delete_flag,
+                        create_time
+              FROM football_distribution_t
+    <where>
+                        <if test="footballDistribution.id != null ">
+            AND id = #{footballDistribution.id}
+          </if>
+                                <if test="footballDistribution.matchId != null ">
+            AND match_id = #{footballDistribution.matchId}
+          </if>
+                                <if test="footballDistribution.teamId != null ">
+            AND team_id = #{footballDistribution.teamId}
+          </if>
+                                <if test="footballDistribution.teamType != null ">
+            AND team_type = #{footballDistribution.teamType}
+          </if>
+                                <if test="footballDistribution.siteType != null and footballDistribution.siteType.trim() != ''">
+            AND site_type = #{footballDistribution.siteType}
+          </if>
+                                <if test="footballDistribution.matches != null ">
+            AND matches = #{footballDistribution.matches}
+          </if>
+                                <if test="footballDistribution.type != null ">
+            AND type = #{footballDistribution.type}
+          </if>
+                                <if test="footballDistribution.ballNumber != null ">
+            AND ball_number = #{footballDistribution.ballNumber}
+          </if>
+                                <if test="footballDistribution.percentage != null ">
+            AND percentage = #{footballDistribution.percentage}
+          </if>
+                                <if test="footballDistribution.startTime != null ">
+            AND start_time = #{footballDistribution.startTime}
+          </if>
+                                <if test="footballDistribution.endTime != null ">
+            AND end_time = #{footballDistribution.endTime}
+          </if>
+                                <if test="footballDistribution.deleteFlag != null and footballDistribution.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballDistribution.deleteFlag}
+          </if>
+                                <if test="footballDistribution.createTime != null ">
+            AND create_time = #{footballDistribution.createTime}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

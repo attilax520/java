@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballScoreDao">
+
+    <resultMap id="footballScoreMap" type="com.kok.sport.entity.FootballScore">
+        <id property="id" column="id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="teamType" column="team_type"/>
+        <result property="leagueRanking" column="league_ranking"/>
+        <result property="regularTimeScore" column="regular_time_score"/>
+        <result property="halfCourtScore" column="half_court_score"/>
+        <result property="score" column="score"/>
+        <result property="redCard" column="red_card"/>
+        <result property="yellowCard" column="yellow_card"/>
+        <result property="cornerKick" column="corner_kick"/>
+        <result property="overtimeScore" column="overtime_score"/>
+        <result property="pointScore" column="point_score"/>
+        <result property="remark" column="remark"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+    <!--footballScore简单分页查询-->
+    <select id="getFootballScorePage" resultMap="footballScoreMap">
+        SELECT
+        id,
+        match_id,
+        team_id,
+        team_type,
+        league_ranking,
+        regular_time_score,
+        half_court_score,
+        score,
+        red_card,
+        yellow_card,
+        corner_kick,
+        overtime_score,
+        point_score,
+        remark,
+        create_time,
+        delete_flag
+        FROM football_score_t
+        <where>
+            <if test="footballScore.id != null ">
+                AND id = #{footballScore.id}
+            </if>
+            <if test="footballScore.matchId != null ">
+                AND match_id = #{footballScore.matchId}
+            </if>
+            <if test="footballScore.teamId != null ">
+                AND team_id = #{footballScore.teamId}
+            </if>
+            <if test="footballScore.teamType != null ">
+                AND team_type = #{footballScore.teamType}
+            </if>
+            <if test="footballScore.leagueRanking != null ">
+                AND league_ranking = #{footballScore.leagueRanking}
+            </if>
+            <if test="footballScore.regularTimeScore != null ">
+                AND regular_time_score = #{footballScore.regularTimeScore}
+            </if>
+            <if test="footballScore.halfCourtScore != null ">
+                AND half_court_score = #{footballScore.halfCourtScore}
+            </if>
+            <if test="footballScore.score != null ">
+                AND score = #{footballScore.score}
+            </if>
+            <if test="footballScore.redCard != null ">
+                AND red_card = #{footballScore.redCard}
+            </if>
+            <if test="footballScore.yellowCard != null ">
+                AND yellow_card = #{footballScore.yellowCard}
+            </if>
+            <if test="footballScore.cornerKick != null ">
+                AND corner_kick = #{footballScore.cornerKick}
+            </if>
+            <if test="footballScore.overtimeScore != null ">
+                AND overtime_score = #{footballScore.overtimeScore}
+            </if>
+            <if test="footballScore.pointScore != null ">
+                AND point_score = #{footballScore.pointScore}
+            </if>
+            <if test="footballScore.remark != null and footballScore.remark.trim() != ''">
+                AND remark = #{footballScore.remark}
+            </if>
+            <if test="footballScore.createTime != null ">
+                AND create_time = #{footballScore.createTime}
+            </if>
+            <if test="footballScore.deleteFlag != null and footballScore.deleteFlag.trim() != ''">
+                AND delete_flag = #{footballScore.deleteFlag}
+            </if>
+        </where>
+    </select>
+    <select id="getTeamIdByMatchId" resultMap="footballScoreMap">
+        SELECT
+            id,
+            match_id,
+            team_id,
+            team_type
+        FROM football_score_t
+        <where>
+            <if test="matchId != null ">
+                AND match_id = #{matchId}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateFootballScore">
+        <foreach collection="scoreList" index="index" item="item" separator=";">
+            UPDATE football_score_t
+            <set>
+                <if test="item.regularTimeScore != null ">
+                    AND regular_time_score = #{item.regularTimeScore}
+                </if>
+                <if test="item.halfCourtScore != null ">
+                    AND half_court_score = #{item.halfCourtScore}
+                </if>
+                <if test="item.redCard != null ">
+                    AND red_card = #{item.redCard}
+                </if>
+                <if test="item.yellowCard != null ">
+                    AND yellow_card = #{item.yellowCard}
+                </if>
+                <if test="item.cornerKick != null ">
+                    AND corner_kick = #{item.cornerKick}
+                </if>
+                <if test="item.overtimeScore != null ">
+                    AND overtime_score = #{item.overtimeScore}
+                </if>
+                <if test="item.pointScore != null ">
+                    AND point_score = #{item.pointScore}
+                </if>
+                <if test="item.remark != null and item.remark.trim() != ''">
+                    AND remark = #{item.remark}
+                </if>
+            </set>
+            <where>
+                match_id = #{item.matchId}
+                AND team_id = #{item.teamId}
+            </where>
+        </foreach>
+    </update>
+</mapper>

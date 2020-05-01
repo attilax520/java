@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="/">
+    <!-- 自定义返回结果集 -->
+    
+    
+      <resultMap id="rm" type="map">
+
+    </resultMap>
+    <resultMap id="rm2" type="map">
+
+</resultMap>
+  <resultMap id="rm3" type="map">
+
+</resultMap>
+  <resultMap id="rm4" type="map">
+
+</resultMap>
+  <resultMap id="rm5" type="map">
+
+</resultMap>
+    
+    <!-- 
+    <resultMap id="userMap" type="twm.mybatisdemo.pojo.User">
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result property="user_name" column="username"></result>
+        <result property="city" column="city"></result>
+    </resultMap>
+    --> 
+</mapper>
+ 

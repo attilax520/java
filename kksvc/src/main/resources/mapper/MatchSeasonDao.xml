@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.MatchSeasonDao">
+
+  <resultMap id="matchSeasonMap" type="com.kok.sport.entity.MatchSeason">
+                  <id property="id" column="id"/>
+                        <result property="sportType" column="sport_type"/>
+                        <result property="season" column="season"/>
+                        <result property="seasonYear" column="season_year"/>
+                        <result property="nameZh" column="name_zh"/>
+                        <result property="shortNameZh" column="short_name_zh"/>
+                        <result property="nameZht" column="name_zht"/>
+                        <result property="shortNameZht" column="short_name_zht"/>
+                        <result property="nameEn" column="name_en"/>
+                        <result property="shortNameEn" column="short_name_en"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+                        <result property="createTime" column="create_time"/>
+            </resultMap>
+
+  <!--matchSeason简单分页查询-->
+  <select id="getMatchSeasonPage" resultMap="matchSeasonMap">
+    SELECT
+                  id,
+                        sport_type,
+                        season,
+                        season_year,
+                        name_zh,
+                        short_name_zh,
+                        name_zht,
+                        short_name_zht,
+                        name_en,
+                        short_name_en,
+                        delete_flag,
+                        create_time
+              FROM match_season_t
+    <where>
+                        <if test="matchSeason.id != null ">
+            AND id = #{matchSeason.id}
+          </if>
+                                <if test="matchSeason.sportType != null ">
+            AND sport_type = #{matchSeason.sportType}
+          </if>
+                                <if test="matchSeason.season != null and matchSeason.season.trim() != ''">
+            AND season = #{matchSeason.season}
+          </if>
+                                <if test="matchSeason.seasonYear != null ">
+            AND season_year = #{matchSeason.seasonYear}
+          </if>
+                                <if test="matchSeason.nameZh != null and matchSeason.nameZh.trim() != ''">
+            AND name_zh = #{matchSeason.nameZh}
+          </if>
+                                <if test="matchSeason.shortNameZh != null and matchSeason.shortNameZh.trim() != ''">
+            AND short_name_zh = #{matchSeason.shortNameZh}
+          </if>
+                                <if test="matchSeason.nameZht != null and matchSeason.nameZht.trim() != ''">
+            AND name_zht = #{matchSeason.nameZht}
+          </if>
+                                <if test="matchSeason.shortNameZht != null and matchSeason.shortNameZht.trim() != ''">
+            AND short_name_zht = #{matchSeason.shortNameZht}
+          </if>
+                                <if test="matchSeason.nameEn != null and matchSeason.nameEn.trim() != ''">
+            AND name_en = #{matchSeason.nameEn}
+          </if>
+                                <if test="matchSeason.shortNameEn != null and matchSeason.shortNameEn.trim() != ''">
+            AND short_name_en = #{matchSeason.shortNameEn}
+          </if>
+                                <if test="matchSeason.deleteFlag != null and matchSeason.deleteFlag.trim() != ''">
+            AND delete_flag = #{matchSeason.deleteFlag}
+          </if>
+                                <if test="matchSeason.createTime != null ">
+            AND create_time = #{matchSeason.createTime}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

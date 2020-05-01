@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="/">
+
+<!--  
+      <resultMap id="rm" type="map">
+
+    </resultMap>
+    <resultMap id="rm2" type="map">
+
+</resultMap>
+  <resultMap id="rm3" type="map">
+
+</resultMap>
+  <resultMap id="rm4" type="map">
+
+</resultMap>
+  <resultMap id="rm5" type="map">
+
+</resultMap>
+-->
+	<update id="insert_into_football_team_t" parameterType="Map"
+		 >
+
+		<!-- id,name_zh,short_name_zh,name_zht,short_name_zht,name_en,short_name_en,logo 
+			,create_time ,delete_flag " + " @id@,@name_zh@,@short_name_zh@,@name_zht@,@short_name_zht@,@name_en@,@short_name_en@,@logo@,now(),0 -->
+		insert into football_team_t(id,name_zh,short_name_zh,name_zht,short_name_zht,name_en,short_name_en,logo)values(#{id},#{name_zh},#{short_name_zh},#{name_zht},#{short_name_zht},#{name_en},#{short_name_en},#{logo})
+
+	</update>
+	
+		<update id="insert_into_football_odds_t" parameterType="Map"	 >
+	insert  into football_odds_t(   id,company_id, match_id ,change_time, home_odds,tie_odds,away_odds,lock_flag,create_time,delete_flag )values( #{id},#{company_id},#{match_id},#{change_time},
+										 #{home_odds},#{tie_odds},#{away_odds},#{lock_flag},now(),0  )
+	</update>
+</mapper>

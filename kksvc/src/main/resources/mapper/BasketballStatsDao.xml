@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballStatsDao">
+
+    <resultMap id="basketballStatsMap" type="com.kok.sport.entity.BasketballStats">
+        <id property="id" column="id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="statsType" column="stats_type"/>
+        <result property="homeData" column="home_data"/>
+        <result property="awayData" column="away_data"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <!--basketballStats简单分页查询-->
+    <select id="getBasketballStatsPage" resultMap="basketballStatsMap">
+        SELECT
+        id,
+        match_id,
+        stats_type,
+        home_data,
+        away_data,
+        create_time,
+        delete_flag
+        FROM basketball_stats_t
+        <where>
+            <if test="basketballStats.id != null ">
+                AND id = #{basketballStats.id}
+            </if>
+            <if test="basketballStats.matchId != null ">
+                AND match_id = #{basketballStats.matchId}
+            </if>
+            <if test="basketballStats.statsType != null ">
+                AND stats_type = #{basketballStats.statsType}
+            </if>
+            <if test="basketballStats.homeData != null ">
+                AND home_data = #{basketballStats.homeData}
+            </if>
+            <if test="basketballStats.awayData != null ">
+                AND away_data = #{basketballStats.awayData}
+            </if>
+            <if test="basketballStats.createTime != null ">
+                AND create_time = #{basketballStats.createTime}
+            </if>
+            <if test="basketballStats.deleteFlag != null and basketballStats.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballStats.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <!--basketballStats根据matchId查询该表记录-->
+    <select id="getByMatcheId" resultMap="basketballStatsMap">
+       SELECT * FROM basketball_stats_t  WHERE match_id = #{matchId}
+       AND stats_type = #{statsType}
+    </select>
+
+
+</mapper>

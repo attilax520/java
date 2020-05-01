@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballTeamPlayerDao">
+
+  <resultMap id="footballTeamPlayerMap" type="com.kok.sport.entity.FootballTeamPlayer">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="teamId" column="team_id"/>
+                        <result property="nameZh" column="name_zh"/>
+                        <result property="nameZht" column="name_zht"/>
+                        <result property="nameEn" column="name_en"/>
+                        <result property="shirtNumber" column="shirt_number"/>
+                        <result property="logo" column="logo"/>
+                        <result property="position" column="position"/>
+                        <result property="rating" column="rating"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+                        <result property="createTime" column="create_time"/>
+            </resultMap>
+
+  <!--footballTeamPlayer简单分页查询-->
+  <select id="getFootballTeamPlayerPage" resultMap="footballTeamPlayerMap">
+    SELECT
+                  id,
+                        match_id,
+                        team_id,
+                        name_zh,
+                        name_zht,
+                        name_en,
+                        shirt_number,
+                        logo,
+                        position,
+                        rating,
+                        delete_flag,
+                        create_time
+              FROM football_team_player_t
+    <where>
+                        <if test="footballTeamPlayer.id != null ">
+            AND id = #{footballTeamPlayer.id}
+          </if>
+                                <if test="footballTeamPlayer.matchId != null ">
+            AND match_id = #{footballTeamPlayer.matchId}
+          </if>
+                                <if test="footballTeamPlayer.teamId != null ">
+            AND team_id = #{footballTeamPlayer.teamId}
+          </if>
+                                <if test="footballTeamPlayer.nameZh != null and footballTeamPlayer.nameZh.trim() != ''">
+            AND name_zh = #{footballTeamPlayer.nameZh}
+          </if>
+                                <if test="footballTeamPlayer.nameZht != null and footballTeamPlayer.nameZht.trim() != ''">
+            AND name_zht = #{footballTeamPlayer.nameZht}
+          </if>
+                                <if test="footballTeamPlayer.nameEn != null and footballTeamPlayer.nameEn.trim() != ''">
+            AND name_en = #{footballTeamPlayer.nameEn}
+          </if>
+                                <if test="footballTeamPlayer.shirtNumber != null ">
+            AND shirt_number = #{footballTeamPlayer.shirtNumber}
+          </if>
+                                <if test="footballTeamPlayer.logo != null and footballTeamPlayer.logo.trim() != ''">
+            AND logo = #{footballTeamPlayer.logo}
+          </if>
+                                <if test="footballTeamPlayer.position != null and footballTeamPlayer.position.trim() != ''">
+            AND position = #{footballTeamPlayer.position}
+          </if>
+                                <if test="footballTeamPlayer.rating != null and footballTeamPlayer.rating.trim() != ''">
+            AND rating = #{footballTeamPlayer.rating}
+          </if>
+                                <if test="footballTeamPlayer.deleteFlag != null and footballTeamPlayer.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballTeamPlayer.deleteFlag}
+          </if>
+                                <if test="footballTeamPlayer.createTime != null ">
+            AND create_time = #{footballTeamPlayer.createTime}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

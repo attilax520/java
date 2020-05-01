@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballInjuryDao">
+
+  <resultMap id="footballInjuryMap" type="com.kok.sport.entity.FootballInjury">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="teamType" column="team_type"/>
+                        <result property="playerId" column="player_id"/>
+                        <result property="playerName" column="player_name"/>
+                        <result property="logo" column="logo"/>
+                        <result property="position" column="position"/>
+                        <result property="reason" column="reason"/>
+                        <result property="missedMatches" column="missed_matches"/>
+                        <result property="startTime" column="start_time"/>
+                        <result property="endTime" column="end_time"/>
+                        <result property="type" column="type"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballInjury简单分页查询-->
+  <select id="getFootballInjuryPage" resultMap="footballInjuryMap">
+    SELECT
+                  id,
+                        match_id,
+                        team_type,
+                        player_id,
+                        player_name,
+                        logo,
+                        position,
+                        reason,
+                        missed_matches,
+                        start_time,
+                        end_time,
+                        type,
+                        create_time,
+                        delete_flag
+              FROM football_injury_t
+    <where>
+                        <if test="footballInjury.id != null ">
+            AND id = #{footballInjury.id}
+          </if>
+                                <if test="footballInjury.matchId != null ">
+            AND match_id = #{footballInjury.matchId}
+          </if>
+                                <if test="footballInjury.teamType != null ">
+            AND team_type = #{footballInjury.teamType}
+          </if>
+                                <if test="footballInjury.playerId != null ">
+            AND player_id = #{footballInjury.playerId}
+          </if>
+                                <if test="footballInjury.playerName != null and footballInjury.playerName.trim() != ''">
+            AND player_name = #{footballInjury.playerName}
+          </if>
+                                <if test="footballInjury.logo != null and footballInjury.logo.trim() != ''">
+            AND logo = #{footballInjury.logo}
+          </if>
+                                <if test="footballInjury.position != null and footballInjury.position.trim() != ''">
+            AND position = #{footballInjury.position}
+          </if>
+                                <if test="footballInjury.reason != null and footballInjury.reason.trim() != ''">
+            AND reason = #{footballInjury.reason}
+          </if>
+                                <if test="footballInjury.missedMatches != null ">
+            AND missed_matches = #{footballInjury.missedMatches}
+          </if>
+                                <if test="footballInjury.startTime != null ">
+            AND start_time = #{footballInjury.startTime}
+          </if>
+                                <if test="footballInjury.endTime != null ">
+            AND end_time = #{footballInjury.endTime}
+          </if>
+                                <if test="footballInjury.type != null ">
+            AND type = #{footballInjury.type}
+          </if>
+                                <if test="footballInjury.createTime != null ">
+            AND create_time = #{footballInjury.createTime}
+          </if>
+                                <if test="footballInjury.deleteFlag != null and footballInjury.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballInjury.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

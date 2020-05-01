@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballMatchDao">
+
+    <resultMap id="basketballMatchMap" type="com.kok.sport.entity.BasketballMatch">
+        <id property="id" column="id"/>
+        <result property="matchEventId" column="match_event_id"/>
+        <result property="seasonId" column="season_id"/>
+        <result property="stagesId" column="stages_id"/>
+        <result property="homeId" column="home_id"/>
+        <result property="awayId" column="away_id"/>
+        <result property="matchType" column="match_type"/>
+        <result property="totalSections" column="total_sections"/>
+        <result property="matchStatus" column="match_status"/>
+        <result property="matchTime" column="match_time"/>
+        <result property="currentTotalSeconds" column="current_total_seconds"/>
+        <result property="matchDetail" column="match_detail"/>
+        <result property="compatible" column="compatible"/>
+        <result property="animation" column="animation"/>
+        <result property="intelligence" column="intelligence"/>
+        <result property="homeData" column="home_data"/>
+        <result property="awayData" column="away_data"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <!--basketballMatch简单分页查询-->
+    <select id="getBasketballMatchPage" resultMap="basketballMatchMap">
+        SELECT
+        id,
+        match_event_id,
+        season_id,
+        stages_id,
+        home_id,
+        away_id,
+        match_type,
+        total_sections,
+        match_status,
+        match_time,
+        current_total_seconds,
+        match_detail,
+        compatible,
+        animation,
+        intelligence,
+        home_data,
+        away_data,
+        create_time,
+        delete_flag
+        FROM basketball_match_t
+        <where>
+            <if test="basketballMatch.id != null ">
+                AND id = #{basketballMatch.id}
+            </if>
+            <if test="basketballMatch.matchEventId != null ">
+                AND match_event_id = #{basketballMatch.matchEventId}
+            </if>
+            <if test="basketballMatch.seasonId != null ">
+                AND season_id = #{basketballMatch.seasonId}
+            </if>
+            <if test="basketballMatch.stagesId != null ">
+                AND stages_id = #{basketballMatch.stagesId}
+            </if>
+            <if test="basketballMatch.homeId != null ">
+                AND home_id = #{basketballMatch.homeId}
+            </if>
+            <if test="basketballMatch.awayId != null ">
+                AND away_id = #{basketballMatch.awayId}
+            </if>
+            <if test="basketballMatch.matchType != null ">
+                AND match_type = #{basketballMatch.matchType}
+            </if>
+            <if test="basketballMatch.totalSections != null ">
+                AND total_sections = #{basketballMatch.totalSections}
+            </if>
+            <if test="basketballMatch.matchStatus != null ">
+                AND match_status = #{basketballMatch.matchStatus}
+            </if>
+            <if test="basketballMatch.matchTime != null ">
+                AND match_time = #{basketballMatch.matchTime}
+            </if>
+            <if test="basketballMatch.currentTotalSeconds != null ">
+                AND current_total_seconds = #{basketballMatch.currentTotalSeconds}
+            </if>
+            <if test="basketballMatch.matchDetail != null and basketballMatch.matchDetail.trim() != ''">
+                AND match_detail = #{basketballMatch.matchDetail}
+            </if>
+            <if test="basketballMatch.compatible != null and basketballMatch.compatible.trim() != ''">
+                AND compatible = #{basketballMatch.compatible}
+            </if>
+            <if test="basketballMatch.animation != null ">
+                AND animation = #{basketballMatch.animation}
+            </if>
+            <if test="basketballMatch.intelligence != null ">
+                AND intelligence = #{basketballMatch.intelligence}
+            </if>
+            <if test="basketballMatch.createTime != null ">
+                AND create_time = #{basketballMatch.createTime}
+            </if>
+            <if test="basketballMatch.deleteFlag != null and basketballMatch.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballMatch.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <!--批量保存篮球比赛信息-->
+    <insert id="saveBasketballMatch">
+        insert into basketball_match_t(
+            id,
+            match_event_id,
+            season_id,
+            stages_id,
+            home_id,
+            away_id,
+            match_type,
+            total_sections,
+            match_status,
+            match_time,
+            current_total_seconds,
+            match_detail,
+            compatible,
+            animation,
+            intelligence,
+            create_time,
+            delete_flag
+        )
+        values
+        <foreach collection="teamList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.matchEventId},
+            #{item.seasonId},
+            #{item.stagesId},
+            #{item.homeId},
+            #{item.awayId},
+            #{item.matchType},
+            #{item.totalSections},
+            #{item.matchStatus},
+            #{item.matchTime},
+            #{item.currentTotalSeconds},
+            #{item.matchDetail},
+            #{item.compatible},
+            #{item.animation},
+            #{item.intelligence},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        match_event_id = values(match_event_id),
+        season_id = values(season_id),
+        stages_id = values(stages_id),
+        home_id = values(home_id),
+        away_id = values(away_id),
+        match_type = values(match_type),
+        total_sections = values(total_sections),
+        match_status = values(match_status),
+        match_time = values(match_time),
+        current_total_seconds = values(current_total_seconds),
+        match_detail = values(match_detail),
+        compatible = values(compatible),
+        animation = values(animation),
+        intelligence = values(intelligence)
+    </insert>
+
+    <insert id="saveBaskerballMatch">
+        insert into basketball_match_t(
+        id,
+        match_event_id,
+        season_id,
+        stages_id,
+        home_id,
+        away_id,
+        match_type,
+        total_sections,
+        match_status,
+        match_time,
+        current_total_seconds,
+        match_detail,
+        compatible,
+        animation,
+        intelligence,
+        create_time,
+        delete_flag
+        )
+        values
+        <foreach collection="teamList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.matchEventId},
+            #{item.seasonId},
+            #{item.stagesId},
+            #{item.homeId},
+            #{item.awayId},
+            #{item.matchType},
+            #{item.totalSections},
+            #{item.matchStatus},
+            #{item.matchTime},
+            #{item.currentTotalSeconds},
+            #{item.matchDetail},
+            #{item.compatible},
+            #{item.animation},
+            #{item.intelligence},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        match_event_id = values(match_event_id),
+        season_id = values(season_id),
+        stages_id = values(stages_id),
+        home_id = values(home_id),
+        away_id = values(away_id),
+        match_type = values(match_type),
+        total_sections = values(total_sections),
+        match_status = values(match_status),
+        match_time = values(match_time),
+        current_total_seconds = values(current_total_seconds),
+        match_detail = values(match_detail),
+        compatible = values(compatible),
+        animation = values(animation),
+        intelligence = values(intelligence)
+    </insert>
+</mapper>

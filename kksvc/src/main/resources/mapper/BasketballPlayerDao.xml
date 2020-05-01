@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballPlayerDao">
+
+    <resultMap id="basketballPlayerMap" type="com.kok.sport.entity.BasketballPlayer">
+        <id property="id" column="id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="teamType" column="team_type"/>
+        <result property="playerId" column="player_id"/>
+        <result property="playerNameZh" column="player_name_zh"/>
+        <result property="playerNameZht" column="player_name_zht"/>
+        <result property="playerNameEn" column="player_name_en"/>
+        <result property="playerNo" column="player_no"/>
+        <result property="playerHeader" column="player_header"/>
+        <result property="playerData" column="player_data"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <!--basketballPlayer简单分页查询-->
+    <select id="getBasketballPlayerPage" resultMap="basketballPlayerMap">
+        SELECT
+        id,
+        match_id,
+        team_type,
+        player_id,
+        player_name_zh,
+        player_name_zht,
+        player_name_en,
+        player_no,
+        player_header,
+        player_data,
+        create_time,
+        delete_flag
+        FROM basketball_player_t
+        <where>
+            <if test="basketballPlayer.id != null ">
+                AND id = #{basketballPlayer.id}
+            </if>
+            <if test="basketballPlayer.matchId != null ">
+                AND match_id = #{basketballPlayer.matchId}
+            </if>
+            <if test="basketballPlayer.teamType != null ">
+                AND team_type = #{basketballPlayer.teamType}
+            </if>
+            <if test="basketballPlayer.playerId != null ">
+                AND player_id = #{basketballPlayer.playerId}
+            </if>
+            <if test="basketballPlayer.playerNameZh != null and basketballPlayer.playerNameZh.trim() != ''">
+                AND player_name_zh = #{basketballPlayer.playerNameZh}
+            </if>
+            <if test="basketballPlayer.playerNameZht != null and basketballPlayer.playerNameZht.trim() != ''">
+                AND player_name_zht = #{basketballPlayer.playerNameZht}
+            </if>
+            <if test="basketballPlayer.playerNameEn != null and basketballPlayer.playerNameEn.trim() != ''">
+                AND player_name_en = #{basketballPlayer.playerNameEn}
+            </if>
+            <if test="basketballPlayer.playerNo != null and basketballPlayer.playerNo.trim() != ''">
+                AND player_no = #{basketballPlayer.playerNo}
+            </if>
+            <if test="basketballPlayer.playerHeader != null and basketballPlayer.playerHeader.trim() != ''">
+                AND player_header = #{basketballPlayer.playerHeader}
+            </if>
+            <if test="basketballPlayer.playerData != null and basketballPlayer.playerData.trim() != ''">
+                AND player_data = #{basketballPlayer.playerData}
+            </if>
+            <if test="basketballPlayer.createTime != null ">
+                AND create_time = #{basketballPlayer.createTime}
+            </if>
+            <if test="basketballPlayer.deleteFlag != null and basketballPlayer.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballPlayer.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <!--basketballPlayer根据matchId查询该表记录-->
+    <select id="getByMatcheId" resultMap="basketballPlayerMap">
+       SELECT * FROM basketball_player_t  WHERE match_id = #{matchId}
+       AND team_type = #{teamType}
+       AND player_id = #{playerId}
+    </select>
+
+</mapper>

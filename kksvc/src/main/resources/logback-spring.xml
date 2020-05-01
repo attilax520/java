@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--该日志将日志级别不同的log信息保存到不同的文件中 -->
+<configuration>
+
+<!--jdbc -->
+<logger name="java.sql.Connection" level="debug" />
+<logger name="java.sql.PreparedStatement" level="debug" />
+<logger name="org.apache.zookeeper" level="ERROR" />
+
+
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+	<springProperty scope="context" name="springAppName"
+					source="spring.application.name"/>
+
+	<!-- 日志在工程中的输出位置 -->
+	<property name="LOG_FILE" value="${BUILD_FOLDER:-build}/${springAppName}LOG_FILELOG_FILE"/>
+
+	<!-- 控制台的日志输出样式 -->
+	<property name="CONSOLE_LOG_PATTERN"
+			  value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+	<!-- 控制台输出 -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
+		<!-- 日志输出编码 -->
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+			<charset>utf8</charset>
+		</encoder>
+	</appender>
+
+	<appender name="fileappender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+<!--		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>/data/logs/platform-player-service/platform-player-service.%d{yyyy-MM-dd}-%i.log
+			</fileNamePattern>
+			<maxHistory>30</maxHistory>
+			<TimeBasedFileNamingAndTriggeringPolicy
+					class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<MaxFileSize>100MB</MaxFileSize>
+			</TimeBasedFileNamingAndTriggeringPolicy>
+		</rollingPolicy>-->
+
+		<!--日志文件最大的大小 <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+			<MaxFileSize>10MB</MaxFileSize> </triggeringPolicy> -->
+
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>INFO</level><!-- 控制写的级别 -->
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+
+
+
+	<!-- 为logstash输出的JSON格式的Appender -->
+<!--	<appender name="logstash"-->
+<!--			  class="net.logstash.logback.appender.LogstashTcpSocketAppender">-->
+<!--		&lt;!&ndash; destination为日志的发送地址，在配置Logstash的时候选择监听这个地址即可进行日志收集。 &ndash;&gt;-->
+<!--		<destination>172.18.0.123:5044</destination>-->
+<!--		&lt;!&ndash; 日志输出编码 &ndash;&gt;-->
+<!--		<encoder-->
+<!--				class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">-->
+<!--			<providers>-->
+<!--				<timestamp>-->
+<!--					<timeZone>UTC</timeZone>-->
+<!--				</timestamp>-->
+<!--				<pattern>-->
+<!--					<pattern>-->
+<!--						{-->
+<!--						"severity": "%level",-->
+<!--						"service": "${springAppName:-}",-->
+<!--						&lt;!&ndash;                         "trace": "%X{X-B3-TraceId:-}", &ndash;&gt;-->
+<!--						&lt;!&ndash;                         "span": "%X{X-B3-SpanId:-}", &ndash;&gt;-->
+<!--						&lt;!&ndash;                         "exportable": "%X{X-Span-Export:-}", &ndash;&gt;-->
+<!--						"pid": "${PID:-}",-->
+<!--						"thread": "%thread",-->
+<!--						"class": "%logger{40}",-->
+<!--						"msg": "%message",-->
+<!--						"username":"%X{username}",-->
+<!--						"userId":"%X{userId}",-->
+<!--						"companyId":"%X{companyId}",-->
+<!--						"companyName":"%X{companyName}",-->
+<!--						"logintype":"%X{logintype}",-->
+<!--						"userType":"%X{userType}",-->
+<!--						"mgrType":"%X{mgrType}",-->
+<!--						"deptId":"%X{deptId}",-->
+<!--						"systemCode":"%X{systemCode}",-->
+<!--						"requestData0":"%X{requestData0}",-->
+<!--						"requestData1":"%X{requestData1}",-->
+<!--						"requestData2":"%X{requestData2}",-->
+<!--						"responseData":"%X{responseData}"-->
+<!--						}-->
+<!--						%n-->
+<!--					</pattern>-->
+<!--				</pattern>-->
+<!--			</providers>-->
+<!--		</encoder>-->
+<!--	</appender>-->
+
+	<!-- 日志输出级别 -->
+	<root level="INFO">
+		<appender-ref ref="console"/>
+<!--		<appender-ref ref="logstash"/>-->
+		<appender-ref ref="fileappender" />
+	</root>
+</configuration>

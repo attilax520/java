@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.MatchStreamDao">
+
+  <resultMap id="matchStreamMap" type="com.kok.sport.entity.MatchStream">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="sportType" column="sport_type"/>
+                        <result property="matchTime" column="match_time"/>
+                        <result property="comp" column="comp"/>
+                        <result property="home" column="home"/>
+                        <result property="away" column="away"/>
+                        <result property="matchStatus" column="match_status"/>
+                        <result property="liveStatus" column="live_status"/>
+                        <result property="playUrl" column="play_url"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--matchStream简单分页查询-->
+  <select id="getMatchStreamPage" resultMap="matchStreamMap">
+    SELECT
+                  id,
+                        match_id,
+                        sport_type,
+                        match_time,
+                        comp,
+                        home,
+                        away,
+                        match_status,
+                        live_status,
+                        play_url,
+                        create_time,
+                        delete_flag
+              FROM match_stream_t
+    <where>
+                        <if test="matchStream.id != null ">
+            AND id = #{matchStream.id}
+          </if>
+                                <if test="matchStream.matchId != null ">
+            AND match_id = #{matchStream.matchId}
+          </if>
+                                <if test="matchStream.sportType != null ">
+            AND sport_type = #{matchStream.sportType}
+          </if>
+                                <if test="matchStream.matchTime != null ">
+            AND match_time = #{matchStream.matchTime}
+          </if>
+                                <if test="matchStream.comp != null and matchStream.comp.trim() != ''">
+            AND comp = #{matchStream.comp}
+          </if>
+                                <if test="matchStream.home != null and matchStream.home.trim() != ''">
+            AND home = #{matchStream.home}
+          </if>
+                                <if test="matchStream.away != null and matchStream.away.trim() != ''">
+            AND away = #{matchStream.away}
+          </if>
+                                <if test="matchStream.matchStatus != null ">
+            AND match_status = #{matchStream.matchStatus}
+          </if>
+                                <if test="matchStream.liveStatus != null ">
+            AND live_status = #{matchStream.liveStatus}
+          </if>
+                                <if test="matchStream.playUrl != null and matchStream.playUrl.trim() != ''">
+            AND play_url = #{matchStream.playUrl}
+          </if>
+                                <if test="matchStream.createTime != null ">
+            AND create_time = #{matchStream.createTime}
+          </if>
+                                <if test="matchStream.deleteFlag != null and matchStream.deleteFlag.trim() != ''">
+            AND delete_flag = #{matchStream.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

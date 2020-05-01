@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballStageDao">
+
+    <resultMap id="basketballStageMap" type="com.kok.sport.entity.BasketballStage">
+        <id property="id" column="id"/>
+        <result property="nameZh" column="name_zh"/>
+        <result property="nameZht" column="name_zht"/>
+        <result property="nameEn" column="name_en"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <!--basketballStage简单分页查询-->
+    <select id="getBasketballStagePage" resultMap="basketballStageMap">
+        SELECT
+        id,
+        name_zh,
+        name_zht,
+        name_en,
+        create_time,
+        delete_flag
+        FROM basketball_stage_t
+        <where>
+            <if test="basketballStage.id != null ">
+                AND id = #{basketballStage.id}
+            </if>
+            <if test="basketballStage.nameZh != null and basketballStage.nameZh.trim() != ''">
+                AND name_zh = #{basketballStage.nameZh}
+            </if>
+            <if test="basketballStage.nameZht != null and basketballStage.nameZht.trim() != ''">
+                AND name_zht = #{basketballStage.nameZht}
+            </if>
+            <if test="basketballStage.nameEn != null and basketballStage.nameEn.trim() != ''">
+                AND name_en = #{basketballStage.nameEn}
+            </if>
+            <if test="basketballStage.createTime != null ">
+                AND create_time = #{basketballStage.createTime}
+            </if>
+            <if test="basketballStage.deleteFlag != null and basketballStage.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballStage.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <insert id="saveBasketballStage">
+        insert into basketball_stage_t(
+        id,
+        name_zh,
+        name_zht,
+        name_en,
+        create_time,
+        delete_flag
+        )
+        values
+        <foreach collection="stageList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.nameZh},
+            #{item.nameZht},
+            #{item.nameEn},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        name_zh = values(name_zh),
+        name_zht = values(name_zht),
+        name_en = values(name_en),
+    </insert>
+</mapper>

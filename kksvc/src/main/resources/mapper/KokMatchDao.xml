@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.KokMatchDao">
+
+    <resultMap id="kokMatchMap" type="com.kok.sport.vo.KokMatchVO">
+        <id property="id" column="match_id"/>
+        <result property="matchType" column="match_type"/>
+        <result property="matchTime" column="match_time"/>
+        <result property="homeTeam" column="home_team"/>
+        <result property="awayTeam" column="away_team"/>
+        <result property="md5key" column="md5key"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="matchStatus" column="match_status"/>
+        <collection property="streamUrlList" column="match_id" ofType="com.kok.sport.entity.KokMatchStream" javaType="java.util.List"
+                     select="com.kok.sport.dao.KokMatchStreamDao.getKokMatchStreamById">
+        </collection>
+    </resultMap>
+    <!--kokMatch简单分页查询-->
+    <select id="getKokMatchPage" resultMap="kokMatchMap">
+        SELECT
+            id as match_id,
+            match_type,
+            match_time,
+            home_team,
+            away_team,
+            md5key,
+            start_time,
+            end_time,
+            match_status
+        FROM kok_match_t mt
+        <where>
+            <if test="kokMatchDto.id != null">
+                AND id = #{kokMatchDto.id}
+            </if>
+            <if test="kokMatchDto.matchType != null">
+                AND match_type = #{kokMatchDto.matchType}
+            </if>
+            <if test="kokMatchDto.matchTime != null and kokMatchDto.match_time.trim() != ''">
+                AND match_time = #{kokMatchDto.matchTime}
+            </if>
+            <if test="kokMatchDto.homeTeam != null and kokMatchDto.homeTeam.trim() != ''">
+                AND home_team = #{kokMatchDto.homeTeam}
+            </if>
+            <if test="kokMatchDto.awayTeam != null and kokMatchDto.awayTeam.trim() != ''">
+                AND away_team = #{kokMatchDto.awayTeam}
+            </if>
+            <if test="kokMatchDto.md5key != null and kokMatchDto.md5key.trim() != ''">
+                AND md5key = #{kokMatchDto.md5key}
+            </if>
+            <if test="kokMatchDto.matchStatus != null and kokMatchDto.matchStatus.trim() != ''">
+                AND match_status = #{kokMatchDto.matchStatus}
+            </if>
+        </where>
+    </select>
+</mapper>

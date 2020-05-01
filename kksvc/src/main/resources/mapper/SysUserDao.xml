@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.SysUserDao">
+
+    <resultMap id="sysUserMap" type="com.kok.sport.entity.SysUser">
+        <id property="id" column="id"/>
+        <result property="userName" column="user_name"/>
+        <result property="password" column="password"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="registerTime" column="register_time"/>
+        <result property="registerIp" column="register_ip"/>
+        <result property="loginTime" column="login_time"/>
+        <result property="loginIp" column="login_ip"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="age" column="age"/>
+        <result property="sex" column="sex"/>
+        <result property="sign" column="sign"/>
+        <result property="img" column="img"/>
+    </resultMap>
+
+    <!--sysUser简单分页查询-->
+    <select id="getSysUserPage" resultMap="sysUserMap">
+        SELECT
+            id,
+            user_name,
+            phone,
+            email,
+            register_time,
+            register_ip,
+            login_time,
+            login_ip,
+            delete_flag,
+            nick_name,
+            age,
+            sex,
+            sign,
+            img
+        FROM sys_user_t
+        <where>
+            <if test="sysUser.id != null ">
+                AND id = #{sysUser.id}
+            </if>
+            <if test="sysUser.userName != null and sysUser.userName.trim() != ''">
+                AND user_name = #{sysUser.userName}
+            </if>
+            <if test="sysUser.password != null and sysUser.password.trim() != ''">
+                AND password = #{sysUser.password}
+            </if>
+            <if test="sysUser.phone != null and sysUser.phone.trim() != ''">
+                AND phone = #{sysUser.phone}
+            </if>
+            <if test="sysUser.email != null and sysUser.email.trim() != ''">
+                AND email = #{sysUser.email}
+            </if>
+            <if test="sysUser.registerTime != null ">
+                AND register_time = #{sysUser.registerTime}
+            </if>
+            <if test="sysUser.registerIp != null and sysUser.registerIp.trim() != ''">
+                AND register_ip = #{sysUser.registerIp}
+            </if>
+            <if test="sysUser.loginTime != null ">
+                AND login_time = #{sysUser.loginTime}
+            </if>
+            <if test="sysUser.loginIp != null and sysUser.loginIp.trim() != ''">
+                AND login_ip = #{sysUser.loginIp}
+            </if>
+            <if test="sysUser.deleteFlag != null and sysUser.deleteFlag.trim() != ''">
+                AND delete_flag = #{sysUser.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <!--用户信息查询-->
+    <select id="getSysUserByCondition" resultMap="sysUserMap" parameterType="com.kok.sport.vo.SysUserVo">
+        SELECT
+            id,
+            user_name,
+            phone,
+            email,
+            register_time,
+            register_ip,
+            login_time,
+            login_ip,
+            delete_flag,
+            nick_name,
+            age,
+            sex,
+            sign,
+            img
+        FROM sys_user_t
+        <where>
+            <if test="sysUser.userId != null">
+                AND id = #{sysUser.userId}
+            </if>
+            <if test="sysUser.password != null and sysUser.password.trim() != ''">
+                AND password = #{sysUser.password}
+            </if>
+            <if test="sysUser.phone != null and sysUser.phone.trim() != ''">
+                AND phone = #{sysUser.phone}
+            </if>
+        </where>
+    </select>
+
+    <!--设置新的密码-->
+    <update id="updatePassword" parameterType="com.kok.sport.vo.SysUserVo">
+        update sys_user_t set password = #{sysUser.password} where phone = #{sysUser.phone}
+    </update>
+
+    <!-- 更新用户信息 -->
+    <update id="updateUserInfo">
+        update sys_user_t
+        <set>
+            <if test="sysUser.nickName != null and sysUser.nickName.trim() != ''">
+                nick_name = #{sysUser.nickName}
+            </if>
+            <if test="sysUser.age != null">
+                age = #{sysUser.age}
+            </if>
+            <if test="sysUser.sex != null">
+                sex = #{sysUser.sex}
+            </if>
+            <if test="sysUser.sign != null and sysUser.sign.trim() != ''">
+                sign = #{sysUser.sign}
+            </if>
+            <if test="sysUser.img != null and sysUser.img != ''">
+                img = #{sysUser.img}
+            </if>
+        </set>
+        <where>
+            id = #{sysUser.userId}
+        </where>
+    </update>
+
+    <!-- 注册新用户 -->
+    <insert id="reqister" parameterType="com.kok.sport.entity.SysUser">
+        INSERT INTO sys_user_t(
+            user_name,
+            password,
+            phone,
+            register_time,
+            register_ip,
+            delete_flag
+        ) VALUES (
+            #{sysUser.userName},
+            #{sysUser.password},
+            #{sysUser.phone},
+            #{sysUser.registerTime},
+            #{sysUser.registerIp},
+            #{sysUser.deleteFlag}
+        )
+    </insert>
+</mapper>

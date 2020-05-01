@@ -1,0 +1,17 @@
+{
+	"effectRowsNums": 1,
+	"m_into": {
+		"@where": "id=3380166",
+		"fav": "y",
+		"@edit": "football_match_t",
+		"tab": "football_match_t",
+		"setList_spel": "fav=#{[fav]}",
+		"val_warped_sqlValFmt": {
+			"@where": "id=3380166",
+			"fav": "'y'",
+			"@edit": "football_match_t"
+		},
+		"set": "fav='y'",
+		"where": "id=3380166"
+	}
+}

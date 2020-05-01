@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballTliveDao">
+
+  <resultMap id="footballTliveMap" type="com.kok.sport.entity.FootballTlive">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="main" column="main"/>
+                        <result property="data" column="data"/>
+                        <result property="position" column="position"/>
+                        <result property="type" column="type"/>
+                        <result property="time" column="time"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballTlive简单分页查询-->
+  <select id="getFootballTlivePage" resultMap="footballTliveMap">
+    SELECT
+                  id,
+                        match_id,
+                        main,
+                        data,
+                        position,
+                        type,
+                        time,
+                        create_time,
+                        delete_flag
+              FROM football_tlive_t
+    <where>
+                        <if test="footballTlive.id != null ">
+            AND id = #{footballTlive.id}
+          </if>
+                                <if test="footballTlive.matchId != null ">
+            AND match_id = #{footballTlive.matchId}
+          </if>
+                                <if test="footballTlive.main != null ">
+            AND main = #{footballTlive.main}
+          </if>
+                                <if test="footballTlive.data != null and footballTlive.data.trim() != ''">
+            AND data = #{footballTlive.data}
+          </if>
+                                <if test="footballTlive.position != null ">
+            AND position = #{footballTlive.position}
+          </if>
+                                <if test="footballTlive.type != null ">
+            AND type = #{footballTlive.type}
+          </if>
+                                <if test="footballTlive.time != null ">
+            AND time = #{footballTlive.time}
+          </if>
+                                <if test="footballTlive.createTime != null ">
+            AND create_time = #{footballTlive.createTime}
+          </if>
+                                <if test="footballTlive.deleteFlag != null and footballTlive.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballTlive.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

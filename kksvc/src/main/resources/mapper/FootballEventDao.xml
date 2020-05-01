@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballEventDao">
+
+  <resultMap id="footballEventMap" type="com.kok.sport.entity.FootballEvent">
+                  <id property="id" column="id"/>
+                        <result property="seasonId" column="season_id"/>
+                        <result property="areaId" column="area_id"/>
+                        <result property="countryId" column="country_id"/>
+                        <result property="type" column="type"/>
+                        <result property="level" column="level"/>
+                        <result property="nameZh" column="name_zh"/>
+                        <result property="shortNameZh" column="short_name_zh"/>
+                        <result property="nameZht" column="name_zht"/>
+                        <result property="shortNameZht" column="short_name_zht"/>
+                        <result property="nameEn" column="name_en"/>
+                        <result property="shortNameEn" column="short_name_en"/>
+                        <result property="matchLogo" column="match_logo"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+                        <result property="createTime" column="create_time"/>
+            </resultMap>
+
+  <!--footballEvent简单分页查询-->
+  <select id="getFootballEventPage" resultMap="footballEventMap">
+    SELECT
+                  id,
+                        season_id,
+                        area_id,
+                        country_id,
+                        type,
+                        level,
+                        name_zh,
+                        short_name_zh,
+                        name_zht,
+                        short_name_zht,
+                        name_en,
+                        short_name_en,
+                        match_logo,
+                        delete_flag,
+                        create_time
+              FROM football_event_t
+    <where>
+                        <if test="footballEvent.id != null ">
+            AND id = #{footballEvent.id}
+          </if>
+                                <if test="footballEvent.seasonId != null ">
+            AND season_id = #{footballEvent.seasonId}
+          </if>
+                                <if test="footballEvent.areaId != null ">
+            AND area_id = #{footballEvent.areaId}
+          </if>
+                                <if test="footballEvent.countryId != null ">
+            AND country_id = #{footballEvent.countryId}
+          </if>
+                                <if test="footballEvent.type != null ">
+            AND type = #{footballEvent.type}
+          </if>
+                                <if test="footballEvent.level != null ">
+            AND level = #{footballEvent.level}
+          </if>
+                                <if test="footballEvent.nameZh != null and footballEvent.nameZh.trim() != ''">
+            AND name_zh = #{footballEvent.nameZh}
+          </if>
+                                <if test="footballEvent.shortNameZh != null and footballEvent.shortNameZh.trim() != ''">
+            AND short_name_zh = #{footballEvent.shortNameZh}
+          </if>
+                                <if test="footballEvent.nameZht != null and footballEvent.nameZht.trim() != ''">
+            AND name_zht = #{footballEvent.nameZht}
+          </if>
+                                <if test="footballEvent.shortNameZht != null and footballEvent.shortNameZht.trim() != ''">
+            AND short_name_zht = #{footballEvent.shortNameZht}
+          </if>
+                                <if test="footballEvent.nameEn != null and footballEvent.nameEn.trim() != ''">
+            AND name_en = #{footballEvent.nameEn}
+          </if>
+                                <if test="footballEvent.shortNameEn != null and footballEvent.shortNameEn.trim() != ''">
+            AND short_name_en = #{footballEvent.shortNameEn}
+          </if>
+                                <if test="footballEvent.matchLogo != null and footballEvent.matchLogo.trim() != ''">
+            AND match_logo = #{footballEvent.matchLogo}
+          </if>
+                                <if test="footballEvent.deleteFlag != null and footballEvent.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballEvent.deleteFlag}
+          </if>
+                                <if test="footballEvent.createTime != null ">
+            AND create_time = #{footballEvent.createTime}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>
