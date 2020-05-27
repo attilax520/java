@@ -1,0 +1,104 @@
+########################端口
+server:
+  port: 9601
+  tomcat:
+    max-threads: 384
+spring:
+
+  ########################服务名
+  application:
+    name: platform-player-service
+  ########################环境
+  profiles:
+    active: prod
+  ########################配置中心客户端配置
+  cloud:
+    config:
+      fail-fast: true
+      profile: prod
+      name: platform-player-service
+      discovery:
+        enabled: true
+        service-id: config-center
+  main:
+    allow-bean-definition-overriding: true
+########################eureka client
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://gy3a:gy3a@10.0.1.30:8100/eureka/,http://gy3a:gy3a@10.0.1.46:8100/eureka/
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-expiration-duration-in-seconds: 15
+    lease-renewal-interval-in-seconds: 5
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+feign:
+  hystrix:
+    enabled: true
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            ##超过设置的时间断路，默认1000
+            timeoutInMilliseconds: 40000
+      circuitBreaker:
+        ##断路器跳闸后，在此值的时间的内，hystrix会拒绝新的请求，只有过了这个时间断路器才会打开闸门，默认5000 5s,这里设置30s,考虑服务启动时间
+        sleepWindowInMilliseconds: 30000
+        ##断路器跳闸的最小请求数量,10s内超过数量就不会远程请求(默认20根据请求量设置)，如果开启了降级直接调用本地
+        requestVolumeThreshold: 20
+        ##不采用降级的方式，如果集群的节点都出现的宕机或不可用，会给用户反馈友好提示，比如：服务器迷路了
+      fallback:
+        enabled: false
+ribbon:
+  ###请求处理的超时时间,默认值1000 (RibbonClientConfiguration可查看)
+  ReadTimeout: 30000
+  ###请求连接的超时时间,默认值1000 (RibbonClientConfiguration可查看)
+  ConnectTimeout: 5000
+  ###切换实例的次数，建议根据集群节点配置，避免负载失效,默认值1(DefaultClientConfigImpl可查看)
+  MaxAutoRetriesNextServer: 1
+  ###本实例的重试次数,默认值0(DefaultClientConfigImpl可查看)
+  MaxAutoRetries: 0
+#########################监控端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+########################log
+logging:
+  level:
+    com.kok.player.dao: info
+  file: logs/${spring.application.name}.log
+  config: classpath:logback-spring.xml
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*Dao.xml
+security:
+  oauth2:
+    resource:
+      #指定用户信息地址
+      user-info-uri: http://10.0.1.29:8120/auth/user
+      prefer-token-info: false
+########################MQ
+rocketmq:
+  defaultProducer:
+    enabel: true
+    namesrvAddr: 10.0.1.24:9876;10.0.1.26:9876
+    groupName: y3a
+  transactionProducer:
+    enabel: false
+    namesrvAddr: 10.0.1.24:9876;10.0.1.26:9876
+    groupName: y3a
+  defaultConsumer:
+    enabel: true
+    namesrvAddr: 10.0.1.24:9876;10.0.1.26:9876
+    groupName: y3a
+  orderlyConsumer:
+    enabel: false
+    namesrvAddr: 10.0.1.24:9876;10.0.1.26:9876
+    groupName: y3a

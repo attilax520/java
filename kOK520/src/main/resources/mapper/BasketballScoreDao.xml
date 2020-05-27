@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballScoreDao">
+
+    <resultMap id="basketballScoreMap" type="com.kok.sport.entity.BasketballScore">
+        <id property="id" column="id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="teamId" column="team_id"/>
+        <result property="teamType" column="team_type"/>
+        <result property="matchStatus" column="match_status"/>
+        <result property="time" column="time"/>
+        <result property="firstSectionScores" column="first_section_scores"/>
+        <result property="secondSectionScores" column="second_section_scores"/>
+        <result property="thirdSectionScores" column="third_section_scores"/>
+        <result property="fourthSectionScores" column="fourth_section_scores"/>
+        <result property="overtimeScores" column="overtime_scores"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+
+    <!--basketballScore简单分页查询-->
+    <select id="getBasketballScorePage" resultMap="basketballScoreMap">
+        SELECT
+        id,
+        match_id,
+        team_id,
+        team_type,
+        match_status,
+        time,
+        first_section_scores,
+        second_section_scores,
+        third_section_scores,
+        fourth_section_scores,
+        overtime_scores,
+        create_time,
+        delete_flag
+        FROM basketball_score_t
+        <where>
+            <if test="basketballScore.id != null ">
+                AND id = #{basketballScore.id}
+            </if>
+            <if test="basketballScore.matchId != null ">
+                AND match_id = #{basketballScore.matchId}
+            </if>
+            <if test="basketballScore.teamId != null ">
+                AND team_id = #{basketballScore.teamId}
+            </if>
+            <if test="basketballScore.teamType != null ">
+                AND team_type = #{basketballScore.teamType}
+            </if>
+            <if test="basketballScore.matchStatus != null ">
+                AND match_status = #{basketballScore.matchStatus}
+            </if>
+            <if test="basketballScore.time != null ">
+                AND time = #{basketballScore.time}
+            </if>
+            <if test="basketballScore.firstSectionScores != null ">
+                AND first_section_scores = #{basketballScore.firstSectionScores}
+            </if>
+            <if test="basketballScore.secondSectionScores != null ">
+                AND second_section_scores = #{basketballScore.secondSectionScores}
+            </if>
+            <if test="basketballScore.thirdSectionScores != null ">
+                AND third_section_scores = #{basketballScore.thirdSectionScores}
+            </if>
+            <if test="basketballScore.fourthSectionScores != null ">
+                AND fourth_section_scores = #{basketballScore.fourthSectionScores}
+            </if>
+            <if test="basketballScore.overtimeScores != null ">
+                AND overtime_scores = #{basketballScore.overtimeScores}
+            </if>
+            <if test="basketballScore.createTime != null ">
+                AND create_time = #{basketballScore.createTime}
+            </if>
+            <if test="basketballScore.deleteFlag != null and basketballScore.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballScore.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="saveBasketballScore">
+        insert into basketball_score_t(
+        id,
+        match_id,
+        team_id,
+        team_type,
+        match_status,
+        time,
+        first_section_scores,
+        second_section_scores,
+        third_section_scores,
+        fourth_section_scores,
+        overtime_scores,
+        create_time DATETIME,
+        delete_flag
+        )
+        values
+        <foreach collection="scoreList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.matchId},
+            #{item.teamId},
+            #{item.teamType},
+            #{item.matchStatus},
+            #{item.time},
+            #{item.firstSectionScores},
+            #{item.secondSectionScores},
+            #{item.thirdSectionScores},
+            #{item.fourthSectionScores},
+            #{item.overtimeScores},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+    </insert>
+
+    <!--basketballScore根据matchId查询该表记录-->
+    <select id="getByMatcheId" resultMap="basketballScoreMap">
+       SELECT * FROM basketball_score_t  WHERE match_id = #{matchId}
+       AND team_type = #{team_type}
+    </select>
+
+    <update id="updateBasketballScore">
+        <foreach collection="scoreList" index="index" item="item" separator=";">
+            UPDATE basketball_score_t
+            <set>
+                <if test="item.teamType != null">
+                    team_type = #{item.teamType}
+                </if>
+                <if test="item.matchStatus != null">
+                    match_status = #{item.matchStatus}
+                </if>
+                <if test="item.time != null">
+                    time = #{item.time}
+                </if>
+                <if test="item.firstSectionScores != null">
+                    first_section_scores = #{item.firstSectionScores}
+                </if>
+                <if test="item.secondSectionScores != null">
+                    second_section_scores = #{item.secondSectionScores}
+                </if>
+                <if test="item.thirdSectionScores != null">
+                    third_section_scores = #{item.thirdSectionScores}
+                </if>
+                <if test="item.fourthSectionScores != null">
+                    fourth_section_scores = #{item.fourthSectionScores}
+                </if>
+                <if test="item.overtimeScores != null">
+                    overtime_scores = #{item.overtimeScores}
+                </if>
+            </set>
+            <where>
+                match_id = #{item.matchId}
+            </where>
+        </foreach>
+    </update>
+</mapper>

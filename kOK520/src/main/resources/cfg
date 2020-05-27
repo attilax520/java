@@ -1,0 +1,5 @@
+sprbtcfg_index=bootstrap
+db=jdbc:mysql://182.16.50.115:3306/dev_kok_sport?user=root&password=cjds1023123&allowMultiQueries=true
+mybatisNamespace=com.kok.sport.utils
+noveldb=jdbc:mysql://182.16.50.115:3306/kok_novel?user=root&password=cjds1023123&allowMultiQueries=true
+cmsdb=jdbc:mysql://103.234.96.143:3306/eladmin?user=admin&password=houtai@33.com&allowMultiQueries=true

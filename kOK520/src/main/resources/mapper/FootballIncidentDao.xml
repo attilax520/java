@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballIncidentDao">
+
+  <resultMap id="footballIncidentMap" type="com.kok.sport.entity.FootballIncident">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="type" column="type"/>
+                        <result property="position" column="position"/>
+                        <result property="time" column="time"/>
+                        <result property="playerId" column="player_id"/>
+                        <result property="playerName" column="player_name"/>
+                        <result property="assist1Id" column="assist1_id"/>
+                        <result property="assist1Name" column="assist1_name"/>
+                        <result property="inPlayerId" column="in_player_id"/>
+                        <result property="inPlayerName" column="in_player_name"/>
+                        <result property="outPlayerId" column="out_player_id"/>
+                        <result property="outPlayerName" column="out_player_name"/>
+                        <result property="homeScore" column="home_score"/>
+                        <result property="awayScore" column="away_score"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+                        <result property="createTime" column="create_time"/>
+            </resultMap>
+
+  <!--footballIncident简单分页查询-->
+  <select id="getFootballIncidentPage" resultMap="footballIncidentMap">
+    SELECT
+                  id,
+                        match_id,
+                        type,
+                        position,
+                        time,
+                        player_id,
+                        player_name,
+                        assist1_id,
+                        assist1_name,
+                        in_player_id,
+                        in_player_name,
+                        out_player_id,
+                        out_player_name,
+                        home_score,
+                        away_score,
+                        delete_flag,
+                        create_time
+              FROM football_incident_t
+    <where>
+                        <if test="footballIncident.id != null ">
+            AND id = #{footballIncident.id}
+          </if>
+                                <if test="footballIncident.matchId != null ">
+            AND match_id = #{footballIncident.matchId}
+          </if>
+                                <if test="footballIncident.type != null ">
+            AND type = #{footballIncident.type}
+          </if>
+                                <if test="footballIncident.position != null ">
+            AND position = #{footballIncident.position}
+          </if>
+                                <if test="footballIncident.time != null ">
+            AND time = #{footballIncident.time}
+          </if>
+                                <if test="footballIncident.playerId != null ">
+            AND player_id = #{footballIncident.playerId}
+          </if>
+                                <if test="footballIncident.playerName != null and footballIncident.playerName.trim() != ''">
+            AND player_name = #{footballIncident.playerName}
+          </if>
+                                <if test="footballIncident.assist1Id != null ">
+            AND assist1_id = #{footballIncident.assist1Id}
+          </if>
+                                <if test="footballIncident.assist1Name != null and footballIncident.assist1Name.trim() != ''">
+            AND assist1_name = #{footballIncident.assist1Name}
+          </if>
+                                <if test="footballIncident.inPlayerId != null ">
+            AND in_player_id = #{footballIncident.inPlayerId}
+          </if>
+                                <if test="footballIncident.inPlayerName != null and footballIncident.inPlayerName.trim() != ''">
+            AND in_player_name = #{footballIncident.inPlayerName}
+          </if>
+                                <if test="footballIncident.outPlayerId != null ">
+            AND out_player_id = #{footballIncident.outPlayerId}
+          </if>
+                                <if test="footballIncident.outPlayerName != null and footballIncident.outPlayerName.trim() != ''">
+            AND out_player_name = #{footballIncident.outPlayerName}
+          </if>
+                                <if test="footballIncident.homeScore != null ">
+            AND home_score = #{footballIncident.homeScore}
+          </if>
+                                <if test="footballIncident.awayScore != null ">
+            AND away_score = #{footballIncident.awayScore}
+          </if>
+                                <if test="footballIncident.deleteFlag != null and footballIncident.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballIncident.deleteFlag}
+          </if>
+                                <if test="footballIncident.createTime != null ">
+            AND create_time = #{footballIncident.createTime}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

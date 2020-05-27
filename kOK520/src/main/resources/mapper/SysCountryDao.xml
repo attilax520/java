@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.SysCountryDao">
+
+  <resultMap id="sysCountryMap" type="com.kok.sport.entity.SysCountry">
+                  <id property="id" column="id"/>
+                        <result property="areaId" column="area_id"/>
+                        <result property="nameZh" column="name_zh"/>
+                        <result property="nameZht" column="name_zht"/>
+                        <result property="nameEn" column="name_en"/>
+                        <result property="countryLogo" column="country_logo"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--sysCountry简单分页查询-->
+  <select id="getSysCountryPage" resultMap="sysCountryMap">
+    SELECT
+                  id,
+                        area_id,
+                        name_zh,
+                        name_zht,
+                        name_en,
+                        country_logo,
+                        create_time,
+                        delete_flag
+              FROM sys_country_t
+    <where>
+                        <if test="sysCountry.id != null ">
+            AND id = #{sysCountry.id}
+          </if>
+                                <if test="sysCountry.areaId != null ">
+            AND area_id = #{sysCountry.areaId}
+          </if>
+                                <if test="sysCountry.nameZh != null and sysCountry.nameZh.trim() != ''">
+            AND name_zh = #{sysCountry.nameZh}
+          </if>
+                                <if test="sysCountry.nameZht != null and sysCountry.nameZht.trim() != ''">
+            AND name_zht = #{sysCountry.nameZht}
+          </if>
+                                <if test="sysCountry.nameEn != null and sysCountry.nameEn.trim() != ''">
+            AND name_en = #{sysCountry.nameEn}
+          </if>
+                                <if test="sysCountry.countryLogo != null and sysCountry.countryLogo.trim() != ''">
+            AND country_logo = #{sysCountry.countryLogo}
+          </if>
+                                <if test="sysCountry.createTime != null ">
+            AND create_time = #{sysCountry.createTime}
+          </if>
+                                <if test="sysCountry.deleteFlag != null and sysCountry.deleteFlag.trim() != ''">
+            AND delete_flag = #{sysCountry.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

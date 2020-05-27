@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballEnvironmentDao">
+
+  <resultMap id="footballEnvironmentMap" type="com.kok.sport.entity.FootballEnvironment">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="pressure" column="pressure"/>
+                        <result property="temperature" column="temperature"/>
+                        <result property="wind" column="wind"/>
+                        <result property="humidity" column="humidity"/>
+                        <result property="weatherId" column="weather_id"/>
+                        <result property="weather" column="weather"/>
+                        <result property="weatherImage" column="weather_image"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballEnvironment简单分页查询-->
+  <select id="getFootballEnvironmentPage" resultMap="footballEnvironmentMap">
+    SELECT
+                  id,
+                        match_id,
+                        pressure,
+                        temperature,
+                        wind,
+                        humidity,
+                        weather_id,
+                        weather,
+                        weather_image,
+                        create_time,
+                        delete_flag
+              FROM football_environment_t
+    <where>
+                        <if test="footballEnvironment.id != null ">
+            AND id = #{footballEnvironment.id}
+          </if>
+                                <if test="footballEnvironment.matchId != null ">
+            AND match_id = #{footballEnvironment.matchId}
+          </if>
+                                <if test="footballEnvironment.pressure != null and footballEnvironment.pressure.trim() != ''">
+            AND pressure = #{footballEnvironment.pressure}
+          </if>
+                                <if test="footballEnvironment.temperature != null and footballEnvironment.temperature.trim() != ''">
+            AND temperature = #{footballEnvironment.temperature}
+          </if>
+                                <if test="footballEnvironment.wind != null and footballEnvironment.wind.trim() != ''">
+            AND wind = #{footballEnvironment.wind}
+          </if>
+                                <if test="footballEnvironment.humidity != null and footballEnvironment.humidity.trim() != ''">
+            AND humidity = #{footballEnvironment.humidity}
+          </if>
+                                <if test="footballEnvironment.weatherId != null ">
+            AND weather_id = #{footballEnvironment.weatherId}
+          </if>
+                                <if test="footballEnvironment.weather != null and footballEnvironment.weather.trim() != ''">
+            AND weather = #{footballEnvironment.weather}
+          </if>
+                                <if test="footballEnvironment.weatherImage != null and footballEnvironment.weatherImage.trim() != ''">
+            AND weather_image = #{footballEnvironment.weatherImage}
+          </if>
+                                <if test="footballEnvironment.createTime != null ">
+            AND create_time = #{footballEnvironment.createTime}
+          </if>
+                                <if test="footballEnvironment.deleteFlag != null and footballEnvironment.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballEnvironment.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

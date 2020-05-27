@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="/">
+	<sql id="fixcol"> create_time,delete_flag  </sql>
+	
+	<update id="insert_into_football_incident_t" parameterType="Map">
+		insert into football_incident_t( id,time, type ,position,match_id,
+		player_id,player_name,home_score,away_score,
+
+		<include refid="fixcol">
+		</include>
+
+		)values(
+		replace(UNIX_TIMESTAMP(now(6)),'.',''),#{time},#{type},#{position}, #{id},#{player_id},#{player_name},#{home_score},#{away_score},
+		now(),0
+		)
+	</update>
+
+
+	<update id="insert_into_football_incident_tV2" parameterType="Map">
+		insert into football_incident_t(
+		id,time, type ,position,match_id,player_id,player_name,home_score,away_score,
+
+		<include refid="fixcol">
+		</include>
+
+		)values(
+		replace(UNIX_TIMESTAMP(now(6)),'.',''),${vals},#{away_score},
+		now(),0
+		)
+	</update>
+	
+	
+	<update id="insert_into_tabs" parameterType="Map">
+		insert into ${tab}( ${cols})values( ${vals})
+	</update>
+
+
+	<update id="insert_into_football_score_t" parameterType="Map">
+		replace
+		into football_score_t( id,regular_time_score, half_court_score
+		,red_card,yellow_card,		corner_kick,
+		
+		overtime_score,point_score,
+		
+		match_id,team_id,team_type,
+		
+		remark,league_ranking, 
+		
+		score,create_time,delete_flag )values(
+		
+		replace(UNIX_TIMESTAMP(now(6)),'.','')	,#{regular_time_score},#{half_court_score},
+		
+		#{red_card},#{yellow_card},		#{[corner_kick]},
+		#{overtime_score},#{point_score},
+		#{match_id},#{team_id},#{team_type},
+		'',0,
+		
+		#{regular_time_score},now(),0 )
+	</update>
+
+	<update id="insert_into_football_tlive_t" parameterType="Map">
+		insert
+		into football_tlive_t( id,time, type
+		,data,position,match_id,main,
+		create_time,delete_flag)values(
+		replace(UNIX_TIMESTAMP(now(6)),'.',''),#{time},#{type},#{data},#{position},
+		#{[id]},0,now(),0 )
+
+	</update>
+
+
+</mapper>

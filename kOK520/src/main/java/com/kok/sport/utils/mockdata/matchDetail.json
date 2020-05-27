@@ -1,0 +1,41 @@
+{
+	"ret": 200,
+	"data": {
+		"version": 2,
+		"info": {
+			"round": 35,
+			"matchtime": 1589356800,
+			"statusid": 9,
+			"realtime": 0
+		},
+		"matchevent": {
+			"id": 271,
+			"season": "2019-2020",
+			"name_zh": "罗马尼亚乙级联赛"
+		},
+		"home_team": {
+			"id": 30460,
+			"name_zh": "克勒拉希",
+			"logo": "ce0eb9a5934a929e1fcdde65d4b201fb.png",
+			"score": 0,
+			"half_score": 0
+		},
+		"away_team": {
+			"id": 28007,
+			"name_zh": "奥拉迪亚",
+			"logo": "0ffa2000fe9ca71c87f39853208c7ad2.png",
+			"score": 0,
+			"half_score": 0
+		},
+		"tlive": [
+			{
+				"time": "",
+				"type": 0,
+				"data": "大家好，欢迎来到雷速体育观看本场比赛直播,比赛即将开始",
+				"position": 0
+			}
+		],
+		"stats": []
+	},
+	"msg": ""
+}
