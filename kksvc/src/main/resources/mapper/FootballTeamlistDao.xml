@@ -25,12 +25,9 @@
 
 		<!-- id,name_zh,short_name_zh,name_zht,short_name_zht,name_en,short_name_en,logo 
 			,create_time ,delete_flag " + " @id@,@name_zh@,@short_name_zh@,@name_zht@,@short_name_zht@,@name_en@,@short_name_en@,@logo@,now(),0 -->
-		insert into football_team_t(id,name_zh,short_name_zh,name_zht,short_name_zht,name_en,short_name_en,logo)values(#{id},#{name_zh},#{short_name_zh},#{name_zht},#{short_name_zht},#{name_en},#{short_name_en},#{logo})
+		insert into football_team_t(id,name_zh,short_name_zh,name_zht,short_name_zht,name_en,short_name_en,logo,create_time)values(#{id},#{name_zh},#{short_name_zh},#{name_zht},#{short_name_zht},#{name_en},#{short_name_en},#{logo},now())
 
 	</update>
 	
-		<update id="insert_into_football_odds_t" parameterType="Map"	 >
-	insert  into football_odds_t(   id,company_id, match_id ,change_time, home_odds,tie_odds,away_odds,lock_flag,create_time,delete_flag )values( #{id},#{company_id},#{match_id},#{change_time},
-										 #{home_odds},#{tie_odds},#{away_odds},#{lock_flag},now(),0  )
-	</update>
+		
 </mapper>

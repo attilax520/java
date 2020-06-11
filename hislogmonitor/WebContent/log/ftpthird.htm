@@ -1,0 +1,134 @@
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta id="viewport" name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1; user-scalable=no;">
+		<LINK rel=stylesheet type=text/css href="img/style.css">
+		<LINK rel=stylesheet type=text/css href="img/style3.css">
+		<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.5.1.min.js00"></script>
+		<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+		
+		<script type="text/javascript" src="../js/check.js"></script>
+		<script type="text/javascript" src="../js/checkAll.js"></script>
+		<script type="text/javascript" src="weebox0.4/bgiframe.js"></script>
+		<script type="text/javascript" src="weebox0.4/weebox.js"></script>
+		<link type="text/css" rel="stylesheet" href="weebox0.4/weebox.css" />
+		<script language="javascript" type="text/javascript" src="../com.atilax.frmwk/My97DatePicker/WdatePicker.js" ></script>
+<script type="text/javascript" src="../com.atilax.frmwk/vue.js"></script>
+
+<script type="text/javascript" src="../com.attilax/web/req.js"></script>
+<div style="width:100%">
+第三方文件path：<input id="kw" name="wd" list="url_list" class="s_ipt" value="" maxlength="2550" autocomplete="on" style="width:80%" > 
+ 协议：<input id="encodetxt" list="proto_list" class="s_ipt" value="ftp" maxlength="2550" autocomplete="on" style="width:100px" >
+ </div>
+ <datalist id="proto_list">
+	<option label="ftp" value="ftp" />
+	<option label="ssh" value="ssh" />
+	<option label="nfs" value="nfs" />
+</datalist>
+
+<p>
+ 
+ encode编码：<input id="encodetxt" list="encode_list" class="s_ipt" value="utf8" maxlength="2550" autocomplete="on" style="width:100px" >
+ <datalist id="url_list">
+	<option label="logcfgfile" value="C:\0wkspc\hislog\src\main\resources\log4j.properties" />
+	<option label="logfile" value="C:\0log\hislog.log" />
+	<option label="Microsoft" value="http://www.microsoft.com" />
+</datalist>
+ <datalist id="encode_list">
+	<option label="utf8" value="utf8" />
+	<option label="gbk" value="gbk" />
+	 
+</datalist>
+<button type="button" onclick="openx();return false;" id="openbtn">open加载</button>  
+ <button type="button" onclick="fresh();return false;" id="openbtn_fresh">open加载（自动刷新</button>
+ <button type="button" onclick="openurl();return false;" id="openbtn_url">url模式查看</button>
+  <input type="button" id="su" value="save保存" class="bg s_btn"   onclick="save()"/>
+<p>
+<textarea rows="50" cols="200" id="editctrl" style="width:100%">
+
+
+
+ 
+</textarea>
+<script>
+function changeevt(filectrl)
+{
+$("#kw").val( $(filectrl).val());
+
+}
+if(UrlParm.parm('viewmode'))
+{
+$("#su").hide();
+//$("#openbtn").hide();
+}else   //edit mode
+{
+  $("#openbtn_fresh").hide();
+}
+
+function save()
+{
+var f=$("#kw").val();
+url="../FileServiceServlet?method=save&fpath="+encodeURIComponent($("#kw").val())+"&txt="+encodeURIComponent($("#editctrl").val())+"&encode=@encode@";
+url=url.replace("@encode@",$("#encodetxt").val());
+ $.get(url, function(result,status,xhr){
+	 
+		   if(result=="")
+		   alert("ok");
+		   else
+		   alert(result);
+	 });
+}
+function openurl()
+{
+url="../FileServiceServlet?method=read&fpath="+encodeURIComponent($("#kw").val())+"&encode=@encode@";
+url=url.replace("@encode@",$("#encodetxt").val());
+window.open(url);
+}
+function openx()
+{
+//alert("");
+url="../ftpClientSrv?method=read&fpath="+encodeURIComponent($("#kw").val())+"&encode=@encode@";
+url=url.replace("@encode@",$("#encodetxt").val());
+
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);
+		
+		   var scrollTop = $("#editctrl")[0].scrollHeight;  
+                         $("#editctrl").scrollTop(scrollTop);  
+						 
+	 });
+    
+}
+
+
+function fresh()
+{
+//alert("");
+ 
+	 window.setInterval(function(){
+						 
+						 openx();
+						 },2000);
+	alert("ok");					 
+ 
+    
+}
+
+
+
+function openV2(aftFun)
+{
+//alert("");
+url="../FileServiceServlet?method=read&fpath="+encodeURIComponent($("#kw").val());
+	 $.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);
+		
+		   var scrollTop = $("#editctrl")[0].scrollHeight;  
+                         $("#editctrl").scrollTop(scrollTop);  
+						aftFun();
+	 });
+    
+}
+</script>

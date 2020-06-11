@@ -1,0 +1,21 @@
+
+
+
+CREATE INDEX "ix_vaf01_on_@tab@" ON @tab@  USING btree ("vaf01");
+
+CREATE INDEX " bck01d_index_@tab@" ON @tab@ USING btree ("bck01d");
+
+CREATE INDEX " bdn01_index_@tab@" ON @tab@ USING btree ("bdn01");
+
+CREATE INDEX " vaa01_index_@tab@" ON @tab@ USING btree ("vaa01");
+
+CREATE INDEX " vaa07_@tab@" ON  @tab@ USING btree ("vaa07");
+
+CREATE INDEX " vai01_@tab@" ON  @tab@ USING btree ("vai01");
+
+CREATE INDEX " vaj46_index_@tab@" ON  @tab@ USING btree ("vaj46");
+
+CREATE INDEX " vaj51_index_@tab@" ON  @tab@ USING btree ("vaj51");
+
+
+vaf01,bck01d,bdn01,vaa01,vaa07,vai01,vaj46,vaj51

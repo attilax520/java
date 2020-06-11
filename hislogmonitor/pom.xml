@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.hisloggroupId</groupId>
+  <artifactId>hislogv6</artifactId>
+  <packaging>war</packaging>
+    <version>1</version>
+ <!--  pom2tomcat -->
+ 
+  <name>hislicense Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <properties>  
+        
+    </properties>  
+    
+    <!--   builder   <finalName>hislogv3</finalName> -->
+    <!--    -->
+   <build>
+   
+      
+      
+       <!-- ************************************ out war dir and filename -->  
+      <!-- war filename -->
+   <finalName>webcon</finalName>
+   <!-- war position   webapps-->
+   <directory>C:\Program Files (x86)\Apache Software Foundation\Tomcat 8.0\s71</directory> 
+  
+   
+   
+    <!-- ************************************set not build by maven ,use elcipse build -->
+   <sourceDirectory>srcnone</sourceDirectory>    
+      <resources> 
+            <!-- 这个元素描述了项目相关或测试相关的所有资源路径 --> 
+            <resource> 
+   
+                <!-- 描述存放资源的目录，该路径相对POM路径 --> 
+                <directory>resnone</directory>
+
+               
+            </resource> 
+     </resources> 
+   
+   
+   <plugins>  
+        <!-- ************************************修改webapp目录为WebContent -->  
+        <plugin>  
+            <groupId>org.apache.maven.plugins</groupId>  
+            <artifactId>maven-war-plugin</artifactId>  
+            <configuration>  
+                <!-- 设置WebContent目录为Web目录 -->  
+                <webappDirectory>${basedir}/WebContent</webappDirectory>  
+                <warSourceDirectory>${basedir}/WebContent4</warSourceDirectory>  
+            </configuration>  
+        </plugin>  
+        
+        
+        
+          <plugin>  
+    <groupId>org.apahce.maven.plugins</groupId>  
+    <artifactId>maven-surefire-plugin</artifactId>  
+    <version>2.5</version>  
+    <configuration>  
+          <testFailureIgnore>true</testFailureIgnore>  
+           <skip>true</skip>
+             <directory>resnone</directory>
+        </configuration>          
+</plugin>  
+
+
+    </plugins>  
+    
+    
+    
+     <testSourceDirectory>src/none</testSourceDirectory>
+    <!-- 
+        <targetPath>target3</targetPath>  
+          <outputDirectory>bin</outputDirectory> 
+    
+     -->
+     
+   
+     
+    
+ 
+  </build>
+
+     <!--  builder end  -->
+     
+     
+     
+   
+</project>

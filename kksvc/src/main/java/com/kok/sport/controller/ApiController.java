@@ -18,6 +18,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -81,7 +83,8 @@ public class ApiController {
 	@GetMapping("/queryPage")
 	public Object queryPage() throws Exception {
 
-		Map reqM = RequestUtil.getMap(req);
+	//	HttpServletRequest req = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
+			Map reqM = RequestUtil.getMap(req);
 		return MybatisQueryUtil.queryPage(reqM, MybatisMapper1);
 
 	}
@@ -135,7 +138,8 @@ public class ApiController {
 	@GetMapping("/queryCount")
 	public int queryCount() throws Exception {
 
-		Map m = RequestUtil.getMap(req);
+	//	HttpServletRequest req = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
+				Map m = RequestUtil.getMap(req);
 
 		return MybatisQueryUtil.queryCount(m, MybatisMapper1);
 
@@ -158,7 +162,8 @@ public class ApiController {
 	@ApiOperation(value = "查询，返回数据json列表，不带翻页数据")
 	@GetMapping("/query")
 	public Object query() throws Exception {
-		Map m = RequestUtil.getMap(req);
+	//	HttpServletRequest req = ((ServletRequestAttributes) (RequestContextHolder.currentRequestAttributes())).getRequest();
+		 		Map m = RequestUtil.getMap(req);
 		return MybatisQueryUtil.query(m, MybatisMapper1);
 
 	}

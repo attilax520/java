@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cnhis.cloudhealth.module.license.dao.SysLicenseDao">
+
+    <sql id="sysLicenseColumns">
+    	product_id AS productId,
+		corporation_id AS corporationId
+    </sql>
+    
+	<insert id="save">
+		INSERT INTO sys_license(
+			"product_id",
+			"corporation_id"
+		)
+		VALUES
+		(
+			#{productId},
+			#{corporationId}
+		 )
+	</insert>
+	
+	<!-- 删除已授权模块 -->
+	<delete id="delProduct">
+		DELETE FROM sys_license 
+		WHERE corporation_id = #{corporationId}
+	</delete>
+</mapper>

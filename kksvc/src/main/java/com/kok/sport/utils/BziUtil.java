@@ -19,23 +19,26 @@ import cn.hutool.core.net.URLEncoder;
 public class BziUtil {
 
 	public static void main(String[] args) throws Exception {
-		long time2 = 1516197600 * 1000;
-		time2 = 1516125600 * 24 * 3600;
-		long time = (long) 1586591592 * (long) 1000;
-		// 1586591592045 //ms
-		System.out.println(new Date().getTime()); // gettime ms timestamp 13bit ms
-		// 毫秒级时间戳
-		long currentTimeMillis = System.currentTimeMillis();
-		System.out.println(currentTimeMillis);
-
-		String result2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
-		System.out.println(" " + result2);
-
-		SqlSession SqlSession1 = MybatisUtil.getConn();
-		MybatisMapper MybatisMapper = SqlSession1.getMapper(MybatisMapper.class);
-		Object bizSql = BziUtil.bizSql("spj", "{\"id\":33}", MybatisMapper);
-		//  '{"id":10000,"fav":"n"}'
-		System.out.println(bizSql);
+		
+	int hours = new Date().getHours();
+	System.out.println(hours);	
+//		long time2 = 1516197600 * 1000;
+//		time2 = 1516125600 * 24 * 3600;
+//		long time = (long) 1586591592 * (long) 1000;
+//		// 1586591592045 //ms
+//		System.out.println(new Date().getTime()); // gettime ms timestamp 13bit ms
+//		// 毫秒级时间戳
+//		long currentTimeMillis = System.currentTimeMillis();
+//		System.out.println(currentTimeMillis);
+//
+//		String result2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(time);
+//		System.out.println(" " + result2);
+//
+//		SqlSession SqlSession1 = MybatisUtil.getConn();
+//		MybatisMapper MybatisMapper = SqlSession1.getMapper(MybatisMapper.class);
+//		Object bizSql = BziUtil.bizSql("spj", "{\"id\":33}", MybatisMapper);
+//		//  '{"id":10000,"fav":"n"}'
+	//	System.out.println(bizSql);
 	
 		
 		

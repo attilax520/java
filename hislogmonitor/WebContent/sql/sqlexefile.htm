@@ -1,0 +1,102 @@
+
+   	<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+连接配置
+<textarea rows="3" cols="200" id="cfgtextbox" style="width:100%">
+ 
+url=jdbc:sqlserver://192.168.1.17;databaseName=HealthOne,username=sa,password=123456,driverClass=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+ 
+</textarea>
+
+  
+	sql文件选择：<input type = "file" name = "filex" onchange="upload()" id="filex" />      &nbsp;  &nbsp;  &nbsp;服务器保存路径：<input type = "text" name = "cmdtextbox" id="cmdtextbox" />  
+  <input type = "button" value="提交执行查询"  onclick="btn_click_query()" >  <input type = "button" value="提交执行更新"  onclick="btn_click_up()" >  <input type = "button" value="提交"  onclick="btn_click()" >
+
+
+
+<script>
+
+function upload()
+{
+ 
+	var self=this;
+ 
+	var fd = new FormData();
+	fd.append("serverSavePath", "/tmp");
+	fd.append("upfile", $("#filex").get(0).files[0]);
+	$.ajax({
+		url: "../UploadServlet1",
+		type: "POST",
+		processData: false,
+		contentType: false,
+		data: fd,
+		success: function(d) {
+			console.log(d);
+			console.log("----fini");
+		    $("#cmdtextbox").val(d);
+		}
+	});	
+ 
+
+}
+
+function btn_click_query()
+{
+//alert("");
+$("#editctrl").val("");	
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=query&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@&cmdFrom=file";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+
+
+	function btn_click_up()
+{
+
+$("#editctrl").val("");	
+//alert("");
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=update&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@&cmdFrom=file";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+
+
+function btn_click()
+{
+$("#editctrl").val("");	
+//alert("");
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@&cmdFrom=file";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+	
+	
+	</script>
+
+结果
+<textarea rows="50" cols="200" id="editctrl" style="width:100%">
+ 
+
+
+ 
+</textarea>

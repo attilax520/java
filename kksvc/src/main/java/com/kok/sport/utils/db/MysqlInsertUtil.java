@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -57,6 +59,102 @@ public class MysqlInsertUtil {
 		}).collect(Collectors.toList());
 		return r;
 	}
+	
+	/**
+	 * sqlSessionFactory just dep null @Nullable
+	 * @param sqlSessionFactory
+	 * @param kv_frmNet
+	 * @param mybatisMapper1
+	 * @return
+	 */
+	public static Object insertV2_faster( @Nullable SqlSessionFactory sqlSessionFactory, Map kv_frmNet, MybatisMapper mybatisMapper1 ) {
+		Map m_intoMybatis = null;
+		try {
+			// defvalue
+		//	CfgDb.fldDefValFun(kv_frmNet);
+
+			String tabname = kv_frmNet.get("$insert").toString();
+			kv_frmNet.remove("$insert");
+			
+		//	SqlSession session = sqlSessionFactory.openSession(true);
+			m_intoMybatis = getMap_InsertMbtsSetMode_FastNocheckColExist(null, kv_frmNet, tabname);
+
+			if(m_intoMybatis.get("set").toString().length()==0)
+				throw new RuntimeException("into tab is err表名可能不正确请检查");
+		//	System.out.println(JSON.toJSONString(m_intoMybatis, true));
+			MybatisMapper mp =mybatisMapper1;
+
+			int insertBymapV2 = mp.insertBymapV2(m_intoMybatis);
+			
+			//def ret curser obj
+			Map m=Maps.newLinkedHashMap();
+			m.put("effectRowsNums", insertBymapV2);
+			m.put("m_into", m_intoMybatis);
+		//	m.put("statement", m_intoMybatis);
+		//	m.put("last_inset_id", m_intoMybatis);
+//			
+//			lastrowid 
+//			column_names
+//			description 
+//			rowcount 
+//			statement 
+//			with_rows
+			
+			return m;
+		} catch (Exception e) {
+//			Map dbginfo = Maps.newLinkedHashMap();
+//		 
+//			dbginfo.put("m_intoMybatis", m_intoMybatis);
+//			ExUtilV2t33.throwExV2(new RuntimeExceptionAtiVer(e,m_intoMybatis));
+ 	 	ExUtilV2t33.throwExWzDbginfo(e,m_intoMybatis);
+		}
+		return 0;
+
+	}
+	
+	public static Object insertV2(SqlSessionFactory sqlSessionFactory, Map kv_frmNet) {
+		Map m_intoMybatis = null;
+		try {
+			// defvalue
+			CfgDb.fldDefValFun(kv_frmNet);
+
+			String tabname = kv_frmNet.get("$insert").toString();
+
+			SqlSession session = sqlSessionFactory.openSession(true);
+			m_intoMybatis = getMap_InsertMbtsSetMode(session, kv_frmNet, tabname);
+
+			if(m_intoMybatis.get("set").toString().length()==0)
+				throw new RuntimeException("into tab is err表名可能不正确请检查");
+			System.out.println(JSON.toJSONString(m_intoMybatis, true));
+			MybatisMapper mp = session.getMapper(MybatisMapper.class);
+
+			int insertBymapV2 = mp.insertBymapV2(m_intoMybatis);
+			
+			//def ret curser obj
+			Map m=Maps.newLinkedHashMap();
+			m.put("effectRowsNums", insertBymapV2);
+			m.put("m_into", m_intoMybatis);
+		//	m.put("statement", m_intoMybatis);
+		//	m.put("last_inset_id", m_intoMybatis);
+//			
+//			lastrowid 
+//			column_names
+//			description 
+//			rowcount 
+//			statement 
+//			with_rows
+			
+			return m;
+		} catch (Exception e) {
+//			Map dbginfo = Maps.newLinkedHashMap();
+//		 
+//			dbginfo.put("m_intoMybatis", m_intoMybatis);
+//			ExUtilV2t33.throwExV2(new RuntimeExceptionAtiVer(e,m_intoMybatis));
+ 	 	ExUtilV2t33.throwExWzDbginfo(e,m_intoMybatis);
+		}
+		return 0;
+
+	}
 
 	public static Object insert(SqlSessionFactory sqlSessionFactory, Map kv_frmNet) {
 		Map m_intoMybatis = null;
@@ -99,13 +197,38 @@ public class MysqlInsertUtil {
 		return 0;
 
 	}
+	
+	private static Map getMap_InsertMbtsSetMode_FastNocheckColExist(SqlSession conn, Map kv_frmNet, String tabname) throws Exception {
+		Map m_intoMybatis = Maps.newLinkedHashMap();
+
+		m_intoMybatis.put("tab", tabname);
+
+		List<String> li_cols = Lists.newArrayList();
+
+		// Sets.newLinkedHashSet()
+		Set<String> ks = kv_frmNet.keySet();
+		//
+	//	List<String> ks_filtedNoexistFld = ks_filtedNoexistFld(ks, conn, tabname);
+		for (String k : ks) {
+		//	if(k.equals("$insert"))
+			String upitem = "" + k + "=#{[" + k + "]}";
+			li_cols.add(upitem);
+		}
+		String setList_spel = "setList_spel";
+		m_intoMybatis.put(setList_spel, "" + Joiner.on(",").join(li_cols));
+		String val_warped_sqlValFmt = "val_warped_sqlValFmt";
+		m_intoMybatis.put(val_warped_sqlValFmt, vals_warpedgene_fater(tabname, kv_frmNet, conn));
+		m_intoMybatis.put("set", QlSpelUtil.parse(m_intoMybatis.get(setList_spel).toString(),
+				(Map) m_intoMybatis.get(val_warped_sqlValFmt)));
+		return m_intoMybatis;
+	}
 
 	private static Map getMap_InsertMbtsSetMode(SqlSession conn, Map kv_frmNet, String tabname) throws Exception {
 		Map m_intoMybatis = Maps.newLinkedHashMap();
 
 		m_intoMybatis.put("tab", tabname);
 
-		List<String> li = Lists.newArrayList();
+		List<String> li_cols = Lists.newArrayList();
 
 		// Sets.newLinkedHashSet()
 		Set<String> ks = kv_frmNet.keySet();
@@ -113,10 +236,10 @@ public class MysqlInsertUtil {
 		List<String> ks_filtedNoexistFld = ks_filtedNoexistFld(ks, conn, tabname);
 		for (String k : ks_filtedNoexistFld) {
 			String upitem = "" + k + "=#{[" + k + "]}";
-			li.add(upitem);
+			li_cols.add(upitem);
 		}
 		String setList_spel = "setList_spel";
-		m_intoMybatis.put(setList_spel, "" + Joiner.on(",").join(li));
+		m_intoMybatis.put(setList_spel, "" + Joiner.on(",").join(li_cols));
 		String val_warped_sqlValFmt = "val_warped_sqlValFmt";
 		m_intoMybatis.put(val_warped_sqlValFmt, vals_warpedgene(tabname, kv_frmNet, conn));
 		m_intoMybatis.put("set", QlSpelUtil.parse(m_intoMybatis.get(setList_spel).toString(),
@@ -134,14 +257,14 @@ public class MysqlInsertUtil {
 		try {
 
 			List<Map> ColsMetaList = DatabaseMetaDataUtil.getColsList(connection, tableName);
-			List<String> cols = ColsMetaList.stream().map(map_item -> {
+			List<String> cols_frmTabDef = ColsMetaList.stream().map(map_item -> {
 				return map_item.get("COLUMN_NAME").toString().toLowerCase();
 			}).collect(Collectors.toList());
-			String cols_inFmt = Joiner.on(",").join(cols);
+	//		String cols_inFmt = Joiner.on(",").join(cols);
 
 			List<String> cols_existIndbOnly = ks.stream().filter(item -> {
 
-				return cols.contains(item.toLowerCase());
+				return cols_frmTabDef.contains(item.toLowerCase());
 				// return true;
 
 			}).collect(Collectors.toList());
@@ -151,6 +274,28 @@ public class MysqlInsertUtil {
 		}
 		return null;
 
+	}
+	
+	
+	private static Map vals_warpedgene_fater(String tableName, Map kv_frmNet, SqlSession conn) throws Exception {
+		String Cols = (String) getColsFrom_objFrmNet(kv_frmNet);
+	//	List<Map> ColsMetaList = DatabaseMetaDataUtil.getColsList(conn.getConnection(), tableName);
+
+		Map m = MapUtil.cloneSafe(kv_frmNet);
+		Set<String> ks = m.keySet();
+		for (String k_col : ks) {
+			try {
+				Object v_col = m.get(k_col);
+				 
+				m.put(k_col, "'"+v_col.toString()+"'");
+			} catch (Exception e) {
+				System.out.println("---waring ");
+				e.printStackTrace();
+			}
+
+		}
+
+		return m;
 	}
 
 	private static Map vals_warpedgene(String tableName, Map kv_frmNet, SqlSession conn) throws Exception {

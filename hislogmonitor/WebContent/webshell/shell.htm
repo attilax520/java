@@ -1,0 +1,75 @@
+ 
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+   	<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>My JSP 'uploadfile.jsp' starting page</title>
+    
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">    
+	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+	<meta http-equiv="description" content="This is my page">
+	<!--
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	-->
+
+  </head>
+  
+  <body>
+     <form action="../UploadServlet1" method="post" enctype="multipart/form-data" >
+      工作路径cwd：<input type = "text" name = "cwd"  id = "cwd" style="width:80%">  
+	  
+	   encode编码：<input id="encodetxt" list="encode_list" class="s_ipt" value="utf8" maxlength="2550" autocomplete="on" style="width:100px" >
+ <datalist id="url_list">
+	<option label="logcfgfile" value="C:\0wkspc\hislog\src\main\resources\log4j.properties" />
+	<option label="logfile" value="C:\0log\hislog.log" />
+	<option label="Microsoft" value="http://www.microsoft.com" />
+</datalist>
+ <datalist id="encode_list">
+	<option label="utf8" value="utf8" />
+	<option label="gbk" value="gbk" />
+	 
+</datalist>
+	<p>  
+	  cmd：<input type = "text" name = "cmdtextbox"   id = "cmdtextbox" style="width:80%">  
+     
+    	<input type = "button" value="提交" onclick="btn_click()">   
+		<p>
+<textarea rows="50" cols="200" id="editctrl" style="width:100%">
+ 
+
+
+ 
+</textarea>
+	  
+	  
+	  
+    </form>
+	
+	<script>
+	function btn_click()
+{
+//alert("");
+url="../ShellServlet?cmdtextbox=@cmdtextbox@&cwd="+$("#cwd").val()+"&encode="+encodeURIComponent($("#encodetxt").val());
+url=url.replace("@cmdtextbox@",encodeURIComponent($("#cmdtextbox").val()));
+
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);
+		  var scrollTop = $("#editctrl")[0].scrollHeight;  
+                         $("#editctrl").scrollTop(scrollTop);  
+	 
+		
+		 
+						 
+	 });
+    
+}
+	
+	
+	</script>
+  </body>
+</html>

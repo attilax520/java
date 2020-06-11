@@ -1,0 +1,6 @@
+{
+"class":"com.attilax.oplog.OperLogAction","method":"list2",
+"params":  [" where 1=1 limit 10 offset 0 " ]
+
+
+}

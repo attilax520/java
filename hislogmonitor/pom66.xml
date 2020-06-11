@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.hisloggroupId</groupId>
+  <artifactId>hislogv3</artifactId>
+  <packaging>war</packaging>
+  
+  <version>0.0.1-SNAPSHOT</version>
+  <name>hislicense Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <properties>  
+        
+    </properties>  
+    
+    <!--   builder   <finalName>hislogv3</finalName> -->
+    <!--    -->
+   <build>
+   
+   
+   <plugins>  
+        <!-- 修改webapp目录为WebContent -->  
+        <plugin>  
+            <groupId>org.apache.maven.plugins</groupId>  
+            <artifactId>maven-war-plugin</artifactId>  
+            <configuration>  
+                <!-- 设置WebContent目录为Web目录 -->  
+                <webappDirectory>${basedir}/WebContent</webappDirectory>  
+                <warSourceDirectory>${basedir}/WebContent3</warSourceDirectory>  
+            </configuration>  
+        </plugin>  
+    </plugins>  
+   
+    <sourceDirectory>srcnone</sourceDirectory> 
+    
+      <resources> 
+            <!-- 这个元素描述了项目相关或测试相关的所有资源路径 --> 
+            <resource> 
+   
+                <!-- 描述存放资源的目录，该路径相对POM路径 --> 
+                <directory>resnone</directory>
+
+               
+            </resource> 
+     </resources> 
+ 
+  </build>
+
+     <!--  builder end  -->
+     
+     
+     
+   
+</project>

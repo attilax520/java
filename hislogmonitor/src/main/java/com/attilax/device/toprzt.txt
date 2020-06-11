@@ -1,0 +1,19 @@
+top - 14:50:09 up 35 days,  1:09, 21 users,  load average: 0.54, 0.54, 0.55
+Tasks: 487 total,   1 running, 470 sleeping,  15 stopped,   1 zombie
+%Cpu(s):  6.3 us,  2.1 sy,  0.0 ni, 91.2 id,  0.3 wa,  0.0 hi,  0.1 si,  0.0 st
+KiB Mem : 65702324 total,  4066060 free, 24392072 used, 37244192 buff/cache
+KiB Swap: 32964604 total, 32174628 free,   789976 used. 39250196 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+20169 root      20   0  210740  25464   4164 S  84.2  0.0 353:11.70 iotop
+20640 root      20   0  210664  25268   4172 S  84.2  0.0 406:16.28 iotop
+ 1381 root      20   0 19.712g 893736  14960 S   5.3  1.4   0:50.67 java
+    1 root      20   0  193932   6004   3644 S   0.0  0.0   2:12.29 systemd
+    2 root      20   0       0      0      0 S   0.0  0.0   0:02.02 kthreadd
+    3 root      20   0       0      0      0 S   0.0  0.0   1:28.31 ksoftirqd/0
+    7 root      rt   0       0      0      0 S   0.0  0.0   0:03.15 migration/0
+    8 root      20   0       0      0      0 S   0.0  0.0   0:00.05 rcu_bh
+    9 root      20   0       0      0      0 S   0.0  0.0  78:36.42 rcu_sched
+   10 root      rt   0       0      0      0 S   0.0  0.0   0:13.94 watchdog/0
+   11 root      rt   0       0      0      0 S   0.0  0.0   0:14.45 watchdog/1
+   12 root      rt   0       0      0      0 S   0.0  0.0   0:06.85 migration/1                            

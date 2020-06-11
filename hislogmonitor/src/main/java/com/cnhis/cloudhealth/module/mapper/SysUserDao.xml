@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cnhis.cloudhealth.module.license.dao.SysUserDao">
+
+    <sql id="sysUserColumns">
+    	id,
+    	sys_account AS sysAccount,
+    	sys_password AS sysPassword,
+		remarks,	
+		update_by AS createBy,	
+		create_date AS createDate,	
+		update_by AS updateBy,	
+		update_date AS updateDate,	
+		del_flag AS delFlag
+    </sql>
+    
+    <sql id="sysUserJoins">
+    </sql>
+    
+    <!-- 查询所有 -->
+	<select id="findAll" resultType="SysUser">
+		SELECT
+			<include refid="sysUserColumns"/>
+		FROM sys_user
+	</select>
+	
+	<!-- 根据ID查询 -->
+	<select id="findById" resultType="SysUser">
+		SELECT
+			<include refid="sysUserColumns"/>
+		FROM sys_user
+	</select>
+	
+	<!-- 检测原始密码是否正确 -->
+	<select id="checkPwd" resultType="java.lang.Integer">
+		SELECT
+			count(*)
+		FROM sys_user
+		WHERE 
+			 id = #{id} AND sys_password = #{oldPassword}
+	</select>
+	
+	<!-- 检测用户名和密码是否正确 -->
+	<select id="checkLogin" resultType="SysUser">
+		SELECT
+			<include refid="sysUserColumns"/>
+		FROM sys_user
+		WHERE 
+			 sys_account = #{sysAccount} AND sys_password = #{sysPassword}
+	</select>
+	
+	<!-- 密码修改-->
+	<update id="updatePwd">
+		UPDATE sys_user SET sys_password = #{sysPassword} WHERE id = #{id}
+	</update>
+	
+</mapper>

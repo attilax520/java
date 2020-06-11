@@ -17,6 +17,12 @@ public class SyncBasketballTeamServiceImpl implements SyncBasketballTeamService 
 
     private BasketballTeamService basketballTeamService;
 
+  //  @Override
+    public boolean test() {
+        System.out.println("执行接口.");
+        return true;
+    }
+
     /**
      * 篮球球队信息
      * @return

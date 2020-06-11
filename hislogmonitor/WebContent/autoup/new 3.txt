@@ -1,0 +1,1 @@
+C:\TiMidity++\timidity.exe  C:\0wkspc\hislog\WebContent\autoup\hwisagwiji.midi -Ow -o hwisagwiji.wav

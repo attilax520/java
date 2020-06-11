@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cnhis.cloudhealth.module.license.dao.SysCorporationDao">
+
+    <sql id="sysCorporationColumns">
+    	a.id,
+		a.code,
+		a.name,
+		a.parentid,
+		a.type,
+		a.svrsdate,
+		a.svredate,
+		a.svrtype,
+		a.credential_name AS credentialName,
+		a.dogid,
+		a.accsdate,
+		a.accedate,
+		a.expire_day AS expireDay,
+		a.provincial,
+		a.bloc_name AS blocName,
+		a.bloc_brief AS blocBrief,
+		a.hospital_num AS hospitalNum,
+		a.token,
+		a.remarks,
+		a.create_by AS createBy,
+		a.create_date AS createDate,
+		a.update_by AS updateBy,
+		a.update_date AS updateDate,
+		a.del_flag AS delFlag
+    </sql>
+    
+    
+    <!-- 查询所有企业医院 -->
+	<select id="findAll" resultType="SysCorporation">
+		SELECT
+			<include refid="sysCorporationColumns"/>
+		FROM sys_corporation a
+		WHERE 1 = 1 AND a.del_flag = '0'
+		<if test="type != null and type != '' ">
+			AND a.type = #{type}
+		</if>
+		<if test="parentid != null">
+			AND a.parentid = #{parentid}
+		</if>
+		<if test="name != null and name != '' ">
+			AND a.code = #{name} OR a.name LIKE '%${name}%'
+		</if>
+		<if test="accsdate != null and accsdate != '' ">
+			AND to_date(a.accsdate::text, 'yyyy-mm-dd') >= to_date(#{accsdate,jdbcType=DATE}, 'yyyy-mm-dd')
+		</if>
+		<if test="accedate != null and accedate != '' ">
+			AND to_date(a.accedate::text, 'yyyy-mm-dd') &lt;= to_date(#{accedate,jdbcType=DATE}, 'yyyy-mm-dd')
+		</if>
+		<if test="day != null and day != '' ">
+			AND a.accedate >= now() and a.accedate &lt;= (now()+interval '${day} day')
+		</if>
+		ORDER BY create_date DESC
+	</select>
+	
+	<!-- 查询所有集团医院 -->
+	<select id="findBlocAll" resultType="SysBlocVo">
+		SELECT
+			<include refid="sysCorporationColumns"/>
+		FROM sys_corporation a
+		WHERE 1 = 1 AND a.type = '0'
+		AND a.parentid = 0
+		<!-- <if test="blocName != null and blocName != '' ">
+			AND a.bloc_name LIKE '%${blocName}%'
+		</if> -->
+		AND a.del_flag = '0'
+		ORDER BY a.create_date DESC
+	</select>
+	
+	<!-- 根据ID查询企业或集团 -->
+	<select id="getCorporation" resultType="SysCorporation">
+		SELECT
+			<include refid="sysCorporationColumns"/>
+		FROM sys_corporation a
+		WHERE id = #{id}
+	</select>
+	
+	<!-- 根据ID查询企业或集团 -->
+	<select id="findMaxCode" resultType="java.lang.String">
+		SELECT MAX(code) as code from sys_corporation
+	</select>
+	
+	<insert id="save">
+		<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="id">  
+		    SELECT COALESCE(MAX(id),0)+1 as id from sys_corporation
+		</selectKey> 
+		INSERT INTO sys_corporation(
+			"id",
+			"code",
+			"name",
+			"parentid",
+			"type",
+			"svrsdate",
+			"svredate",
+			"svrtype",
+			"credential_name",
+			"dogid",
+			"accsdate",
+			"accedate",
+			"expire_day",
+			"provincial",
+			"bloc_name",
+			"bloc_brief",
+			"hospital_num",
+			"token",
+			"remarks",
+			"create_by",
+			"create_date",
+			"update_by",
+			"update_date",
+			"del_flag"
+		)
+		VALUES
+		(
+			#{id},
+			#{code},
+			#{name},
+			#{parentid},
+			#{type},
+			#{svrsdate},
+			#{svredate},
+			#{svrtype},
+			#{credentialName},
+			#{dogid},
+			#{accsdate},
+			#{accedate},
+			#{expireDay},
+			#{provincial},
+			#{blocName},
+			#{blocBrief},
+			#{hospitalNum},
+			#{token},
+			#{remarks},
+			#{createBy},
+			#{createDate},
+			#{updateBy},
+			#{updateDate},
+			#{delFlag}
+		);
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_corporation
+			SET
+			 <if test="code != null and code != '' ">
+			 	"code" = #{code},
+			 </if>
+			 <if test="name != null and name != '' ">
+			 	 "name" = #{name},
+			 </if>
+			 <if test="parentid != null ">
+			 	"parentid" = #{parentid},
+			 </if>
+			 <if test="type != null ">
+			 	 "type" = #{type},
+			 </if>
+			 <if test="svrsdate != null and svrsdate != '' ">
+			 	"svrsdate" = #{svrsdate},
+			 </if>
+			 <if test=" svredate != null and svredate != '' ">
+			 	"svredate" = #{svredate},
+			 </if>
+			 <if test="svrtype != null and svrtype != '' ">
+			 	"svrtype" = #{svrtype},
+			 </if>
+			 <if test="credentialName != null and credentialName != '' ">
+			 	"credential_name" = #{credentialName},
+			 </if>
+			 <if test="dogid != null and dogid != '' ">
+			 	"dogid" =  #{dogid},
+			 </if>
+			 <if test="accsdate != null and accsdate != '' ">
+			 	"accsdate" =  #{accsdate},
+			 </if>
+			 <if test="accedate != null and accedate != '' ">
+			 	"accedate" =  #{accedate},
+			 </if>
+			 <if test="expireDay != null ">
+			 	"expire_day" =  #{expireDay},
+			 </if>
+			 <if test="provincial != null ">
+			 	"provincial" =  #{provincial},
+			 </if>
+			 <if test="blocName != null and blocName != '' ">
+			 	"bloc_name" =  #{blocName},
+			 </if>
+			 <if test="blocBrief != null and blocBrief != '' ">
+			 	"bloc_brief" =  #{blocBrief},
+			 </if>
+			 <if test="hospitalNum != null ">
+			 	"hospital_num" =  #{hospitalNum},
+			 </if>
+			 <if test="token != null and token !='' ">
+			 	"token" =  #{token},
+			 </if>
+			 <if test="remarks != null and remarks != '' ">
+			 	"remarks" =  #{remarks},
+			 </if>
+			 <if test="updateBy != null and updateBy != '' ">
+			 	"update_by" = #{updateBy},
+			 </if>
+			 <if test="delFlag != null ">
+			 	"del_flag" = #{delFlag},
+			 </if>
+			 "update_date" = now()
+			WHERE
+				"id" = #{id}
+	</update>
+	
+	<!-- 添加授权证书名称 -->
+	<update id="addCredentialName">
+		UPDATE sys_corporation
+			SET
+			 	"credential_name" = #{credentialName}
+			WHERE
+				"id" = #{id}
+	</update>
+	
+	<!-- 查询需要授权提醒的个数 -->
+	<select id="remindLicense" resultType="java.lang.Integer">
+		SELECT count(*) FROM sys_corporation a WHERE a.accedate &lt;= current_date + (a.expire_day || ' day')::interval AND a.del_flag = '0'
+	</select>
+	
+	<!-- 根据医院编码以及名称查询医院信息 -->
+	<select id="findByCorporation" resultType="SysCorporation" >
+		SELECT 
+			<include refid="sysCorporationColumns"/>
+		FROM sys_corporation a WHERE a.code = #{code} AND a."name" = #{name}
+	</select>
+	
+	<!-- 批量删除集团下的企业 -->
+	<update id="delBlocCorporation">
+		UPDATE sys_corporation
+			SET del_flag = '1' 
+			WHERE 
+			id IN (SELECT id FROM sys_corporation a where a.parentid = #{id})
+	</update>
+	
+</mapper>

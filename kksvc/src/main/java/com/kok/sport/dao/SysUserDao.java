@@ -41,7 +41,7 @@ public interface SysUserDao extends BaseMapper<SysUser> {
      * @param sysUser 系统用户
      * @return
      */
-    int reqister(@Param("sysUser") SysUser sysUser);
+    int reqister(SysUser sysUser);
 
     /**
      * 更新用户信息

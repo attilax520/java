@@ -1,3 +1,0 @@
-sprbtcfg_index=bootstrap
-db=jdbc:mysql://182.16.50.115:3306/dev_kok_sport?user=root&password=cjds1023123&allowMultiQueries=true
-mybatisNamespace=com.kok.sport.utils

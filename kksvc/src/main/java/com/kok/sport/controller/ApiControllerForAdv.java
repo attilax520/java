@@ -135,7 +135,10 @@ public class ApiControllerForAdv {
 			@ApiParam(name = "req", value = "参数") HttpServletRequest req) throws Exception {
 		Map m = RequestUtil.getMap(req);
 		 String json=JSON.toJSONString(m);
-		return BziUtil.bizSql(m.get("@name").toString(), json,MybatisMapper1);
+		 Object call_spName=m.get("$name");
+		 if(call_spName==null)
+			 call_spName=m.get("@name");
+		return BziUtil.bizSql(call_spName.toString(), json,MybatisMapper1);
 
 	}
 

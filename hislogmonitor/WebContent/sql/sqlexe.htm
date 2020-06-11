@@ -1,0 +1,82 @@
+
+   	<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+连接配置
+<textarea rows="3" cols="200" id="cfgtextbox" style="width:100%">
+ 
+url=jdbc:sqlserver://192.168.1.17;databaseName=HealthOne,username=sa,password=123456,driverClass=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+ 
+</textarea>
+
+sql语句  <input type = "button" value="提交执行查询"  onclick="btn_click_query()" >  <input type = "button" value="提交执行更新"  onclick="btn_click_up()" >  <input type = "button" value="提交"  onclick="btn_click()" >
+<textarea rows="20" cols="200" id="cmdtextbox" style="width:100%">
+ 
+
+   select top 2 *  from VAE1  
+ 
+</textarea>
+
+
+
+<script>
+
+function btn_click_query()
+{
+//alert("");
+$("#editctrl").val("");	
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=query&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+
+
+	function btn_click_up()
+{
+
+$("#editctrl").val("");	
+//alert("");
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=update&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+
+
+function btn_click()
+{
+$("#editctrl").val("");	
+//alert("");
+url="../SqlSrv?cmdtextbox=@cmdtextbox@&mode=&cwd="+$("#cwd").val()+"&cfgtextbox=@cfgtextbox@";
+url=url.replace("@cmdtextbox@",$("#cmdtextbox").val());
+url=url.replace("@cfgtextbox@", encodeURIComponent($("#cfgtextbox").val()));
+$.get(url, function(result,status,xhr){
+	 
+		$("#editctrl").val(result);		 
+						 
+	 });
+    
+}
+	
+	
+	</script>
+
+结果
+<textarea rows="50" cols="200" id="editctrl" style="width:100%">
+ 
+
+
+ 
+</textarea>

@@ -40,6 +40,9 @@ public interface MybatisMapper {
 	@Insert(" insert into ${tab} set ${set} ")
 	public int insertBymapV2(Map m);
 	
+	@Insert(" replace into ${tab} set ${set} ")
+	public int replaceBymapV2(Map m);
+	
 	@Update("update ${tab} set ${setList} where ${where} ")
 	public int updateByMap(Map m);
 	
@@ -63,6 +66,8 @@ public interface MybatisMapper {
 
 	@Select("select * from ${tab} where 1=1 and ${condFld} in (${condFldVals}) ${limit}")
 	List<Map> queryByFld(Map m);
+
+ 
 
  
 }

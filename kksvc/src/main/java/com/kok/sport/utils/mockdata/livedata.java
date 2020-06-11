@@ -87,7 +87,7 @@ public class livedata {
 		}
 	}
 
-	private static List<String> matchids() throws Exception {
+	public static List<String> matchids() throws Exception {
 		SqlSession session = MybatisUtil.getConn();
 		List<Map> sList = MybatisUtil.executeSql("select * from football_match_t");
 		List<String> li_rzt_matchids = sList.stream().map(s -> s.get("id").toString()).collect(Collectors.toList());

@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
+
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionCustomizer;
  
 
 /**
@@ -19,13 +22,17 @@ public class SpringUtil {
 	
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println(getCfgFile());
+		System.out.println(SpringUtil.getCfgFile());
+		System.out.println(SpringUtil.getCfgProperty("spring.datasource.url"));
+	 
+		System.out.println(SpringUtil.getCfgProperty("wss"));
+		//103.103.68.190
 		
 	}
 
     public static String getCfgFile() throws Exception
     {
-    	 String sprbtidx = getSprbtIdx();
+    	 String sprbtidx ="bootstrap";// getSprbtIdx();
         try{
             String profiles_active=  get_profiles_active();
             return "/"+sprbtidx+"-"+profiles_active+".yml";
@@ -46,6 +53,7 @@ public class SpringUtil {
 		return getPrpt(prpt, f);
     }
 
+    //spring.profiles.active     spring.profiles.active
     public static String getPrpt(   String prpt ,String ymlFile) throws OgnlException {
     	  org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
 		Object mObject=yaml.load(SpringUtil.class.getResourceAsStream(ymlFile));
@@ -57,6 +65,7 @@ public class SpringUtil {
         return url.toString();
 	}
 
+    //
 	private static String getSprbtIdx() throws IOException {
 		Properties properties = new Properties();
          InputStream inputStream = Object.class.getResourceAsStream("/cfg");
@@ -83,8 +92,33 @@ public class SpringUtil {
 //        m.put("pwd",pwd.toString());
 //        return m;
 //    }
+	
+	   public static String getCfgPropertySafe(String k)  {
+	    	
+//	    	if(k.contains("profileActive"))
+//	    		return "prod";
+	    	
+	        try {
+	            org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
+	            String cfgFile = getCfgFile();
+				Object mObject=yaml.load(SpringUtil.class.getResourceAsStream(cfgFile));
 
+	            String usr =   Ognl.getValue(Ognl.parseExpression(k), mObject).toString();
+	            return usr;
+	        }catch (Exception e){
+	            System.out.println("k:"+k);
+	            throw new RuntimeException(e);
+	        }
+
+
+	    }
+
+	// k spring boot cfg k   spring.datasource.url
     public static String getCfgProperty(String k) throws Exception {
+    	
+//    	if(k.contains("profileActive"))
+//    		return "prod";
+    	
         try {
             org.yaml.snakeyaml.Yaml yaml = new org.yaml.snakeyaml.Yaml();
             String cfgFile = getCfgFile();
@@ -99,4 +133,14 @@ public class SpringUtil {
 
 
     }
+
+    public static BeanDefinitionCustomizer getBeanDef() {
+		return new BeanDefinitionCustomizer() {
+
+			@Override
+			public void customize(BeanDefinition bd) {
+				// TODO Auto-generated method stub
+				
+			}};
+	}
 }

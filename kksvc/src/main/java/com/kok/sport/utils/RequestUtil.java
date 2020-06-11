@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +24,8 @@ import org.apache.commons.logging.LogFactory;
 
 
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 
 /**
@@ -74,7 +77,7 @@ public class RequestUtil {
 		return Integer.parseInt(req.getParameter(name));
 	}
 
-	public static Map getMap(HttpServletRequest req) {
+	public static Map getMap(@NotNull @NonNull HttpServletRequest req) {
 		Map params = new HashMap();
 		Map p = req.getParameterMap();
 		Iterator itor = p.keySet().iterator();

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cnhis.cloudhealth.module.license.dao.SysProductDao">
+
+    <sql id="SysProductColumns">
+    	a.id,
+    	a.product_name AS productName,
+    	a.product_code AS productCode,
+    	a.parentid
+    </sql>
+    
+    <sql id="SysProductJoins">
+    </sql>
+    
+    <!-- 查询所有 -->
+	<select id="findAll" resultType="SysProduct">
+		SELECT
+			a."id",
+			a.product_name AS productName,
+			a.product_code AS productCode,
+			a.parentid,
+		CASE
+			WHEN
+				a.id = b.product_id
+			THEN
+			'true'
+		ELSE
+			'false'
+		END
+			AS isChecked
+		FROM sys_product a
+		LEFT JOIN sys_license b ON a."id" = b.product_id AND b.corporation_id = #{corporationId}
+		ORDER BY a.id
+	</select>
+	
+	
+	
+	<!-- 获取父节点 -->
+	<select id="findParent" resultType="SysProduct">
+		SELECT
+			<include refid="SysProductColumns"/>
+		FROM
+			sys_product a
+		WHERE
+			a.parentid = 0
+	</select>
+	
+	<!-- 获取当前医院已授权产品 -->
+	<select id="getLicenseProduct" resultType="SysProduct">
+		SELECT
+			<include refid="SysProductColumns"/>
+		FROM
+			sys_license b
+		INNER JOIN sys_product a ON b.product_id = a.id
+		WHERE
+			b.corporation_id = #{corporationId}
+		<if test="parentid != null ">
+			AND a.parentid =#{parentid}
+		</if>
+	</select>
+	
+	<!-- 根据医院code以及医院名称查询授权模块API -->
+	<select id="findLicenseProduct" resultType="SysProduct">
+		SELECT 
+			c.product_code AS productCode,
+			c.product_name AS productName
+		FROM sys_corporation a 
+		INNER JOIN sys_license b ON a."id" = b.corporation_id
+		INNER JOIN sys_product c ON b.product_id = c."id"
+		WHERE a.code = #{code} AND a."name" = #{name}
+	</select>
+	
+</mapper>

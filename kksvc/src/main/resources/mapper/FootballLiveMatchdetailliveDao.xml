@@ -38,15 +38,26 @@
 
 
 	<update id="insert_into_football_score_t" parameterType="Map">
-		insert
+		replace
 		into football_score_t( id,regular_time_score, half_court_score
-		,red_card,yellow_card,
-		corner_kick,overtime_score,point_score,match_id,team_id,team_type,
-		remark,league_ranking, score,create_time,delete_flag)values(
-		replace(UNIX_TIMESTAMP(now(6)),'.','')
-		,#{regular_time_score},#{half_court_score},#{red_card},#{yellow_card},
-		#{[corner_kick]},#{overtime_score},#{point_score},#{match_id},'0',#{team_type},
-		'',0,0,now(),0 )
+		,red_card,yellow_card,		corner_kick,
+		
+		overtime_score,point_score,
+		
+		match_id,team_id,team_type,
+		
+		remark,league_ranking, 
+		
+		score,create_time,delete_flag )values(
+		
+		replace(UNIX_TIMESTAMP(now(6)),'.','')	,#{regular_time_score},#{half_court_score},
+		
+		#{red_card},#{yellow_card},		#{[corner_kick]},
+		#{overtime_score},#{point_score},
+		#{match_id},#{team_id},#{team_type},
+		'',#{league_ranking},
+		
+		#{regular_time_score},now(),0 )
 	</update>
 
 	<update id="insert_into_football_tlive_t" parameterType="Map">

@@ -46,6 +46,7 @@ public class JsonGsonUtil {
 		Object result1 = QlSpelUtil.query(m, expressionString);
 		System.out.println(result1);
 		System.out.println("ff");
+		//JsonGsonUtil.toMap(jsonElement.getAsJsonObject());
 	}
 
 	public static Map toMap(JsonObject json) {

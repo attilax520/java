@@ -97,12 +97,20 @@
   </select>
 
     <insert id="into_football_match_t" parameterType="Map"	>
-    insert  into football_match_t(  id,match_event_id, match_status ,match_time,tee_time, 
-    home_id,away_id,which_round,neutral_site,create_time,delete_flag,match_detail, 
-    animation,intelligence,squad,video)values(
-#{id},#{match_event_id},#{match_status},#{match_time},#{tee_time},
-#{home_id},#{away_id},#{which_round},#{neutral_site},now(),0, #{match_time},
-0,0,0,0)
+    replace  into football_match_t( 
+			     id,match_event_id, match_status ,match_time,tee_time, 
+			    home_id,away_id,which_round,neutral_site,create_time,delete_flag,match_detail, 
+			    animation,intelligence,squad,video
+    )values(
+				#{id},#{match_event_id},#{match_status},#{match_time},#{tee_time},
+				#{home_id},#{away_id},#{which_round},#{neutral_site},now(),0, #{match_detail},
+				0,0,0,0)
     </insert>
+    
+    
+    <update id="insert_into_football_odds_t" parameterType="Map"	 >
+	insert  into football_odds_t(   id,company_id, match_id ,change_time, home_odds,tie_odds,away_odds,lock_flag,create_time,delete_flag )values( #{id},#{company_id},#{match_id},#{change_time},
+										 #{home_odds},#{tie_odds},#{away_odds},#{lock_flag},now(),0  )
+	</update>
 
 </mapper>

@@ -21,7 +21,7 @@ public class SyncStreamListServiceImpl implements SyncStreamListService {
     @Override
     public boolean insertVideoApi() {
         Map<String,String> map = new HashMap<>();
-        map.put("service","App.Site.Stream_list");
+        map.put("service","App.Site.Stream_list_new");
         JSONArray apiData = JSONObject.parseObject(HttpUtil.sendGet(map)).getJSONArray("data");
 
         List<MatchStream> videoList = new ArrayList<>();
@@ -29,7 +29,6 @@ public class SyncStreamListServiceImpl implements SyncStreamListService {
         for (int i = 0; i < apiData.size(); i++) {
             JSONObject jsonData = JSONObject.parseObject(apiData.getString(i));
             MatchStream matchStream = new MatchStream();
-            matchStream.setId((long) i+13);        //原数据库Id 非自增
             matchStream.setSportType(jsonData.getInteger("sport_id"));
             matchStream.setMatchId(jsonData.getLong("match_id"));
             matchStream.setMatchTime(jsonData.getLong("match_time"));
@@ -37,12 +36,7 @@ public class SyncStreamListServiceImpl implements SyncStreamListService {
             matchStream.setHome(jsonData.getString("home"));
             matchStream.setAway(jsonData.getString("away"));
             matchStream.setMatchStatus(jsonData.getInteger("match_status"));
-            matchStream.setLiveStatus(jsonData.getInteger("live_status"));
-            if (matchStream.getLiveStatus() == 0){
-                matchStream.setPlayUrl(null);
-            }else{
-                matchStream.setPlayUrl(jsonData.getString("play_url "));
-            }
+            matchStream.setPlayUrl(jsonData.getString("play_url "));
             matchStream.setCreateTime(LocalDateTime.now());
             matchStream.setDeleteFlag("0");
             if (matchStreamService.findMatchStreamByMatchId(matchStream.getMatchId()) != null){

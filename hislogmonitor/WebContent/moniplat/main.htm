@@ -1,0 +1,79 @@
+
+<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+ crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+ crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+ crossorigin="anonymous"></script>
+
+
+ <link rel="stylesheet" href="../com.atilax.frmwk\bootstrap\bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+ crossorigin="anonymous">
+ 
+<!--
+
+<p>标签式的导航菜单</p>
+-->
+
+<ul class="nav nav-tabs" id="mytab">
+   
+  <li><a href="../cpuV2.htm">服务器负载</a></li>
+  <li><a href="../autoup/autoxV4.htm" >自动升级</a></li>
+  <li><a href="../index1.htm">监控平台</a></li>
+  <li><a href="javascript:void(0)">other</a></li>
+  
+</ul>
+<iframe src="../../autoup/main.htm" width="100%" height='1000px' id="ifrmx"></iframe>
+<script>
+function btn_click_event()
+{
+    $('#mytab a').on('click', function (e) {
+      // 获取已激活的标签页的名称
+            var activeTab = $(e.target).text(); 
+            // 获取前一个激活的标签页的名称
+            var previousTab = $(e.relatedTarget).text(); 
+            // $(".active-tab span").html(activeTab);
+            // $(".previous-tab span").html(previousTab);
+            $("#ifrmx").attr("src", $(this).attr("href") );
+            return false;
+   });
+
+ 
+
+}
+
+  btn_click_event();
+</script>
+<script>
+
+
+
+//jeig bu exec 
+/**
+ * 
+ *  $('#我的tab a').on('shown.bs.tab', function (e) {
+    
+            var 已激活的标签页 = $(e.target).text(); 
+           
+            var 前一个激活的标签页 = $(e.relatedTarget).text(); 
+            // $(".active-tab span").html(已激活的标签页);
+            // $(".previous-tab span").html(前一个激活的标签页);
+            $("#中间框架").attr("src", $(this).attr("href") );
+            return true;
+   });
+
+ */
+      
+
+
+</script>

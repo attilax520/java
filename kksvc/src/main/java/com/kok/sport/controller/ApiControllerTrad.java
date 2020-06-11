@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import javax.websocket.server.PathParam;
 
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -46,6 +47,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 //  
 //@Api(value = "KOK看球比赛查询",tags = "KOK看球比赛查询")
@@ -62,16 +64,58 @@ public class ApiControllerTrad {
 		LinkedHashMap m = Maps.newLinkedHashMap();
 		m.put("timex_start@", "2008");
 		m.put("timex_end@", "20010");
-	//	System.out.println(new ApiControllerTrad().getWhere(m));
+		// System.out.println(new ApiControllerTrad().getWhere(m));
 
 //		ApiControllerTrad ApiController1=new ApiControllerTrad();
 //		ApiController1.sqlSessionFactory=MybatisUtil.getSqlSessionFactory();
 //	System.out.println(ApiController1.queryDataStruts("sys_area_t"));	;
 
 	}
+	
+	// 多语句查询 高级接口
+	@ApiOperation(value = "跨机器多数据集返回查询 高级接口 数据库端组合")
+	@GetMapping("/sport/queryMultiBySp/{dbidPrm}/{fromParam}")
+	public Object queryMultiBySp(@PathVariable(name = "dbidPrm") @NotNull @NonNull String dbId,@PathVariable(name = "fromParam") @NotNull @NonNull  String name) throws Exception {
+	//	String ql = req.getParameter("ql");
+		LinkedHashMap m = Maps.newLinkedHashMap();
+		Map reqM = RequestUtil.getMap(req);
+		MybatisQueryUtil.processWhere(m, reqM);
+		String spParam=JSON.toJSONString(m);
+		spParam=spParam.replaceAll("'", "''");
+		String sql = "call "+name +"('"+spParam+"')";
+		logger.info(sql);
+		MybatisMapper mybatisMapper1_true =MybatisQueryUtil. getTrueMapper(dbId, MybatisMapper1);
+		return  	 	mybatisMapper1_true.querySqlMultiRs(sql );
+
+	}
+
+
+	@ApiOperation(value = "跨机器查询无翻页", notes = "跨机器查询无翻页")
+	@GetMapping("/sport/queryPageTrad/{dbidPrm}/{fromParam}")
+	public Object queryNoLmt(@PathVariable(name = "dbidPrm") @NotNull @NonNull String dbId,
+			@PathVariable(name = "fromParam") String from) throws Exception {
+		LinkedHashMap m = Maps.newLinkedHashMap();
+
+		Map reqM = RequestUtil.getMap(req);
+
+		m.put("from", from);
+		if (reqM.get("@orderby") != null)
+			m.put("orderby", reqM.get("@orderby"));
+//				 if(reqM.get("@page")!=null)
+//		 		 m.put("page", page);
+//				 if(reqM.get("@pagesize")!=null)
+//		 		 m.put("pagesize", pagesize);
+		if (reqM.get("@select") != null)
+			m.put("select", reqM.get("@select"));
+		if (reqM.get("@limit") != null)
+			m.put("limit", reqM.get("@limit"));
+
+		MybatisQueryUtil.processWhere(m, reqM);
+		return MybatisQueryUtil.queryNoLmt(dbId,m, MybatisMapper1);
+	}
 
 	/// sport/queryPageTrad/
-	@ApiOperation(value = "查询", notes = "查询无翻页")
+	@ApiOperation(value = "查询无翻页", notes = "查询无翻页")
 	@GetMapping("/sport/queryPageTrad/{fromParam}")
 	public Object queryNoLmt(@PathVariable(name = "fromParam") String from) throws Exception {
 		LinkedHashMap m = Maps.newLinkedHashMap();
@@ -94,7 +138,6 @@ public class ApiControllerTrad {
 		return MybatisQueryUtil.queryNoLmt(m, MybatisMapper1);
 	}
 
-
 	/**
 	 * @ApiImplicitParam(name = "having", value = "分组统计过滤条件", dataType = "string",
 	 *                        paramType = "query")
@@ -108,8 +151,8 @@ public class ApiControllerTrad {
 	@ApiOperation(value = "翻页查询", notes = "翻页查询的说明note")
 	@ApiImplicitParams({
 			@ApiImplicitParam(name = "@select", value = "要返回的字段集合", dataType = "string", paramType = "query"),
-			@ApiImplicitParam(name = "from", value = "查询数据源，一般是表或视图view,basketball_event_t	篮球赛事表,basketball_match_t	篮球比赛信息表,basketball_odds_t	篮球盘口指数表,basketball_player_t	篮球比赛阵容表 ,basketball_score_t	篮球比赛得分表,basketball_stage_t	篮球比赛阶段表,basketball_stats_t	篮球比赛统计表,basketball_team_player_t	篮球球员表,basketball_team_t	篮球球队表,basketball_tlive_t	篮球比赛文字直播表,football_distribution_t	足球进球分布表,football_environment_t	足球比赛环境表,football_event_t	足球赛事表,football_formation_t	足球比赛阵型表,football_incident_t	比赛发生事件表,football_injury_t	足球比赛伤停情况表,football_league_score_t	足球联赛积分表,football_match_t	足球比赛表,football_odds_t	足球盘口指数表,football_player_incident_t	足球比赛球员事件表,football_score_t	足球比赛得分表,football_stage_t	足球比赛阶段表,football_stats_t	足球比赛统计表,football_team_player_t	足球球队球员表,football_team_t	足球球队表,football_tlive_t	足球比赛文字直播表,kok_match_stream_t	比赛直播数据源表,kok_match_t	比赛信息基础表,match_season_t	赛季信息表,match_stream_t	比赛视频源表,sys_area_t	区域表,sys_country_t	国家表, ", dataType = "string", paramType = "query", required = true, defaultValue = "sys_area_t"),
-			@ApiImplicitParam(name = "where", value = "条件过滤", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "@from", value = "查询数据源，一般是表或视图view,basketball_event_t	篮球赛事表,basketball_match_t	篮球比赛信息表,basketball_odds_t	篮球盘口指数表,basketball_player_t	篮球比赛阵容表 ,basketball_score_t	篮球比赛得分表,basketball_stage_t	篮球比赛阶段表,basketball_stats_t	篮球比赛统计表,basketball_team_player_t	篮球球员表,basketball_team_t	篮球球队表,basketball_tlive_t	篮球比赛文字直播表,football_distribution_t	足球进球分布表,football_environment_t	足球比赛环境表,football_event_t	足球赛事表,football_formation_t	足球比赛阵型表,football_incident_t	比赛发生事件表,football_injury_t	足球比赛伤停情况表,football_league_score_t	足球联赛积分表,football_match_t	足球比赛表,football_odds_t	足球盘口指数表,football_player_incident_t	足球比赛球员事件表,football_score_t	足球比赛得分表,football_stage_t	足球比赛阶段表,football_stats_t	足球比赛统计表,football_team_player_t	足球球队球员表,football_team_t	足球球队表,football_tlive_t	足球比赛文字直播表,kok_match_stream_t	比赛直播数据源表,kok_match_t	比赛信息基础表,match_season_t	赛季信息表,match_stream_t	比赛视频源表,sys_area_t	区域表,sys_country_t	国家表, ", dataType = "string", paramType = "query", required = true, defaultValue = "sys_area_t"),
+			@ApiImplicitParam(name = "@where", value = "条件过滤", dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "@orderby", value = "排序字段", dataType = "string", paramType = "query"),
 			@ApiImplicitParam(name = "@page", value = "页数", dataType = "int", paramType = "query"),
 			@ApiImplicitParam(name = "@pagesize", value = "每页条数", dataType = "int", paramType = "query")
@@ -132,7 +175,7 @@ public class ApiControllerTrad {
 		LinkedHashMap m = Maps.newLinkedHashMap();
 
 		Map reqM = RequestUtil.getMap(req);
-	 
+
 		m.put("from", from);
 		if (reqM.get("@orderby") != null)
 			m.put("orderby", reqM.get("@orderby"));
@@ -142,6 +185,10 @@ public class ApiControllerTrad {
 		m.put("pagesize", pagesize);
 		if (reqM.get("@select") != null)
 			m.put("select", reqM.get("@select"));
+		if (reqM.get(MybatisQueryUtil.$subquery) != null)
+			m.put(MybatisQueryUtil.subquery, reqM.get(MybatisQueryUtil.$subquery));
+		if (reqM.get(MybatisQueryUtil.$OutterSubquery) != null)
+			m.put(MybatisQueryUtil.OutterSubquery, reqM.get(MybatisQueryUtil.$OutterSubquery));
 
 		MybatisQueryUtil.processWhere(m, reqM);
 
@@ -151,9 +198,65 @@ public class ApiControllerTrad {
 		return MybatisQueryUtil.queryPage(m, MybatisMapper1);
 
 	}
-	
-	
-	
+
+//	@xxxxApiOperation(value = "跨机器查询数据v", notes = "跨机器查询数据")
+	@ApiOperation(value = "跨机器查询数据v", notes = "跨机器查询数据")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "@select", value = "要返回的字段集合", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "@from", value = "查询数据源，一般是表或视图view,basketball_event_t	篮球赛事表,basketball_match_t	篮球比赛信息表,basketball_odds_t	篮球盘口指数表,basketball_player_t	篮球比赛阵容表 ,basketball_score_t	篮球比赛得分表,basketball_stage_t	篮球比赛阶段表,basketball_stats_t	篮球比赛统计表,basketball_team_player_t	篮球球员表,basketball_team_t	篮球球队表,basketball_tlive_t	篮球比赛文字直播表,football_distribution_t	足球进球分布表,football_environment_t	足球比赛环境表,football_event_t	足球赛事表,football_formation_t	足球比赛阵型表,football_incident_t	比赛发生事件表,football_injury_t	足球比赛伤停情况表,football_league_score_t	足球联赛积分表,football_match_t	足球比赛表,football_odds_t	足球盘口指数表,football_player_incident_t	足球比赛球员事件表,football_score_t	足球比赛得分表,football_stage_t	足球比赛阶段表,football_stats_t	足球比赛统计表,football_team_player_t	足球球队球员表,football_team_t	足球球队表,football_tlive_t	足球比赛文字直播表,kok_match_stream_t	比赛直播数据源表,kok_match_t	比赛信息基础表,match_season_t	赛季信息表,match_stream_t	比赛视频源表,sys_area_t	区域表,sys_country_t	国家表, ", dataType = "string", paramType = "query", required = true, defaultValue = "sys_area_t"),
+			@ApiImplicitParam(name = "@where", value = "条件过滤", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "@orderby", value = "排序字段", dataType = "string", paramType = "query"),
+			@ApiImplicitParam(name = "@page", value = "页数", dataType = "int", paramType = "query"),
+			@ApiImplicitParam(name = "@pagesize", value = "每页条数", dataType = "int", paramType = "query")
+
+	})
+
+	// http://112.121.163.125:9601/queryPageTrad/football_odds_t_ex?@page=1&@pagesize=10&odds_type=1
+	@GetMapping("/sport/queryPageTrad/{dbPrm}/{fromParam}/{pagesizePrm}/{pagePrm}")
+	public Object queryPage(@PathVariable(name = "dbPrm") @NotNull @NonNull String dbId,
+			@PathVariable(name = "fromParam") @NotNull @NonNull String from,
+			@PathVariable(name = "pagesizePrm") int pagesize, @PathVariable(name = "pagePrm") int page)
+			throws Exception {
+
+		try {
+			res.addHeader("Access-Control-Allow-Origin", "*");
+			res.setHeader("Content-Type", "application/json;charset=UTF-8");
+
+		} catch (Exception e) {
+			// logger.info("",e);
+		}
+		LinkedHashMap m = Maps.newLinkedHashMap();
+
+		Map reqM = RequestUtil.getMap(req);
+
+		m.put("from", from);
+		if (reqM.get("@orderby") != null)
+			m.put("orderby", reqM.get("@orderby"));
+//		 if(reqM.get("@page")!=null)
+		m.put("page", page);
+//		 if(reqM.get("@pagesize")!=null)
+		m.put("pagesize", pagesize);
+		if (reqM.get("@select") != null)
+			m.put("select", reqM.get("@select"));
+		reqM.forEach(new BiConsumer<String, String>() {
+
+			@Override
+			public void accept(String t, String u) {
+				if (t.startsWith("$"))
+					m.put(t.trim(), u.trim());
+
+			}
+		});
+
+		MybatisQueryUtil.processWhere(m, reqM);
+
+		// reqM.remove("@select"); reqM.remove("@orderby"); reqM.remove("@page");
+		// reqM.remove("@pagesize");
+
+		return MybatisQueryUtil.queryPageWzDbid(m, dbId, MybatisMapper1);
+
+	}
+
 	@Autowired
 	public HttpServletResponse res;
 

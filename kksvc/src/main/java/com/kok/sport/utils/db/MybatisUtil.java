@@ -10,6 +10,7 @@ import com.kok.sport.utils.ExUtilV2t33;
 import com.kok.sport.utils.MapUtil;
 import com.kok.sport.utils.MybatisMapper;
 import com.kok.sport.utils.MybatisMapperCls;
+import com.kok.sport.utils.PropertieUtil;
 import com.kok.sport.utils.SpringUtil;
 import com.kok.sport.utils.UrlUtil;
 import com.kok.sport.utils.mybatisdemo;
@@ -17,6 +18,7 @@ import com.kok.sport.utils.mockdata.mybatisXmlParser;
 import com.mysql.cj.core.conf.url.ConnectionUrlParser;
 
 import io.swagger.annotations.ApiOperation;
+import lombok.NonNull;
 import ognl.Ognl;
 import ognl.OgnlException;
 
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +60,8 @@ public class MybatisUtil {
 		SqlSessionFactory sqlSessionFactory = MybatisUtil.getSqlSessionFactory();
 		SqlSession session = sqlSessionFactory.openSession(true);
 		MybatisMapper MybatisMapper1 = session.getMapper(MybatisMapper.class);
+		
+		System.out.println(MybatisMapper1.querySql("select 88"));
 		Map m = Maps.newConcurrentMap();
 		m.put("limit", " limit 2 offset 1");
 
@@ -148,6 +154,20 @@ public class MybatisUtil {
 		}
 
 	}
+	
+	public static SqlSessionFactory getSqlSessionFactoryRE()   {
+		try {
+			String mybatisCfg_result = getCfgTxtV2();
+
+			// System.out.println(mybatisCfg_result);
+			InputStream is2 = new ByteArrayInputStream(mybatisCfg_result.getBytes());
+			// ����sqlSession �Ĺ���
+			return new SqlSessionFactoryBuilder().build(is2);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	 
+	}
 
 	public static SqlSessionFactory getSqlSessionFactory() throws Exception {
 		String mybatisCfg_result = getCfgTxtV2();
@@ -159,30 +179,26 @@ public class MybatisUtil {
 	}
 
 	public static String getCfgTxtV2() throws Exception {
-		Properties properties = new Properties();
-		InputStream inputStream = Object.class.getResourceAsStream("/cfg");
+//		Properties properties = new Properties();
+//		InputStream inputStream = Object.class.getResourceAsStream("/cfg");
+//
+//		properties.load(inputStream);
+//
+//		String mybatisNamespace = "";
+//		try {
+//			mybatisNamespace = properties.getProperty("mybatisNamespace");
+//			if (mybatisNamespace.trim().length() > 0)
+//				mybatisNamespace = mybatisNamespace.replaceAll("\\.", "/");
+//			mybatisNamespace = mybatisNamespace + "/";
+//		} catch (Exception e) {
+//
+//		}
 
-		properties.load(inputStream);
+		String mybatisCfg_result = mybatisCfgTxt();
 
-		String mybatisNamespace = "";
-		try {
-			mybatisNamespace = properties.getProperty("mybatisNamespace");
-			if (mybatisNamespace.trim().length() > 0)
-				mybatisNamespace = mybatisNamespace.replaceAll("\\.", "/");
-			mybatisNamespace = mybatisNamespace + "/";
-		} catch (Exception e) {
-
-		}
-
-		String resource = "/" + mybatisNamespace + "mybatis.xml";
-		// ����mybatis �������ļ�����Ҳ���ع�����ӳ���ļ���
-		// ClassLoader classLoader = .getClassLoader();
-		InputStream is = mybatisdemo.class.getResourceAsStream(resource);
-		String mybatisCfg_result = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
-
-		String getCfgFile = SpringUtil.getCfgFile();
-
-		String mysqlConnUrl = properties.get("db").toString();
+	//	String getCfgFile = SpringUtil.getCfgFile();
+		
+		String mysqlConnUrl =getMysqlUrl(); 
 		ConnectionUrlParser connStringParser = ConnectionUrlParser.parseConnectionString(mysqlConnUrl);
 		System.out.println(connStringParser);
 
@@ -198,6 +214,52 @@ public class MybatisUtil {
 
 		mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.password}", pwd.toString());
 		return mybatisCfg_result;
+	}
+
+	public static String getMysqlUrl() {
+		// TODO Auto-generated method stub  String propFilePath = "/cfg";
+		//return PropertieUtil.getProperty(propFilePath,"db");;
+//	String springcfgFiepath=	SpringUtil.getCfgFile();
+		
+		try {
+			String cfgProperty = SpringUtil.getCfgProperty("spring.datasource.url");
+		
+			String username = SpringUtil.getCfgProperty("spring.datasource.username");
+			String password = SpringUtil.getCfgProperty("spring.datasource.password");
+			if(!cfgProperty.contains("?"))
+				cfgProperty=cfgProperty+"?";
+			cfgProperty=cfgProperty+"&user="+username+"&password="+password;
+			return cfgProperty;
+		} catch (Exception e) {
+			 throw new RuntimeException(e);
+		}
+	}
+
+	private static String mybatisCfgTxt() throws IOException {
+		String MybatisCfgPath =getMybatisCfgPath();
+	//	"/" + mybatisNamespace + "mybatis.xml";
+		// ����mybatis �������ļ�����Ҳ���ع�����ӳ���ļ���
+		// ClassLoader classLoader = .getClassLoader();
+		InputStream is = mybatisdemo.class.getResourceAsStream(MybatisCfgPath);
+		String mybatisCfg_result = CharStreams.toString(new InputStreamReader(is, Charsets.UTF_8));
+		return mybatisCfg_result;
+	}
+
+	private static String getMybatisCfgPath() {
+		 
+
+		String mybatisNamespace = "";
+		String propFilePath = "/cfg";
+		try {
+			mybatisNamespace = PropertieUtil.getProperty(propFilePath,"mybatisNamespace");
+			if (mybatisNamespace.trim().length() > 0)
+				mybatisNamespace = mybatisNamespace.replaceAll("\\.", "/");
+			mybatisNamespace = mybatisNamespace + "/";
+		} catch (Exception e) {
+
+		}
+		String resource =		"/" + mybatisNamespace + "mybatis.xml";
+		return resource;
 	}
 
 	@Deprecated
@@ -226,6 +288,13 @@ public class MybatisUtil {
 		return mybatisCfg_result;
 	}
 
+	
+	/**
+	 * select $view
+	 * @param view
+	 * @return
+	 * @throws Exception
+	 */
 	public static List executeQueryView(String view) throws Exception {
 
 		SqlSessionFactory sqlSessionFactory = MybatisUtil.getSqlSessionFactory();
@@ -455,6 +524,89 @@ public class MybatisUtil {
 	public static MybatisMapper getMybatisMapper(SqlSessionFactory sqlSessionFactory1) {
 		 
 		return  sqlSessionFactory1.openSession(true).getMapper(MybatisMapper.class); 
+	}
+
+	public static SqlSessionFactory getSqlSessionFactory(String db_id) {
+		String mybatisCfg_result = getCfgTxtV2(db_id);
+
+		// System.out.println(mybatisCfg_result);
+		InputStream is2 = new ByteArrayInputStream(mybatisCfg_result.getBytes());
+		// ����sqlSession �Ĺ���
+		return new SqlSessionFactoryBuilder().build(is2);
+	}
+	
+	
+	public static SqlSessionFactory getSqlSessionFactoryByDburl(String dburl) {
+		String mybatisCfg_result = getCfgTxtByDburl(dburl.trim());
+
+		// System.out.println(mybatisCfg_result);
+		InputStream is2 = new ByteArrayInputStream(mybatisCfg_result.getBytes());
+		// ����sqlSession �Ĺ���
+		return new SqlSessionFactoryBuilder().build(is2);
+	}
+	private static String getCfgTxtByDburl(@NotNull @NonNull String mysqlConnUrl) {
+		String mybatisCfg_result = null;
+		try {
+			mybatisCfg_result = mybatisCfgTxt();
+		} catch (IOException e) {
+			ExUtilV2t33.throwExV2(e);
+		}
+
+		//	String getCfgFile = SpringUtil.getCfgFile();
+			String propFilePath = "/cfg";
+			 
+			ConnectionUrlParser connStringParser = ConnectionUrlParser.parseConnectionString(mysqlConnUrl);
+			System.out.println(connStringParser);
+
+			Object url = mysqlConnUrl;
+			Object usr = UrlUtil.parse4Q(connStringParser.getQuery()).get("user");
+			Object pwd = UrlUtil.parse4Q(connStringParser.getQuery()).get("password");
+			if (pwd == null)
+				pwd = "";
+			url = cn.hutool.core.util.XmlUtil.escape(url.toString() + "&allowMultiQueries=true");
+
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.url}", url.toString());
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.username}", usr.toString());
+
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.password}", pwd.toString());
+			return mybatisCfg_result;
+	//	return null;
+	}
+
+	private static String getCfgTxtV2(@NotNull @NonNull String db_id) {
+		String mybatisCfg_result = null;
+		try {
+			mybatisCfg_result = mybatisCfgTxt();
+		} catch (IOException e) {
+			ExUtilV2t33.throwExV2(e);
+		}
+
+		//	String getCfgFile = SpringUtil.getCfgFile();
+			String propFilePath = "/cfg";
+			String mysqlConnUrl =PropertieUtil.getProperty(propFilePath,db_id);
+			if(mysqlConnUrl==null)
+				throw new RuntimeException("mysqlConnUrl==null,dbid="+db_id);
+			ConnectionUrlParser connStringParser = ConnectionUrlParser.parseConnectionString(mysqlConnUrl);
+			System.out.println(connStringParser);
+
+			Object url = mysqlConnUrl;
+			Object usr = UrlUtil.parse4Q(connStringParser.getQuery()).get("user");
+			Object pwd = UrlUtil.parse4Q(connStringParser.getQuery()).get("password");
+			if (pwd == null)
+				pwd = "";
+			url = cn.hutool.core.util.XmlUtil.escape(url.toString() + "&allowMultiQueries=true");
+
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.url}", url.toString());
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.username}", usr.toString());
+
+			mybatisCfg_result = mybatisCfg_result.replaceAll("\\$\\{mysql.password}", pwd.toString());
+			return mybatisCfg_result;
+	//	return null;
+	}
+
+	public static LinkedHashMap querySingleMap(String sql, SqlSession conn) {
+		List<LinkedHashMap> li =	conn.getMapper(MybatisMapper.class).querySql(sql);
+		return li.get(0);
 	}
 
 }

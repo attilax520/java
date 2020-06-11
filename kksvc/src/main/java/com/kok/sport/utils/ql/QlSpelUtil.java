@@ -33,6 +33,12 @@ public class QlSpelUtil {
  	System.out.println("ff");
 	}
 
+	/**
+	 * str  var insert
+	 * @param strTmp
+	 * @param m
+	 * @return
+	 */
 	public static String parse(String strTmp, Map m) {
 		// 创建一个ExpressionParser对象，用于解析表达式
 				ExpressionParser parser = new SpelExpressionParser();

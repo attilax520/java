@@ -13,6 +13,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class Util {
+	
+	public static void main(String[] args) {
+		System.out.println(getPageCount(21,5));
+	}
 
 	public static int getPageCount(int rows, int pageSize) {
 //		//总记录数
@@ -20,7 +24,8 @@ public class Util {
 //		//每页显示的记录数
 //		int pageSize=5;  
 		// 页数
-		int pageSum = (rows - 1) / pageSize + 1;
+		 
+		int pageSum =(int) Math.ceil( (double)rows / (double) pageSize );
 		return pageSum;
 	}
 
@@ -96,6 +101,25 @@ public class Util {
 
 		}
 
+	}
+
+	public static void timeOutExitRuntime(int timetout) {
+new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					
+					Thread.sleep(timetout);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				Runtime.getRuntime().exit(0);
+				
+			}
+		}).start();;
+		
 	}
 
 }

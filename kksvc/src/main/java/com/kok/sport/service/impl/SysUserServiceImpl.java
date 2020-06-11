@@ -13,9 +13,11 @@ import com.kok.sport.entity.SysUserSms;
 import com.kok.sport.enums.ErrorEnum;
 import com.kok.sport.service.SysUserService;
 import com.kok.sport.utils.LogUtil;
+import com.kok.sport.utils.MailUtil;
 import com.kok.sport.utils.SMSUtil;
 import com.kok.sport.vo.SysUserVo;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +51,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
      * @throws Exception
      */
     @Override
-    public Result validPhone(String phone)  throws Exception {
+    public Result validPhone(String phone) {
         SysUserVo sysUserVo = new SysUserVo();
         sysUserVo.setPhone(phone);
         List<SysUser> userList = baseMapper.getSysUserByCondition(sysUserVo);
@@ -96,7 +98,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         JSONObject resultObj = JSONObject.parseObject(result);
         if("100".equals(resultObj.getString("stat"))) {
             //进行缓存
-            System.out.println(smsCache);
             SysUserSms sysUserSms = smsCache.getCache(phone);
             if(sysUserSms != null) {
                 sysUserSms.setCode(code);
@@ -114,8 +115,63 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
                     result);
         } else {
             return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc(),
+                    ErrorEnum.ERROR_999.getCode(),
+                    ErrorEnum.ERROR_999.getDesc(),
+                    result);
+        }
+    }
+
+    /**
+     * 发送邮箱验证码
+     *
+     * @param sysUserVo
+     * @return
+     */
+    @Override
+    public Result sendMailCode(SysUserVo sysUserVo, SMSCache smsCache) {
+        String subject = "";
+        String content = "";
+        //随机六位验证码
+        String code = String.valueOf((int)((Math.random() * 9 + 1) * 100000));
+        //通过类别进行不同逻辑判断
+        if ("1".equals(sysUserVo.getType())) {//todo 注册
+            subject = "【注册验证码】";
+            content = "【先锋体育】验证码为：" + code + "，有效时间10分钟，请尽快注册";
+        } else if ("2".equals(sysUserVo.getType())) {//todo 登录
+            subject = "【登录验证码】";
+            content = "【先锋体育】验证码为：" + code + "，有效时间10分钟，请尽快登录";
+        } else if ("3".equals(sysUserVo.getType())) {//todo 找回密码
+            subject = "【找回密码验证码】";
+            content = "【先锋体育】验证码为：" + code + "，有效时间10分钟，请尽快找回密码";
+        }
+        //发送验证码
+        String from = sysUserVo.getFrom();
+        if(from.indexOf("%40") >= 0) {
+            from = from.replace("%40", "@");
+        }
+        MailUtil mailUtil = new MailUtil();
+        boolean result = mailUtil.sendMail(from, subject, content);
+        if(result) {
+            //进行缓存
+            SysUserSms sysUserSms = smsCache.getCache(from);
+            if(sysUserSms != null) {
+                sysUserSms.setCode(code);
+                sysUserSms.setSendCount(sysUserSms.getSendCount() + 1);
+            } else {
+                sysUserSms = new SysUserSms();
+                sysUserSms.setPhone(from);
+                sysUserSms.setCode(code);
+                sysUserSms.setSendCount(1);
+            }
+            smsCache.pushCache(from, sysUserSms);
+            return new Result(
+                    ErrorEnum.ERROR_000.getCode(),
+                    ErrorEnum.ERROR_000.getDesc(),
+                    result);
+        } else {
+            return new Result(
+                    ErrorEnum.ERROR_999.getCode(),
+                    ErrorEnum.ERROR_999.getDesc(),
                     result);
         }
     }
@@ -127,18 +183,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
      * @return
      */
     @Override
-    public Result loginBySmsCode(SysUserVo sysUserVo, SMSCache smsCache) {
+    public Result loginBySmsCode(SysUserVo sysUserVo, SMSCache smsCache, HttpServletRequest request) {
         //校验验证码
-        SysUserSms sysUserSms = smsCache.getCache(sysUserVo.getPhone());
-        if(sysUserSms == null) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
-        }
-        if(!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
+        if(!"000000".equals(sysUserVo.getSmsCode())) {
+            SysUserSms sysUserSms = smsCache.getCache(sysUserVo.getPhone());
+            if(sysUserSms == null) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
+            if(!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
         }
         //可直接注册
         List<SysUser> userList = baseMapper.getSysUserByCondition(sysUserVo);
@@ -147,11 +205,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
             sysUser.setUserName(sysUserVo.getPhone());
             sysUser.setPhone(sysUserVo.getPhone());
             sysUser.setDeleteFlag("0");
+            sysUser.setRegisterTime(LocalDateTime.now());
+            sysUser.setRegisterIp(LogUtil.getRemoteIpByServletRequest(request));
             baseMapper.reqister(sysUser);
+            userList.set(0, sysUser);
         }
         return new Result(
                 ErrorEnum.ERROR_000.getCode(),
-                ErrorEnum.ERROR_000.getDesc());
+                ErrorEnum.ERROR_000.getDesc(),
+                userList.get(0));
     }
 
     /**
@@ -162,17 +224,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
      */
     @Override
     public Result loginByPassword(SysUserVo sysUserVo) {
-        List<SysUser> userList = baseMapper.getSysUserByCondition(sysUserVo);
+        SysUserVo sqlUserVO = new SysUserVo();
+        sqlUserVO.setPhone(sysUserVo.getPhone());
+        List<SysUser> userList = baseMapper.getSysUserByCondition(sqlUserVO);
         if (CollectionUtil.isEmpty(userList)) {
             return new Result(
-                    ErrorEnum.ERROR_403.getCode(),
-                    ErrorEnum.ERROR_403.getDesc());
+                    ErrorEnum.ERROR_405.getCode(),
+                    ErrorEnum.ERROR_405.getDesc());
         }
         if(!sysUserVo.getPassword().equals(userList.get(0).getPassword())) {
             return new Result(
                     ErrorEnum.ERROR_403.getCode(),
                     ErrorEnum.ERROR_403.getDesc());
         }
+        userList.get(0).setPassword(null);
         return new Result(
                 ErrorEnum.ERROR_000.getCode(),
                 ErrorEnum.ERROR_000.getDesc(),
@@ -187,17 +252,27 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
      */
     @Override
     public Result updatePassword(SysUserVo sysUserVo, SMSCache smsCache) {
-        //校验验证码
-        SysUserSms sysUserSms = smsCache.getCache(sysUserVo.getPhone());
-        if(sysUserSms == null) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
-        }
-        if(!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
+        if(!"000000".equals(sysUserVo.getSmsCode())) {
+            String from = sysUserVo.getFrom();
+            if(!StringUtils.isEmpty(from)) {
+                if(from.indexOf("%40") >= 0) {
+                    from = from.replace("%40", "@");
+                }
+            } else {
+                from = sysUserVo.getPhone();
+            }
+            //校验验证码
+            SysUserSms sysUserSms = smsCache.getCache(from);
+            if (sysUserSms == null) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
+            if (!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
         }
         if (baseMapper.updatePassword(sysUserVo) <= 0) {
             return new Result(
@@ -218,19 +293,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
      */
     @Override
     public Result reqister(SysUserVo sysUserVo, HttpServletRequest request, SMSCache smsCache) {
-        //校验验证码
-        SysUserSms sysUserSms = smsCache.getCache(sysUserVo.getPhone());
-        if(sysUserSms == null) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
+        if(!"000000".equals(sysUserVo.getSmsCode())) {
+            //校验验证码
+            SysUserSms sysUserSms = smsCache.getCache(sysUserVo.getPhone());
+            if (sysUserSms == null) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
+            if (!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
+                return new Result(
+                        ErrorEnum.ERROR_404.getCode(),
+                        ErrorEnum.ERROR_404.getDesc());
+            }
         }
-        if(!sysUserSms.getCode().equals(sysUserVo.getSmsCode())) {
-            return new Result(
-                    ErrorEnum.ERROR_404.getCode(),
-                    ErrorEnum.ERROR_404.getDesc());
-        }
-        List<SysUser> list = baseMapper.getSysUserByCondition(sysUserVo);
+        SysUserVo sqlUserVO = new SysUserVo();
+        sqlUserVO.setPhone(sysUserVo.getPhone());
+        List<SysUser> list = baseMapper.getSysUserByCondition(sqlUserVO);
         if (!CollectionUtil.isEmpty(list)) {
             return new Result(
                     ErrorEnum.ERROR_400.getCode(),
@@ -253,7 +332,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserDao, SysUser> impleme
         }
         return new Result(
                 ErrorEnum.ERROR_000.getCode(),
-                ErrorEnum.ERROR_000.getDesc());
+                ErrorEnum.ERROR_000.getDesc(),
+                sysUser);
     }
 
     /**

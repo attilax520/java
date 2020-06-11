@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts, id:digerata, Yahoo! Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+ 
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns="http://java.sun.com/xml/ns/javaee"  
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"  
+    version="3.0">  
+
+ 
+ <!--webdav-->
+  <servlet>
+        <servlet-name>webdav</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.WebdavServlet</servlet-class>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>listings</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <!-- Read-Write Access Settings -->
+        <init-param>
+            <param-name>readonly</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <!--By default access to /WEB-INF and META-INF are not available via WebDAV. To enable access to these URLs, use add:allowSpecialPaths -->
+        <init-param>  
+		  <param-name>allowSpecialPaths</param-name>  
+		  <param-value>true</param-value>  
+		</init-param>  
+    </servlet>
+    <!-- URL Mapping -->
+    <servlet-mapping>
+        <servlet-name>webdav</servlet-name>
+        <url-pattern>/webdavurl/*</url-pattern>
+    </servlet-mapping>
+    
+    
+     
+
+ <!--webdav end-->
+ 
+ 
+  <description>Build management system</description>
+   <display-name>Archetype Created Web Application</display-name>  
+    <!-- Spring和mybatis的配置文件  如果有多个插件则修改spring-context.xml为spring-context*.xml-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>  
+        <param-value>classpath:spring-context*.xml</param-value>
+    </context-param>  
+    <!-- 编码过滤器 --> 
+    <filter>  
+        <filter-name>encodingFilter</filter-name>  
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
+        <async-supported>true</async-supported>  
+        <init-param>  
+            <param-name>encoding</param-name>  
+            <param-value>UTF-8</param-value>  
+        </init-param>  
+    </filter>  
+    <filter-mapping>  
+        <filter-name>encodingFilter</filter-name>  
+        <url-pattern>/*</url-pattern>  
+    </filter-mapping>  
+    
+    <!-- session销毁时间设置分钟 -->  
+    <session-config>
+    	<session-timeout>30</session-timeout>
+  	</session-config>
+    
+    <!-- Spring监听器 -->  
+    <listener>  
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>  
+    </listener>  
+    <!-- 防止Spring内存溢出监听器 -->  
+    <listener>  
+        <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>  
+    </listener>  
+  
+    <!-- Spring MVC servlet -->  
+    <servlet>  
+        <servlet-name>SpringMVC</servlet-name>  
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>  
+        <init-param>  
+            <param-name>contextConfigLocation</param-name>  
+            <param-value>classpath:spring-mvc.xml</param-value>  
+        </init-param>  
+        <load-on-startup>1</load-on-startup>  
+        <async-supported>true</async-supported>  
+    </servlet>  
+    <servlet-mapping>  
+        <servlet-name>SpringMVC</servlet-name>  
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>  
+  
+  
+  <!-- php envi-->
+    <servlet>
+	  	 <servlet-name>Quercus Servlet</servlet-name>
+	     <servlet-class>com.caucho.quercus.servlet.QuercusServlet</servlet-class>
+    
+    </servlet>
+   <servlet-mapping>
+    <servlet-name>Quercus Servlet</servlet-name>
+    <url-pattern>*.php</url-pattern>
+  </servlet-mapping>
+
+
+    <!-- php envi-->
+    
+    
+  <!--
+  
+  <servlet>
+   <servlet-name>javax.ws.rs.core.Application</servlet-name>
+ 
+   <load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>javax.ws.rs.core.Application</servlet-name>
+    <url-pattern>/rest/*</url-pattern>
+</servlet-mapping>
+
+-->
+<!--
+  <servlet-class>com.attilax.net.MyApplication</servlet-class>
+ <servlet-class>com.attilax.net.MyApplication</servlet-class>
+-->
+
+
+<!-- resteasy-start -->
+
+<!-- Auto scan REST service    
+
+
+
+   
+
+<servlet>
+		<servlet-name>dispatcher</servlet-name>
+		<servlet-class>com.attilax.io.FileServiceServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>dispatcher</servlet-name>
+		<url-pattern>/FileServiceServlet</url-pattern>
+	</servlet-mapping>
+--> 
+
+
+  <welcome-file-list>
+    <welcome-file>/login.jsp</welcome-file>
+  </welcome-file-list>
+  
+  
+  
+</web-app>
+

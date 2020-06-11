@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -66,6 +67,24 @@ public class CaptchData {
 		// Football_Europe_Odds_europe_live();
 		Football_Live_Match_detail_live();
 	}
+	
+	//  where match_time between unix_timestamp(date_sub(now(), interval 8 day)) and unix_timestamp( now() ) order by match_time desc
+	public static List<String> matchids(String where) throws Exception {
+		SqlSession session = MybatisUtil.getConn();
+		List<Map> sList = MybatisUtil.executeSql(
+				"select * from football_match_t "+where);
+		List<String> li_rzt_matchids = sList.stream().map(s -> s.get("id").toString()).collect(Collectors.toList());
+		return li_rzt_matchids;
+	}
+	
+	
+//	public static List<String> matchids(String where) throws Exception {
+//		SqlSession session = MybatisUtil.getConn();
+//		List<Map> sList = MybatisUtil.executeSql(
+//				"select * from football_match_t "+where);
+//		List<String> li_rzt_matchids = sList.stream().map(s -> s.get("id").toString()).collect(Collectors.toList());
+//		return li_rzt_matchids;
+//	}
 
 	/**
 	 * Football.Live.Match_detail_live
@@ -665,6 +684,51 @@ public class CaptchData {
 		return getJsonRzt(svr, param, svr);
 
 	}
+	public static JsonObject getJsonRztFromUrl(String svr,String param) throws Exception {
+
+	
+			//http://www.skrsport.live/?service=Football.Analysis.Match_detail&username=sport_api&secret=0gclkqzK&id=2723955
+			String url = "http://www.skrsport.live/?service=" + svr + "&username=sport_api&secret=0gclkqzK"	 + param;
+
+//	        const request = require("request");
+//	        const util = require('util')
+//	        const requestPromise = util.promisify(request);
+//	        const response = await requestPromise(url);
+//	        console.log('response', response.body);
+			String t = Httpcliet.testGet(url);
+			// fs.writeFileSync(fname, response.body);
+		 
+			return new JsonParser().parse(t).getAsJsonObject();
+	 
+
+	}
+
+	public static JsonObject getJsonRztFromUrl(String svr) throws Exception {
+
+	//	 + param
+			//http://www.skrsport.live/?service=Football.Analysis.Match_detail&username=sport_api&secret=0gclkqzK&id=2723955
+			String url = "http://www.skrsport.live/?service=" + svr + "&username=sport_api&secret=0gclkqzK";
+System.out.println(url);
+//	        const request = require("request");
+//	        const util = require('util')
+//	        const requestPromise = util.promisify(request);
+//	        const response = await requestPromise(url);
+//	        console.log('response', response.body);
+			String t = Httpcliet.testGet(url);
+			// fs.writeFileSync(fname, response.body);
+		 
+			try {
+				String fname = "d:\\cache\\" + svr + ".json";
+
+				FileUtils.write(new File(fname), t);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			
+			return new JsonParser().parse(t).getAsJsonObject();
+	 
+
+	}
 
 	public static JsonObject getJsonRzt(String svr) throws Exception {
 
@@ -677,6 +741,7 @@ public class CaptchData {
 			return new JsonParser().parse(readFileToString).getAsJsonObject();
 
 		} else {
+			//http://www.skrsport.live/?service=Football.Analysis.Match_detail&username=sport_api&secret=0gclkqzK&id=2723955
 			String url = "http://www.skrsport.live/?service=" + svr + "&username=sport_api&secret=0gclkqzK";
 
 //	        const request = require("request");

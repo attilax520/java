@@ -1,0 +1,7 @@
+[
+"server18,192.168.1.18,root,cloudhealth,linux,ssh",
+"localhost,root,cloudhealth,linux",
+"127.0.0.1,root,555",
+"192.168.1.77,anonimouse,,win,ftp",
+"server20,192.168.1.20,root,admin@123.com,linux"
+]

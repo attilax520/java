@@ -44,6 +44,7 @@ public class SysUserController implements ISysUserController {
     public Result validPhone(String phone)  throws Exception {
         return sysUserService.validPhone(phone);
     }
+
     /**
      * 发送短信验证码
      * @param sysUserVo
@@ -52,7 +53,27 @@ public class SysUserController implements ISysUserController {
     @Override
     @ApiOperation("发送短信验证码")
     public Result sendSmsCode(SysUserVo sysUserVo) throws Exception {
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         return sysUserService.sendSmsCode(sysUserVo, smsCache);
+    }
+
+    /**
+     * 发送邮箱验证码
+     * @param sysUserVo
+     * @return R
+     */
+    @Override
+    @ApiOperation("发送邮箱验证码")
+    public Result sendMailCode(SysUserVo sysUserVo) throws Exception {
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
+        if (StringUtils.isEmpty(sysUserVo.getFrom())) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
+        return sysUserService.sendMailCode(sysUserVo, smsCache);
     }
 
     /**
@@ -62,13 +83,16 @@ public class SysUserController implements ISysUserController {
      */
     @Override
     @ApiOperation("通过短信验证码登录")
-    public Result loginBySmsCode(SysUserVo sysUserVo) throws ApplicationException {
+    public Result loginBySmsCode(SysUserVo sysUserVo, HttpServletRequest request) throws ApplicationException {
         /*手机号码或者短信验证码不允许为空*/
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         if (StringUtils.isEmpty(sysUserVo.getPhone())
                 || StringUtils.isEmpty(sysUserVo.getSmsCode())) {
             return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
         }
-        return sysUserService.loginBySmsCode(sysUserVo, smsCache);
+        return sysUserService.loginBySmsCode(sysUserVo, smsCache, request);
     }
 
     /**
@@ -80,6 +104,9 @@ public class SysUserController implements ISysUserController {
     @ApiOperation("通过账号密码登录")
     public Result loginByPassword(SysUserVo sysUserVo) throws ApplicationException {
         /*手机号码或者密码不允许为空*/
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         if (StringUtils.isEmpty(sysUserVo.getPhone())
                 || StringUtils.isEmpty(sysUserVo.getPassword())) {
             return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
@@ -97,9 +124,16 @@ public class SysUserController implements ISysUserController {
     @ApiOperation("设置新的密码")
     public Result updatePassword(SysUserVo sysUserVo) throws ApplicationException {
         /*手机号码,短信验证码,密码不允许为空*/
-        if (StringUtils.isEmpty(sysUserVo.getPhone())
-                || StringUtils.isEmpty(sysUserVo.getSmsCode())
-                || StringUtils.isEmpty(sysUserVo.getPassword())) {
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
+        if ("1".equals(sysUserVo.getType()) && StringUtils.isEmpty(sysUserVo.getPhone())){
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
+        if ("2".equals(sysUserVo.getType()) && StringUtils.isEmpty(sysUserVo.getFrom())) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
+        if(StringUtils.isEmpty(sysUserVo.getSmsCode()) || StringUtils.isEmpty(sysUserVo.getPassword())) {
             return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
         }
         sysUserVo.setPassword(MD5.EncoderByMd5(sysUserVo.getPassword()));
@@ -115,6 +149,9 @@ public class SysUserController implements ISysUserController {
     @ApiOperation("注册")
     public Result reqister(SysUserVo sysUserVo, HttpServletRequest request) throws ApplicationException {
         //todo: 验证非空
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         if (StringUtils.isEmpty(sysUserVo.getPhone())
                 || StringUtils.isEmpty(sysUserVo.getSmsCode())
                 || StringUtils.isEmpty(sysUserVo.getPassword())) {
@@ -135,6 +172,9 @@ public class SysUserController implements ISysUserController {
     @Override
     @ApiOperation("获取用户信息")
     public Result getUserInfo(SysUserVo sysUserVo) throws ApplicationException {
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         if (null != sysUserVo.getUserId()) {
             return sysUserService.getUserInfo(sysUserVo);
         }
@@ -150,6 +190,9 @@ public class SysUserController implements ISysUserController {
     @Override
     @ApiOperation("更新用户信息")
     public Result updateUserInfo(SysUserVo sysUserVo) throws ApplicationException {
+        if(sysUserVo == null) {
+            return new Result(ErrorEnum.ERROR_402.getCode(), ErrorEnum.ERROR_402.getDesc());
+        }
         if (null != sysUserVo.getUserId()) {
             return sysUserService.updateUserInfo(sysUserVo);
         }

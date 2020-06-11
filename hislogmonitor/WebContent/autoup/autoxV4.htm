@@ -1,0 +1,175 @@
+<!--v3 realtime ret console
+v4  remt linux up and run
+
+ -->
+
+<script type="text/javascript" src="../com.atilax.frmwk/jquery-1.11.3.js"></script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+ crossorigin="anonymous">
+
+<!-- 可选的 Bootstrap 主题文件（一般不用引入） -->
+<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+ crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+ crossorigin="anonymous"></script>
+<p>
+	<p>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+		<!--  loading -->
+		<!--  
+		<link rel="stylesheet" href="dist/ladda-themeless.min.css">
+		<script src="dist/spin.min.js"></script>
+		<script src="dist/ladda.min.js"></script>
+ -->
+
+		<!--  rmt  -->
+
+
+
+		服务器地址连接信息:
+		<select name="svrinfo" id="svrinfo"> </select>
+		<input type="text" style="width:500px;display:none" list="host_list" autocomplete="on"  />
+		<datalist id="host_list">
+
+		</datalist>
+
+		<button type="button" class="btn btn-success" onclick="">
+			<a href="../log/fileeditV2.htm?file=/host.txt" style="color:white" target="_blank">编辑服务器列表</a>
+		</button>
+
+
+
+		<script src="hostmana.js"></script>
+
+		<script>
+
+			inihostV2("../webdavurl/host.txt",function(){
+				 setini()
+			});
+		</script>
+
+
+		<!--  rmt  -->
+
+
+		<div class="panel   panel-default" style="width:95%;margin-left:10px">
+			<div class="panel-heading">-----上传升级------------------</div>
+			<div class="panel-body">
+
+
+
+
+
+
+				<!-- body start -->
+
+
+				<div style="display:none">
+					路径与配置
+					<textarea rows="3" cols="200" id="cfgtextbox" style="width:100%;height:800px">
+ 
+ 
+
+ 
+</textarea>
+				</div>
+
+				上传升级包：
+				<input type="file" name="filex" onchange="upload()" id="filex" style="display:inline" class="btn btn-default" /> &nbsp; &nbsp; &nbsp;
+				<img id="loadimg" src="..\com.attilax\loading\loading-0.gif">
+				<span id="uppct"></span>/
+				<span id="putpct"></span>升级包安装起始路径：
+				<input type="text" name="shellExePath" id="shellExePath" style="width:500px;display:inline" />
+				<span id="upaftinfo">
+					服务器保存路径：
+					<input type="text" name="savepath" id="savepath" style="width:500px;display:inline" /> shell读取编码：
+					<input id="encodetxt" list="encode_list" class="s_ipt" value="utf8" maxlength="2550" autocomplete="on" style="width:100px">
+					<datalist id="url_list">
+						<option label="logcfgfile" value="C:\0wkspc\hislog\src\main\resources\log4j.properties" />
+						<option label="logfile" value="C:\0log\hislog.log" />
+						<option label="Microsoft" value="http://www.microsoft.com" />
+					</datalist>
+					<datalist id="encode_list">
+						<option label="utf8" value="utf8" />
+						<option label="gbk" value="gbk" />
+
+					</datalist>
+				</span>
+				<button type="button" class="btn btn-success" onclick="btn_click()">
+					提交执行更新
+				</button>
+				<img id="loadimg_exe" src="..\com.attilax\loading\loading_bar.gif" style="display:none">
+
+
+				<script src="autoxV4.js"></script>
+				<script>
+					$("#upaftinfo").hide();
+
+
+
+					$("#loadimg").hide();
+
+
+
+
+				</script>
+
+
+				<textarea rows="40" cols="200" id="editctrl" style="width:100%">
+ 
+运行结果。。。。
+
+ 
+</textarea>
+				<!-- end -->
+
+
+			</div>
+		</div>
+
+
+		<script src="../com.attilax/net/cookie.js"></script>
+		<script>
+
+			function setini() {
+
+
+					var hostx = readCookie("hostx");
+					console.log("readCookie:" + hostx);
+					if (hostx) {
+						$("#svrinfo").val(hostx);
+						$("#svrinfo").find("option[value='" + hostx + "']").attr("selected", true);
+						$("#svrinfo").find("option[value='" + hostx + "']").attr("selected", 'selected');
+
+
+						/*
+							$("#svrinfo option").each(function () {  //遍历所有option  
+											var channlVal = $(this).val();   //获取option值   
+											if (channlVal == hostx) {
+												$("#svrinfo").find("option[value='" + hostx + "']").attr("selected", true);
+												$("#svrinfo").find("option[value='" + hostx + "']").attr("selected", 'selected');
+												$(this).attr("selected", true);
+											}
+										})
+						
+						*/
+
+
+
+
+					}
+
+				}
+		
+
+
+		</script>

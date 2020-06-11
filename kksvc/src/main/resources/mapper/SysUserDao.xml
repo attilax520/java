@@ -78,6 +78,7 @@
         SELECT
             id,
             user_name,
+            password,
             phone,
             email,
             register_time,
@@ -112,30 +113,30 @@
     <!-- 更新用户信息 -->
     <update id="updateUserInfo">
         update sys_user_t
-        <set>
+        <trim prefix="set" suffixOverrides=",">
             <if test="sysUser.nickName != null and sysUser.nickName.trim() != ''">
-                nick_name = #{sysUser.nickName}
+                nick_name = #{sysUser.nickName},
             </if>
             <if test="sysUser.age != null">
-                age = #{sysUser.age}
+                age = #{sysUser.age},
             </if>
             <if test="sysUser.sex != null">
-                sex = #{sysUser.sex}
+                sex = #{sysUser.sex},
             </if>
             <if test="sysUser.sign != null and sysUser.sign.trim() != ''">
-                sign = #{sysUser.sign}
+                sign = #{sysUser.sign},
             </if>
             <if test="sysUser.img != null and sysUser.img != ''">
-                img = #{sysUser.img}
+                img = #{sysUser.img},
             </if>
-        </set>
+        </trim>
         <where>
             id = #{sysUser.userId}
         </where>
     </update>
 
     <!-- 注册新用户 -->
-    <insert id="reqister" parameterType="com.kok.sport.entity.SysUser">
+    <insert id="reqister" parameterType="com.kok.sport.entity.SysUser" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO sys_user_t(
             user_name,
             password,
@@ -144,12 +145,12 @@
             register_ip,
             delete_flag
         ) VALUES (
-            #{sysUser.userName},
-            #{sysUser.password},
-            #{sysUser.phone},
-            #{sysUser.registerTime},
-            #{sysUser.registerIp},
-            #{sysUser.deleteFlag}
+            #{userName, jdbcType=VARCHAR},
+            #{password, jdbcType=VARCHAR},
+            #{phone, jdbcType=VARCHAR},
+            #{registerTime, jdbcType=TIMESTAMP},
+            #{registerIp, jdbcType=VARCHAR},
+            #{deleteFlag, jdbcType=VARCHAR}
         )
     </insert>
 </mapper>

@@ -1,0 +1,24 @@
+ {
+                    "name": "@evtname@", 
+                    "weight": 500, 
+                    "evolution": [
+                        {
+                            "time": "2018-@mon1@-@startday@", 
+                            "value": 24, 
+                            "detail": {
+                                "link": "www.baidu.com", 
+                                "text": "百度指数", 
+                                "img": '../asset/ico/favicon.png'
+                            }
+                        }, 
+                        {
+                            "time": "2018-@mon2@-@endday@", 
+                            "value": 34, 
+                            "detail": {
+                                "link": "http://www.baidu.com", 
+                                "text": "百度指数", 
+                                "img": '../asset/ico/favicon.png'
+                            }
+                        } 
+                    ]
+                }
