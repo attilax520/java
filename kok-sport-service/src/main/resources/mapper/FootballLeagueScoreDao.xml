@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballLeagueScoreDao">
+
+  <resultMap id="footballLeagueScoreMap" type="com.kok.sport.entity.FootballLeagueScore">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="seasonId" column="season_id"/>
+                        <result property="stageId" column="stage_id"/>
+                        <result property="season" column="season"/>
+                        <result property="eventName" column="event_name"/>
+                        <result property="teamType" column="team_type"/>
+                        <result property="dataType" column="data_type"/>
+                        <result property="position" column="position"/>
+                        <result property="pts" column="pts"/>
+                        <result property="played" column="played"/>
+                        <result property="won" column="won"/>
+                        <result property="drawn" column="drawn"/>
+                        <result property="lost" column="lost"/>
+                        <result property="goals" column="goals"/>
+                        <result property="awayGoals" column="away_goals"/>
+                        <result property="against" column="against"/>
+                        <result property="diff" column="diff"/>
+                        <result property="teamId" column="team_id"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballLeagueScore简单分页查询-->
+  <select id="getFootballLeagueScorePage" resultMap="footballLeagueScoreMap">
+    SELECT
+                  id,
+                        match_id,
+                        season_id,
+                        stage_id,
+                        season,
+                        event_name,
+                        team_type,
+                        data_type,
+                        position,
+                        pts,
+                        played,
+                        won,
+                        drawn,
+                        lost,
+                        goals,
+                        away_goals,
+                        against,
+                        diff,
+                        team_id,
+                        create_time,
+                        delete_flag
+              FROM football_league_score_t
+    <where>
+                        <if test="footballLeagueScore.id != null ">
+            AND id = #{footballLeagueScore.id}
+          </if>
+                                <if test="footballLeagueScore.matchId != null ">
+            AND match_id = #{footballLeagueScore.matchId}
+          </if>
+                                <if test="footballLeagueScore.seasonId != null ">
+            AND season_id = #{footballLeagueScore.seasonId}
+          </if>
+                                <if test="footballLeagueScore.stageId != null ">
+            AND stage_id = #{footballLeagueScore.stageId}
+          </if>
+                                <if test="footballLeagueScore.season != null and footballLeagueScore.season.trim() != ''">
+            AND season = #{footballLeagueScore.season}
+          </if>
+                                <if test="footballLeagueScore.eventName != null and footballLeagueScore.eventName.trim() != ''">
+            AND event_name = #{footballLeagueScore.eventName}
+          </if>
+                                <if test="footballLeagueScore.teamType != null ">
+            AND team_type = #{footballLeagueScore.teamType}
+          </if>
+                                <if test="footballLeagueScore.dataType != null and footballLeagueScore.dataType.trim() != ''">
+            AND data_type = #{footballLeagueScore.dataType}
+          </if>
+                                <if test="footballLeagueScore.position != null ">
+            AND position = #{footballLeagueScore.position}
+          </if>
+                                <if test="footballLeagueScore.pts != null ">
+            AND pts = #{footballLeagueScore.pts}
+          </if>
+                                <if test="footballLeagueScore.played != null ">
+            AND played = #{footballLeagueScore.played}
+          </if>
+                                <if test="footballLeagueScore.won != null ">
+            AND won = #{footballLeagueScore.won}
+          </if>
+                                <if test="footballLeagueScore.drawn != null ">
+            AND drawn = #{footballLeagueScore.drawn}
+          </if>
+                                <if test="footballLeagueScore.lost != null ">
+            AND lost = #{footballLeagueScore.lost}
+          </if>
+                                <if test="footballLeagueScore.goals != null ">
+            AND goals = #{footballLeagueScore.goals}
+          </if>
+                                <if test="footballLeagueScore.awayGoals != null ">
+            AND away_goals = #{footballLeagueScore.awayGoals}
+          </if>
+                                <if test="footballLeagueScore.against != null ">
+            AND against = #{footballLeagueScore.against}
+          </if>
+                                <if test="footballLeagueScore.diff != null ">
+            AND diff = #{footballLeagueScore.diff}
+          </if>
+                                <if test="footballLeagueScore.teamId != null ">
+            AND team_id = #{footballLeagueScore.teamId}
+          </if>
+                                <if test="footballLeagueScore.createTime != null ">
+            AND create_time = #{footballLeagueScore.createTime}
+          </if>
+                                <if test="footballLeagueScore.deleteFlag != null and footballLeagueScore.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballLeagueScore.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

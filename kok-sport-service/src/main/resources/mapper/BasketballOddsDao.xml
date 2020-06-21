@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballOddsDao">
+
+    <resultMap id="basketballOddsMap" type="com.kok.sport.entity.BasketballOdds">
+        <id property="id" column="id"/>
+        <result property="companyId" column="company_id"/>
+        <result property="matcheId" column="matche_id"/>
+        <result property="oddsType" column="odds_type"/>
+        <result property="changeTime" column="change_time"/>
+        <result property="happenTime" column="happen_time"/>
+        <result property="matchStatus" column="match_status"/>
+        <result property="homeOdds" column="home_odds"/>
+        <result property="tieOdds" column="tie_odds"/>
+        <result property="awayOdds" column="away_odds"/>
+        <result property="lockFlag" column="lock_flag"/>
+        <result property="realTimeScore" column="real_time_score"/>
+        <result property="createTime" column="create_time"/>
+        <result property="deleteFlag" column="delete_flag"/>
+    </resultMap>
+    <!--basketballOdds简单分页查询-->
+    <select id="getBasketballOddsPage" resultMap="basketballOddsMap">
+        SELECT
+        id,
+        company_id,
+        matche_id,
+        odds_type,
+        change_time,
+        happen_time,
+        match_status,
+        home_odds,
+        tie_odds,
+        away_odds,
+        lock_flag,
+        real_time_score,
+        create_time,
+        delete_flag
+        FROM basketball_odds_t
+        <where>
+            <if test="basketballOdds.id != null ">
+                AND id = #{basketballOdds.id}
+            </if>
+            <if test="basketballOdds.companyId != null ">
+                AND company_id = #{basketballOdds.companyId}
+            </if>
+            <if test="basketballOdds.matcheId != null ">
+                AND matche_id = #{basketballOdds.matcheId}
+            </if>
+            <if test="basketballOdds.oddsType != null ">
+                AND odds_type = #{basketballOdds.oddsType}
+            </if>
+            <if test="basketballOdds.changeTime != null ">
+                AND change_time = #{basketballOdds.changeTime}
+            </if>
+            <if test="basketballOdds.happenTime != null and basketballOdds.happenTime.trim() != ''">
+                AND happen_time = #{basketballOdds.happenTime}
+            </if>
+            <if test="basketballOdds.matchStatus != null ">
+                AND match_status = #{basketballOdds.matchStatus}
+            </if>
+            <if test="basketballOdds.homeOdds != null ">
+                AND home_odds = #{basketballOdds.homeOdds}
+            </if>
+            <if test="basketballOdds.tieOdds != null ">
+                AND tie_odds = #{basketballOdds.tieOdds}
+            </if>
+            <if test="basketballOdds.awayOdds != null ">
+                AND away_odds = #{basketballOdds.awayOdds}
+            </if>
+            <if test="basketballOdds.lockFlag != null ">
+                AND lock_flag = #{basketballOdds.lockFlag}
+            </if>
+            <if test="basketballOdds.realTimeScore != null and basketballOdds.realTimeScore.trim() != ''">
+                AND real_time_score = #{basketballOdds.realTimeScore}
+            </if>
+            <if test="basketballOdds.createTime != null ">
+                AND create_time = #{basketballOdds.createTime}
+            </if>
+            <if test="basketballOdds.deleteFlag != null and basketballOdds.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballOdds.deleteFlag}
+            </if>
+        </where>
+    </select>
+
+    <!--basketballOdds根据matchId查询该表记录-->
+    <select id="getByMatcheId" resultMap="basketballOddsMap">
+       SELECT * FROM basketball_odds_t  WHERE matche_id = #{matchId}
+       AND company_id = #{companyId}
+       AND odds_type = #{oddsType}
+    </select>
+
+    <!--&lt;!&ndash; useGeneratedKeys="true" keyProperty="xxx" for sqlserver and mysql &ndash;&gt;
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" parameterType="com.kok.sport.entity.BasketballOdds">
+        <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Long">
+            select basketball_odds_t_seq.NEXTVAL as id from DUAL
+        </selectKey>
+        <![CDATA[
+            insert into basketball_odds_t(
+            id,
+            company_id,
+            matche_id,
+            odds_type,
+            change_time,
+            happen_time,
+            match_status,
+            home_odds,
+            tie_odds,
+            away_odds,
+            lock_flag,
+            real_time_score,
+            create_time,
+            delete_flag
+            )
+            values(
+        	#{id,jdbcType=BIGINT} ,
+        	#{company_id,jdbcType=BIGINT} ,
+        	#{matche_id,jdbcType=INTEGER} ,
+        	#{odds_type,jdbcType=VARCHAR} ,
+        	#{change_time,jdbcType=BIGINT} ,
+        	#{happen_time,jdbcType=VARCHAR} ,
+        	#{match_status,jdbcType=INTEGER} ,
+        	#{home_odds,jdbcType=DECIMAL} ,
+        	#{tie_odds,jdbcType=DECIMAL} ,
+        	#{away_odds,jdbcType=DECIMAL} ,
+        	#{lock_flag,jdbcType=INTEGER} ,
+        	#{real_time_score,jdbcType=VARCHAR} ,
+        	#{create_time,jdbcType=TIMESTAMP} ,
+        	#{delete_flag,jdbcType=CHAR}
+        )
+        ]]>
+    </insert>
+
+    <update id="update" parameterType="com.kok.sport.entity.BasketballOdds">
+        <![CDATA[
+        UPDATE basketball_odds_t SET
+	        company_id = #{company_id,jdbcType=BIGINT} ,
+        	matche_id = #{matche_id,jdbcType=VARCHAR} ,
+        	odds_type = #{odds_type,jdbcType=VARCHAR} ,
+        	change_time = #{change_time,jdbcType=BIGINT} ,
+        	happen_time = #{happen_time,jdbcType=VARCHAR} ,
+        	match_status = #{match_status,jdbcType=INTEGER} ,
+        	home_odds = #{home_odds,jdbcType=DECIMAL} ,
+        	tie_odds = #{tie_odds,jdbcType=DECIMAL} ,
+        	away_odds = #{away_odds,jdbcType=DECIMAL} ,
+        	lock_flag = #{lock_flag,jdbcType=INTEGER} ,
+        	real_time_score = #{real_time_score,jdbcType=VARCHAR} ,
+        	create_time = #{create_time,jdbcType=TIMESTAMP} ,
+        	delete_flag = #{delete_flag,jdbcType=CHAR}
+        WHERE
+	        id = #{id,jdbcType=BIGINT}
+    ]]>
+    </update>
+    <update id="updateById"  parameterType="com.kok.sport.entity.BasketballOdds">
+        UPDATE basketball_odds_t
+        <trim prefix="set" suffixOverrides="," >
+
+            <if test="@Ognl@isNotEmpty(company_id)">
+                company_id = #{company_id,jdbcType=BIGINT},
+            </if>
+            <if test="@Ognl@isNotEmpty(matche_id)">
+                matche_id = #{matche_id,jdbcType=INTEGER},
+            </if>
+            <if test="@Ognl@isNotEmpty(odds_type)">
+                odds_type = #{odds_type,jdbcType=VARCHAR} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(change_time)">
+                change_time = #{change_time,jdbcType=BIGINT} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(happen_time)">
+                happen_time = #{happen_time,jdbcType=VARCHAR} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(match_status)">
+                match_status = #{match_status,jdbcType=INTEGER} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(home_odds)">
+                home_odds = #{home_odds,jdbcType=DECIMAL} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(tie_odds)">
+                tie_odds = #{tie_odds,jdbcType=DECIMAL} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(away_odds)">
+                away_odds = #{away_odds,jdbcType=DECIMAL} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(lock_flag)">
+                lock_flag = #{lock_flag,jdbcType=INTEGER} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(real_time_score)">
+                real_time_score = #{real_time_score,jdbcType=VARCHAR} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(create_time)">
+                create_time >= #{create_time,jdbcType=TIMESTAMP} ,
+            </if>
+            <if test="@Ognl@isNotEmpty(delete_flag)">
+                delete_flag = #{delete_flag,jdbcType=CHAR},
+            </if>
+        </trim>
+        WHERE
+        id = #{id,jdbcType=BIGINT}
+    </update>-->
+
+    <insert id="saveBasketballOdds">
+        insert into basketball_odds_t(
+        company_id,
+        matche_id,
+        odds_type,
+        change_time,
+        happen_time,
+        match_status,
+        home_odds,
+        tie_odds,
+        away_odds,
+        lock_flag,
+        real_time_score,
+        create_time,
+        delete_flag
+        )
+        values
+        <foreach collection="oddsList" item="item" index="index" separator=",">
+            (
+            #{item.companyId},
+            #{item.matcheId},
+            #{item.oddsType},
+            #{item.changeTime},
+            #{item.happenTime},
+            #{item.matchStatus},
+            #{item.homeOdds},
+            #{item.tieOdds},
+            #{item.awayOdds},
+            #{item.lockFlag},
+            #{item.realTimeScore},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        change_time = values(change_time),
+        happen_time = values(happen_time),
+        match_status = values(match_status),
+        home_odds = values(home_odds),
+        tie_odds = values(tie_odds),
+        away_odds = values(away_odds),
+        lock_flag = values(lock_flag),
+        real_time_score = values(real_time_score)
+    </insert>
+
+</mapper>

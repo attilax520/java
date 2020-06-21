@@ -1,0 +1,15 @@
+﻿--  zhenron;
+
+
+
+select * from foot_zhenron;
+
+Update football_formation_t set    home_formation='4-2-3-1', away_formation='4-2-3-1';
+
+select * from football_formation_t;
+
+select * from football_team_player_t;
+
+
+Update football_formation_t set  members='';
+

@@ -1,0 +1,13 @@
+atitit url and  query parse 解析
+
+# 半结构化数据
+url ,json xml yml
+
+# url前边部分解析都有
+
+# query部分的解析
+
+## js的解析
+### 
+
+# mysql url的解析

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballTeamDao">
+
+  <resultMap id="footballTeamMap" type="com.kok.sport.entity.FootballTeam">
+                  <id property="id" column="id"/>
+                        <result property="nameZh" column="name_zh"/>
+                        <result property="shortNameZh" column="short_name_zh"/>
+                        <result property="nameZht" column="name_zht"/>
+                        <result property="shortNameZht" column="short_name_zht"/>
+                        <result property="nameEn" column="name_en"/>
+                        <result property="shortNameEn" column="short_name_en"/>
+                        <result property="logo" column="logo"/>
+                        <result property="found" column="found"/>
+                        <result property="webSite" column="web_site"/>
+                        <result property="national" column="national"/>
+                        <result property="countryLogo" column="country_logo"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballTeam简单分页查询-->
+  <select id="getFootballTeamPage" resultMap="footballTeamMap">
+    SELECT
+                  id,
+                        name_zh,
+                        short_name_zh,
+                        name_zht,
+                        short_name_zht,
+                        name_en,
+                        short_name_en,
+                        logo,
+                        found,
+                        web_site,
+                        national,
+                        country_logo,
+                        create_time,
+                        delete_flag
+              FROM football_team_t
+    <where>
+                        <if test="footballTeam.id != null ">
+            AND id = #{footballTeam.id}
+          </if>
+                                <if test="footballTeam.nameZh != null and footballTeam.nameZh.trim() != ''">
+            AND name_zh = #{footballTeam.nameZh}
+          </if>
+                                <if test="footballTeam.shortNameZh != null and footballTeam.shortNameZh.trim() != ''">
+            AND short_name_zh = #{footballTeam.shortNameZh}
+          </if>
+                                <if test="footballTeam.nameZht != null and footballTeam.nameZht.trim() != ''">
+            AND name_zht = #{footballTeam.nameZht}
+          </if>
+                                <if test="footballTeam.shortNameZht != null and footballTeam.shortNameZht.trim() != ''">
+            AND short_name_zht = #{footballTeam.shortNameZht}
+          </if>
+                                <if test="footballTeam.nameEn != null and footballTeam.nameEn.trim() != ''">
+            AND name_en = #{footballTeam.nameEn}
+          </if>
+                                <if test="footballTeam.shortNameEn != null and footballTeam.shortNameEn.trim() != ''">
+            AND short_name_en = #{footballTeam.shortNameEn}
+          </if>
+                                <if test="footballTeam.logo != null and footballTeam.logo.trim() != ''">
+            AND logo = #{footballTeam.logo}
+          </if>
+                                <if test="footballTeam.found != null and footballTeam.found.trim() != ''">
+            AND found = #{footballTeam.found}
+          </if>
+                                <if test="footballTeam.webSite != null and footballTeam.webSite.trim() != ''">
+            AND web_site = #{footballTeam.webSite}
+          </if>
+                                <if test="footballTeam.national != null ">
+            AND national = #{footballTeam.national}
+          </if>
+                                <if test="footballTeam.countryLogo != null and footballTeam.countryLogo.trim() != ''">
+            AND country_logo = #{footballTeam.countryLogo}
+          </if>
+                                <if test="footballTeam.createTime != null ">
+            AND create_time = #{footballTeam.createTime}
+          </if>
+                                <if test="footballTeam.deleteFlag != null and footballTeam.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballTeam.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

@@ -1,0 +1,6 @@
+﻿show variables like '%event_scheduler%';
+select * from information_schema.events;
+
+event_name,event_def,enable_status,event_comment,
+;;
+select * from sys_events;

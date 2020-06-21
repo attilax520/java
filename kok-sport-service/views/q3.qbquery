@@ -1,0 +1,28 @@
+﻿select
+
+0.33 `home_odds`, 0.33 `tie_odds`,0.33 AS `away_odds`,
+'max' AS `type`,0.92 AS `home_odds_chupan`,0.5 AS `tie_odds_chupan`,0.88 AS away_odds_chupan;
+
+select * from sys_views;
+
+
+insert into sys_views set outterSubq='( select * from foot_odds_tongji ) as odds_tongji ',name='football_odds_t_ex',subq
+;
+update sys_views set subquerys='(select 2 id limit 10 ) as subObj ';
+
+
+update sys_views set  outterSubq='( select * from foot_odds_tongji limit 300 ) as odds_tongji ';
+
+
+
+select * from sys_views where name='football_odds_t_ex';
+
+
+select 2 id limit 10;
+
+select * from  foot_detail_data_v;
+select * from  foot_detail_data_recent;
+
+select * from football_match_t ;
+select CONVERT('12345678901' ,  UNSIGNED INTEGER  );
+update football_match_t  set match_time=CONVERT(match_time , UNSIGNED) where id=2644516

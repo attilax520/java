@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballMatchDao">
+
+  <resultMap id="footballMatchMap" type="com.kok.sport.entity.FootballMatch">
+                  <id property="id" column="id"/>
+                        <result property="matchEventId" column="match_event_id"/>
+                        <result property="matchStatus" column="match_status"/>
+                        <result property="matchTime" column="match_time"/>
+                        <result property="teeTime" column="tee_time"/>
+                        <result property="homeId" column="home_id"/>
+                        <result property="awayId" column="away_id"/>
+                        <result property="matchDetail" column="match_detail"/>
+                        <result property="whichRound" column="which_round"/>
+                        <result property="neutralSite" column="neutral_site"/>
+                        <result property="animation" column="animation"/>
+                        <result property="intelligence" column="intelligence"/>
+                        <result property="squad" column="squad"/>
+                        <result property="video" column="video"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballMatch简单分页查询-->
+  <select id="getFootballMatchPage" resultMap="footballMatchMap">
+    SELECT
+                  id,
+                        match_event_id,
+                        match_status,
+                        match_time,
+                        tee_time,
+                        home_id,
+                        away_id,
+                        match_detail,
+                        which_round,
+                        neutral_site,
+                        animation,
+                        intelligence,
+                        squad,
+                        video,
+                        create_time,
+                        delete_flag
+              FROM football_match_t
+    <where>
+                        <if test="footballMatch.id != null ">
+            AND id = #{footballMatch.id}
+          </if>
+                                <if test="footballMatch.matchEventId != null ">
+            AND match_event_id = #{footballMatch.matchEventId}
+          </if>
+                                <if test="footballMatch.matchStatus != null ">
+            AND match_status = #{footballMatch.matchStatus}
+          </if>
+                                <if test="footballMatch.matchTime != null ">
+            AND match_time = #{footballMatch.matchTime}
+          </if>
+                                <if test="footballMatch.teeTime != null ">
+            AND tee_time = #{footballMatch.teeTime}
+          </if>
+                                <if test="footballMatch.homeId != null ">
+            AND home_id = #{footballMatch.homeId}
+          </if>
+                                <if test="footballMatch.awayId != null ">
+            AND away_id = #{footballMatch.awayId}
+          </if>
+                                <if test="footballMatch.matchDetail != null and footballMatch.matchDetail.trim() != ''">
+            AND match_detail = #{footballMatch.matchDetail}
+          </if>
+                                <if test="footballMatch.whichRound != null ">
+            AND which_round = #{footballMatch.whichRound}
+          </if>
+                                <if test="footballMatch.neutralSite != null ">
+            AND neutral_site = #{footballMatch.neutralSite}
+          </if>
+                                <if test="footballMatch.animation != null ">
+            AND animation = #{footballMatch.animation}
+          </if>
+                                <if test="footballMatch.intelligence != null ">
+            AND intelligence = #{footballMatch.intelligence}
+          </if>
+                                <if test="footballMatch.squad != null ">
+            AND squad = #{footballMatch.squad}
+          </if>
+                                <if test="footballMatch.video != null ">
+            AND video = #{footballMatch.video}
+          </if>
+                                <if test="footballMatch.createTime != null ">
+            AND create_time = #{footballMatch.createTime}
+          </if>
+                                <if test="footballMatch.deleteFlag != null and footballMatch.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballMatch.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+    <insert id="into_football_match_t" parameterType="Map"	>
+    insert  into football_match_t( 
+			     id,match_event_id, match_status ,match_time,tee_time, 
+			    home_id,away_id,which_round,neutral_site,create_time,delete_flag,match_detail, 
+			    animation,intelligence,squad,video
+    )values(
+				#{id},#{match_event_id},#{match_status},#{match_time},#{tee_time},
+				#{home_id},#{away_id},#{which_round},#{neutral_site},now(),0, #{match_detail},
+				0,0,0,0)
+				ON DUPLICATE KEY UPDATE match_status=values(match_status),tee_time=values(tee_time);
+    </insert>
+    
+    
+    <update id="insert_into_football_odds_t" parameterType="Map"	 >
+	insert  into football_odds_t(   id,company_id, match_id ,change_time, home_odds,tie_odds,away_odds,lock_flag,create_time,delete_flag )values( #{id},#{company_id},#{match_id},#{change_time},
+										 #{home_odds},#{tie_odds},#{away_odds},#{lock_flag},now(),0  )
+	</update>
+
+</mapper>

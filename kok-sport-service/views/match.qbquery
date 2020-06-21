@@ -1,0 +1,28 @@
+﻿select * from foot_match_v_all;
+select * from  football_match_t;
+
+
+update football_match_t set home_id=10000  where id=3380166;
+update football_match_t set home_id=10000  where id=3380166;
+select * from football_score_t where match_id=3380166 and team_id>1;
+
+show variables like '%event_scheduler%';
+select * from information_schema.events;
+
+SET GLOBAL event_scheduler = ON;
+
+create table events_list(event_name varchar(20) not null, event_started timestamp not null);
+
+
+
+create event event2222
+on schedule
+every  10 second
+do insert into events_list values('event_now', now());
+
+select * from events_list;
+select * from foot_match_v_all;
+match_status between 9 and 13;
+select * from sys_views;
+select * from foot_match_v_all where match_status between 2 and 7 ;
+insert into sys_views set name='foot_match_v_ing' ,context='select * from foot_match_v_all where match_status between 2 and 7  '

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.BasketballEventDao">
+
+    <resultMap id="basketballEventMap" type="com.kok.sport.entity.BasketballEvent">
+        <id property="id" column="id"/>
+        <result property="areaId" column="area_id"/>
+        <result property="countryId" column="country_id"/>
+        <result property="matchType" column="match_type"/>
+        <result property="nameZh" column="name_zh"/>
+        <result property="shortNameZh" column="short_name_zh"/>
+        <result property="nameZht" column="name_zht"/>
+        <result property="shortNameZht" column="short_name_zht"/>
+        <result property="nameEn" column="name_en"/>
+        <result property="shortNameEn" column="short_name_en"/>
+        <result property="matchLogo" column="match_logo"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!--basketballEvent简单分页查询-->
+    <select id="getBasketballEventPage" resultMap="basketballEventMap">
+        SELECT
+        id,
+        area_id,
+        country_id,
+        match_type,
+        name_zh,
+        short_name_zh,
+        name_zht,
+        short_name_zht,
+        name_en,
+        short_name_en,
+        match_logo,
+        delete_flag,
+        create_time
+        FROM basketball_event_t
+        <where>
+            <if test="basketballEvent.id != null ">
+                AND id = #{basketballEvent.id}
+            </if>
+            <if test="basketballEvent.areaId != null ">
+                AND area_id = #{basketballEvent.areaId}
+            </if>
+            <if test="basketballEvent.countryId != null ">
+                AND country_id = #{basketballEvent.countryId}
+            </if>
+            <if test="basketballEvent.matchType != null ">
+                AND match_type = #{basketballEvent.matchType}
+            </if>
+            <if test="basketballEvent.nameZh != null and basketballEvent.nameZh.trim() != ''">
+                AND name_zh = #{basketballEvent.nameZh}
+            </if>
+            <if test="basketballEvent.shortNameZh != null and basketballEvent.shortNameZh.trim() != ''">
+                AND short_name_zh = #{basketballEvent.shortNameZh}
+            </if>
+            <if test="basketballEvent.nameZht != null and basketballEvent.nameZht.trim() != ''">
+                AND name_zht = #{basketballEvent.nameZht}
+            </if>
+            <if test="basketballEvent.shortNameZht != null and basketballEvent.shortNameZht.trim() != ''">
+                AND short_name_zht = #{basketballEvent.shortNameZht}
+            </if>
+            <if test="basketballEvent.nameEn != null and basketballEvent.nameEn.trim() != ''">
+                AND name_en = #{basketballEvent.nameEn}
+            </if>
+            <if test="basketballEvent.shortNameEn != null and basketballEvent.shortNameEn.trim() != ''">
+                AND short_name_en = #{basketballEvent.shortNameEn}
+            </if>
+            <if test="basketballEvent.matchLogo != null and basketballEvent.matchLogo.trim() != ''">
+                AND match_logo = #{basketballEvent.matchLogo}
+            </if>
+            <if test="basketballEvent.deleteFlag != null and basketballEvent.deleteFlag.trim() != ''">
+                AND delete_flag = #{basketballEvent.deleteFlag}
+            </if>
+            <if test="basketballEvent.createTime != null ">
+                AND create_time = #{basketballEvent.createTime}
+            </if>
+        </where>
+    </select>
+
+
+    <insert id="saveBasketballEvent">
+        insert into basketball_event_t(
+        id,
+        area_id,
+        country_id,
+        match_type,
+        name_zh,
+        short_name_zh,
+        name_zht,
+        short_name_zht,
+        name_en,
+        short_name_en,
+        logo,
+        create_time,
+        delete_flag
+        )
+        values
+        <foreach collection="eventList" item="item" index="index" separator=",">
+            (
+            #{item.id},
+            #{item.areaId},
+            #{item.countryId},
+            #{item.matchType},
+            #{item.nameZh},
+            #{item.shortNameZh},
+            #{item.nameZht},
+            #{item.shortNameZht},
+            #{item.nameEn},
+            #{item.shortNameEn},
+            #{item.logo},
+            #{item.createTime},
+            #{item.deleteFlag}
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        area_id = values(area_id),
+        country_id = values(country_id),
+        match_type = values(match_type),
+        name_zh = values(name_zh),
+        short_name_zh = values(short_name_zh),
+        name_zht = values(name_zht),
+        short_name_zht = values(short_name_zht),
+        name_en = values(name_en),
+        short_name_en = values(short_name_en),
+        logo = values(logo)
+    </insert>
+
+    <update id="deleteBasketballEvent">
+        UPDATE basketball_event_t
+        SET delete_flag = '1'
+        WHERE id IN
+        <foreach collection="eventList" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

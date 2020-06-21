@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballOddsDao">
+
+  <resultMap id="footballOddsMap" type="com.kok.sport.entity.FootballOdds">
+                  <id property="id" column="id"/>
+                        <result property="companyId" column="company_id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="oddsType" column="odds_type"/>
+                        <result property="changeTime" column="change_time"/>
+                        <result property="happenTime" column="happen_time"/>
+                        <result property="matchStatus" column="match_status"/>
+                        <result property="homeOdds" column="home_odds"/>
+                        <result property="tieOdds" column="tie_odds"/>
+                        <result property="awayOdds" column="away_odds"/>
+                        <result property="lockFlag" column="lock_flag"/>
+                        <result property="realTimeScore" column="real_time_score"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballOdds简单分页查询-->
+  <select id="getFootballOddsPage" resultMap="footballOddsMap">
+    SELECT
+                  id,
+                        company_id,
+                        match_id,
+                        odds_type,
+                        change_time,
+                        happen_time,
+                        match_status,
+                        home_odds,
+                        tie_odds,
+                        away_odds,
+                        lock_flag,
+                        real_time_score,
+                        create_time,
+                        delete_flag
+              FROM football_odds_t
+    <where>
+                        <if test="footballOdds.id != null ">
+            AND id = #{footballOdds.id}
+          </if>
+                                <if test="footballOdds.companyId != null ">
+            AND company_id = #{footballOdds.companyId}
+          </if>
+                                <if test="footballOdds.matchId != null ">
+            AND match_id = #{footballOdds.matchId}
+          </if>
+                                <if test="footballOdds.oddsType != null ">
+            AND odds_type = #{footballOdds.oddsType}
+          </if>
+                                <if test="footballOdds.changeTime != null ">
+            AND change_time = #{footballOdds.changeTime}
+          </if>
+                                <if test="footballOdds.happenTime != null and footballOdds.happenTime.trim() != ''">
+            AND happen_time = #{footballOdds.happenTime}
+          </if>
+                                <if test="footballOdds.matchStatus != null ">
+            AND match_status = #{footballOdds.matchStatus}
+          </if>
+                                <if test="footballOdds.homeOdds != null ">
+            AND home_odds = #{footballOdds.homeOdds}
+          </if>
+                                <if test="footballOdds.tieOdds != null ">
+            AND tie_odds = #{footballOdds.tieOdds}
+          </if>
+                                <if test="footballOdds.awayOdds != null ">
+            AND away_odds = #{footballOdds.awayOdds}
+          </if>
+                                <if test="footballOdds.lockFlag != null ">
+            AND lock_flag = #{footballOdds.lockFlag}
+          </if>
+                                <if test="footballOdds.realTimeScore != null and footballOdds.realTimeScore.trim() != ''">
+            AND real_time_score = #{footballOdds.realTimeScore}
+          </if>
+                                <if test="footballOdds.createTime != null ">
+            AND create_time = #{footballOdds.createTime}
+          </if>
+                                <if test="footballOdds.deleteFlag != null and footballOdds.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballOdds.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

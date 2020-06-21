@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kok.sport.dao.FootballFormationDao">
+
+  <resultMap id="footballFormationMap" type="com.kok.sport.entity.FootballFormation">
+                  <id property="id" column="id"/>
+                        <result property="matchId" column="match_id"/>
+                        <result property="confirmed" column="confirmed"/>
+                        <result property="homeFormation" column="home_formation"/>
+                        <result property="awayFormation" column="away_formation"/>
+                        <result property="homeId" column="home_id"/>
+                        <result property="awayId" column="away_id"/>
+                        <result property="createTime" column="create_time"/>
+                        <result property="deleteFlag" column="delete_flag"/>
+            </resultMap>
+
+  <!--footballFormation简单分页查询-->
+  <select id="getFootballFormationPage" resultMap="footballFormationMap">
+    SELECT
+                  id,
+                        match_id,
+                        confirmed,
+                        home_formation,
+                        away_formation,
+                        home_id,
+                        away_id,
+                        create_time,
+                        delete_flag
+              FROM football_formation_t
+    <where>
+                        <if test="footballFormation.id != null ">
+            AND id = #{footballFormation.id}
+          </if>
+                                <if test="footballFormation.matchId != null ">
+            AND match_id = #{footballFormation.matchId}
+          </if>
+                                <if test="footballFormation.confirmed != null ">
+            AND confirmed = #{footballFormation.confirmed}
+          </if>
+                                <if test="footballFormation.homeFormation != null and footballFormation.homeFormation.trim() != ''">
+            AND home_formation = #{footballFormation.homeFormation}
+          </if>
+                                <if test="footballFormation.awayFormation != null and footballFormation.awayFormation.trim() != ''">
+            AND away_formation = #{footballFormation.awayFormation}
+          </if>
+                                <if test="footballFormation.homeId != null ">
+            AND home_id = #{footballFormation.homeId}
+          </if>
+                                <if test="footballFormation.awayId != null ">
+            AND away_id = #{footballFormation.awayId}
+          </if>
+                                <if test="footballFormation.createTime != null ">
+            AND create_time = #{footballFormation.createTime}
+          </if>
+                                <if test="footballFormation.deleteFlag != null and footballFormation.deleteFlag.trim() != ''">
+            AND delete_flag = #{footballFormation.deleteFlag}
+          </if>
+                  </where>
+  </select>
+
+
+
+</mapper>

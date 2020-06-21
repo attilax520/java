@@ -1,0 +1,4 @@
+﻿2644515 11021 12159  ;
+select * from football_score_t where match_id=2644515;
+update football_score_t set team_id=11021 where match_id=2644515 and team_type=1;
+update football_score_t set team_id=12159 where match_id=2644515 and team_type=2;

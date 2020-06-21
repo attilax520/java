@@ -1,0 +1,4 @@
+
+
+/sport/footballodds/insertFootballNumberOddsDataHistory?where=
+where match_time between unix_timestamp(date_sub(now(), interval 8 day)) and unix_timestamp( now() ) order by match_time desc
